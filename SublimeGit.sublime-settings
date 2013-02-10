@@ -1,0 +1,90 @@
+{
+    "log_level": "DEBUG",
+    "encoding": "utf-8",
+
+    /*
+     * Show Inline Status Help
+     *
+     * If set to true, the bottom of the Git: Status view
+     * will contain a cheatsheet showing shortcuts and
+     * possible actions.
+     */
+    "git_show_status_help": true,
+
+    /*
+     * Set Git Upstream on Push
+     *
+     * If set to true, Git: Push will set the upstream for
+     * the branch being pushed. This corresponds to adding
+     * the flag --set-upstream to the call to git-push.
+     * See git-push(1) for more information.
+     */
+    "git_set_upstream_on_push": true,
+
+    /*
+     * Persistent status bar message
+     *
+     * Any messages put on the status bar will automatically
+     * be removed after about 4 seconds. By default, SublimeGit
+     * will not try to force a persistent git status message.
+     * This means that the status message will appear for a
+     * short time each time a new buffer comes into focus.
+     *
+     * To always show the git status bar, set this to true.
+     * Even though this is completely async, it might hurt
+     * performance a little bit.
+     */
+    "git_persistent_status_bar_message": false,
+
+    /*
+     * Executables
+     *
+     * The simplest way to make sure that everything works
+     * is to make sure that all of these are in your
+     * sublime path.
+     *
+     * You can see your current sublime path by opening the
+     * console and entering "import os; os.getenv('PATH')".
+     * Be aware that your sublime path might be different
+     * depending on how you started sublime. If you are
+     * unsure where your executables are, try running
+     * "which {executable}" in your terminal.
+     *
+     * If you can't put these executables in your path you
+     * can change them to absolute paths here. Be aware
+     * that each item in the list will be quoted on it's
+     * own. Examples:
+     *
+     * ['/usr/local/bin/git']
+     * ['/usr/bin/git', 'flow']
+     * ['git', 'flow']
+     */
+    "git_executables": {
+        "git": ["git"],
+        "git_flow": ["git-flow"],
+        "legit": ["legit"],
+        "hub": ["hub"]
+    },
+
+    /*
+     * Extensions
+     *
+     * SublimeGit ships with extensions for:
+     *
+     *  - git-flow (https://github.com/nvie/gitflow)
+     *  - legit (http://www.git-legit.org/)
+     *  - hub (https://github.com/defunkt/hub)
+     *
+     * To enable or disable these extensions set these
+     * settings to true/false. If an extension is disabled,
+     * its commands will not show up in your command
+     * palette.
+     *
+     * Requires a restart of Sublime Text to take effect.
+     */
+    "git_extensions": {
+        "git_flow": true,
+        "legit": true,
+        "hub": true
+    }
+}

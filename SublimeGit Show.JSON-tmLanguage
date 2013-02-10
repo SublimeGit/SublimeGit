@@ -1,0 +1,33 @@
+{
+    "name": "SublimeGit Show",
+    "scopeName": "source.git-show",
+    "fileTypes": ["git-show"],
+    "patterns": [
+        {
+            "include": "source.git-diff"
+        },
+        {
+            "name": "source.git-show.commit",
+            "match": "^commit (\\w+)\\n",
+            "captures": {
+                "1": { "name": "source.git-show.commit.sha" }
+            }
+        },
+        {
+            "name": "source.git-show.author",
+            "match": "^Author: (.+) <(.+)>\\n",
+            "captures": {
+                "1": { "name": "source.git-show.author.name" },
+                "2": { "name": "source.git-show.author.email" }
+            }
+        },
+        {
+            "name": "source.git-show.date",
+            "match": "^Date:   (.+)\\n",
+            "captures": {
+                "1": { "name": "source.git-show.date.date" }
+            }
+        }
+    ],
+    "uuid": "d5310b2b-bd7e-42aa-9928-1a460c4c51fd"
+}

@@ -1,0 +1,124 @@
+{
+    "name": "SublimeGit Status",
+    "scopeName": "text.git-status",
+    "fileTypes": ["git-status"],
+    "patterns": [
+        {
+            "name": "comment.git-status.help",
+            "begin": "^# Movement:",
+            "patterns": [
+                {
+                    "name": "comment.git-status.help",
+                    "match": "((?:(?:ctrl|super|alt|shift)\\+\\w )?(?:\\w-)?\\w+) =",
+                    "captures": {
+                        "1": { "name": "string.other.git-status.help.key" }
+                    }
+                }
+            ],
+            "end": "^757c4c04-cf6c-4f8f-b704-4873aee4066d$"
+        },
+        {
+            "name": "comment.git-status.header.remote",
+            "match": "^Remote:\\s+(.+) @ (.+)\\n",
+            "captures": {
+                "1": { "name": "string.other.git-status.remote.name"},
+                "2": { "name": "string.other.git-status.remote.url"}
+            }
+        },
+        {
+            "name": "comment.git-status.header.local",
+            "match": "^Local:\\s+(.+) (.+)\\n",
+            "captures": {
+                "1": { "name": "support.type.git-status.branch" },
+                "2": { "name": "comment.other.git-status.dir" }
+            }
+        },
+        {
+            "name": "meta.git-status.header.head",
+            "match": "^(Head:\\s+)(\\w+) (.+)\\n",
+            "captures": {
+                "1": { "name": "comment.other.git-status.head" },
+                "2": { "name": "entity.other.git-status.hex" },
+                "3": { "name": "entity.other.git-status.log" }
+            }
+        },
+        {
+            "name": "meta.git-status.clean",
+            "match": "^(Nothing to commit \\(working directory clean\\))\\n",
+            "captures": {
+                "1": { "name": "markup.inserted.git-status.clean" }
+            }
+        },
+        {
+            "name": "meta.git-status.stashes",
+            "begin": "^(Stashes:\\n)",
+            "beginCaptures": {
+                "1": { "name": "constant.other.git-status.header" }
+            },
+            "patterns": [
+                {
+                    "name": "meta.git-status.line",
+                    "match": "\\t(.+): On (.+): (.+)\\n",
+                    "captures": {
+                        "1": { "name": "meta.git-status.stash.name" },
+                        "2": { "name": "meta.git-status.stash.branch" },
+                        "3": { "name": "meta.git-status.stash.title" }
+                    }
+                }
+            ],
+            "end": "^\\n$"
+        },
+        {
+            "name": "meta.git-status.untracked_files",
+            "begin": "^(Untracked files:\\n)",
+            "beginCaptures": {
+                "1": { "name": "constant.other.git-status.header" }
+            },
+            "patterns": [
+                {
+                    "name": "meta.git-status.line",
+                    "match": "\\t(.+)\\n",
+                    "captures": {
+                        "1": { "name": "meta.git-status.file" }
+                    }
+                }
+            ],
+            "end": "^\\n$"
+        },
+        {
+            "name": "meta.git-status.unstaged_changes",
+            "begin": "^((?:Unstaged changes:\\n)|(?:Changes:\\n))",
+            "beginCaptures": {
+                "1": { "name": "constant.other.git-status.header" }
+            },
+            "patterns": [
+                {
+                    "name": "meta.git-status.line",
+                    "match": "\\t(\\w+) *(.+)\\n",
+                    "captures": {
+                        "2": { "name": "meta.git-status.file" }
+                    }
+                }
+            ],
+            "end": "^\\n$"
+        },
+        {
+            "name": "meta.git-status.staged_changes",
+            "begin": "^(Staged changes:\\n)",
+            "beginCaptures": {
+                "1": { "name": "constant.other.git-status.header" }
+            },
+            "patterns": [
+                {
+                    "name": "meta.git-status.line",
+                    "match": "\\t(\\w+) *(.+)\\n",
+                    "captures": {
+                        "2": { "name": "meta.git-status.file" }
+                    }
+                }
+            ],
+            "end": "^\\n$"
+        }
+    ],
+    "uuid": "edb6abb2-29b7-41f2-8cd0-32adc7b512c1"
+}

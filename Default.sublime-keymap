@@ -1,0 +1,190 @@
+[
+    /*** GIT STATUS ***/
+    // Refresh
+    { "keys": ["r"], "command": "git_status_refresh",
+        "context": [{ "key": "selector", "operator": "equal", "operand": "text.git-status" }]
+    },
+
+    // Section shortcuts
+    { "keys": ["1"], "command": "git_status_move", "args": {"goto": "section:1"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+    { "keys": ["2"], "command": "git_status_move", "args": {"goto": "section:2"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+    { "keys": ["3"], "command": "git_status_move", "args": {"goto": "section:3"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+    { "keys": ["4"], "command": "git_status_move", "args": {"goto": "section:4"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+    { "keys": ["5"], "command": "git_status_move", "args": {"goto": "section:5"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+
+    // Cycle through sections
+    { "keys": ["N"], "command": "git_status_move", "args": {"goto": "section:next"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+    { "keys": ["P"], "command": "git_status_move", "args": {"goto": "section:prev"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+
+    // Cycle through files
+    { "keys": ["n"], "command": "git_status_move", "args": {"goto": "item:next"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+    { "keys": ["p"], "command": "git_status_move", "args": {"goto": "item:prev"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
+        ]
+    },
+
+    // Stage command (global)
+    { "keys": ["S"], "command": "git_status_stage", "args": {"stage": "unstaged"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+
+    // Stage command (untracked)
+    { "keys": ["s"], "command": "git_status_stage", "args": {"stage": "section"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.untracked_files"},
+            { "key": "selector", "operator": "equal", "operand": "constant.other.git-status.header"}
+        ]
+    },
+    { "keys": ["s"], "command": "git_status_stage", "args": {"stage": "file"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.untracked_files"},
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+
+    // Stage command (unstaged)
+    { "keys": ["s"], "command": "git_status_stage", "args": {"stage": "section"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.unstaged_changes"},
+            { "key": "selector", "operator": "equal", "operand": "constant.other.git-status.header"}
+        ]
+    },
+    { "keys": ["s"], "command": "git_status_stage", "args": {"stage": "file"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.unstaged_changes"},
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+
+    // Unstage command
+    { "keys": ["U"], "command": "git_status_unstage", "args": {"unstage": "all"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+    { "keys": ["u"], "command": "git_status_unstage", "args": {"unstage": "all"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.staged_changes"},
+            { "key": "selector", "operator": "equal", "operand": "constant.other.git-status.header"}
+        ]
+    },
+    { "keys": ["u"], "command": "git_status_unstage", "args": {"unstage": "file"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.staged_changes"},
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+
+        ]
+    },
+
+    // Discard command
+    { "keys": ["k"], "command": "git_status_discard", "args": {"discard": "section"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "constant.other.git-status.header"}
+        ]
+    },
+    { "keys": ["k"], "command": "git_status_discard", "args": {"discard": "item"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+    { "keys": ["K"], "command": "git_status_discard", "args": {"discard": "all"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+
+
+    // Ignore command (only untracked)
+    { "keys": ["i"], "command": "git_status_ignore",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.untracked_files"},
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+    { "keys": ["I"], "command": "git_status_ignore", "args": {"edit_pattern": true},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.untracked_files"},
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+
+    // Open command
+    { "keys": ["enter"], "command": "git_status_open_file",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+
+    // Diff command
+    { "keys": ["d"], "command": "git_status_diff",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+
+    // Stashes
+    { "keys": ["z"], "command": "git_stash",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+    { "keys": ["a"], "command": "git_status_stash_apply",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.stashes"},
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+    { "keys": ["A"], "command": "git_status_stash_pop",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.stashes"},
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+
+    // Commit command
+    { "keys": ["c"], "command": "git_commit",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+    { "keys": ["C"], "command": "git_commit", "args": {"add": true },
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    }
+]

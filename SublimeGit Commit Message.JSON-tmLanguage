@@ -1,0 +1,61 @@
+{
+    "name": "SublimeGit Commit Message",
+    "scopeName": "text.git-commit",
+    "fileTypes": ["COMMIT_EDITMSG"],
+    "patterns": [
+        {
+            "name": "comment.line.number-sign.git-commit",
+            "match": "^\\s*# On branch (.*)\\n",
+            "captures": {
+                "1": { "name": "support.type.git-commit.branch" }
+            }
+        },
+        {
+            "name": "meta.git-commit.remote.status",
+            "match": "^(\\s*# Your branch is )(ahead of ')(.+)(' by )(\\d+ .+)\\.\\n",
+            "captures": {
+                "1": { "name": "comment.line.number-sign.git-commit" },
+                "2": { "name": "entity.other.git-commit.remote.ahead" },
+                "3": { "name": "string.other.git-commit.remote.name" },
+                "4": { "name": "entity.other.git-commit.remote.ahead" },
+                "5": { "name": "entity.other.git-commit.remote.num-commits" }
+            }
+        },
+        {
+            "name": "comment.line.number-sign.git-commit",
+            "match": "^\\s*# (Changes to be committed:)",
+            "captures": {
+                "1": { "name": "constant.other.git-commit.header" }
+            }
+        },
+        {
+            "name": "comment.line.number-sign.git-commit",
+            "match": "^\\s*# (Changes not staged for commit:)",
+            "captures": {
+                "1": { "name": "constant.other.git-commit.header" }
+            }
+        },
+        {
+            "name": "comment.line.number-sign.git-commit",
+            "match": "^\\s*# (Untracked files:)",
+            "captures": {
+                "1": { "name": "constant.other.git-commit.header" }
+            }
+        },
+        {
+            "name": "meta.git-commit.line",
+            "match": "^\\s*((?:#   )|(?:#\t))(.+:)(\\s+)(.+)",
+            "captures": {
+                "1": { "name": "comment.line.number-sign.git-commit"},
+                "2": { "name": "support.other.git-commit.status" },
+                "3": { "name": "comment.line.number-sign.git-commit"},
+                "4": { "name": "support.other.git-commit.file" }
+            }
+        },
+        {
+            "name": "comment.line.number-sign.git-commit",
+            "match": "^\\s*#(.*)"
+        }
+    ],
+    "uuid": "803661a4-a9b6-4945-b061-f96f26dd4e84"
+}

@@ -1,0 +1,55 @@
+[
+    { "caption": "Git", "command": "git_cli"},
+    { "caption": "Git Async", "command": "git_cli_async"},
+    { "caption": "Git: Version", "command": "git_version"},
+    { "caption": "Git: Help", "command": "git_help"},
+
+    { "caption": "Git: Init", "command": "git_init"},
+
+    { "caption": "Git: Status", "command": "git_status"},
+    { "caption": "Git: Refresh Status", "command": "git_status_refresh"},
+    { "caption": "Git: Quick Status", "command": "git_quick_status"},
+
+    { "caption": "Git: Diff", "command": "git_diff"},
+    { "caption": "Git: Diff Cached", "command": "git_diff", "args": {"cached": true}},
+
+    { "caption": "Git: Add Current File", "command": "git_add_current_file"},
+    { "caption": "Git: Quick Add", "command": "git_quick_add"},
+
+    { "caption": "Git: Commit", "command": "git_commit"},
+    { "caption": "Git: Quick Commit", "command": "git_quick_commit"},
+
+    { "caption": "Git: Stash", "command": "git_stash"},
+    { "caption": "Git: Snapshot", "command": "git_snapshot"},
+    { "caption": "Git: Pop Stash", "command": "git_stash_pop"},
+    { "caption": "Git: Apply Stash", "command": "git_stash_apply"},
+
+    { "caption": "Git: Checkout", "command": "git_checkout_branch"},
+    { "caption": "Git: Checkout New Branch", "command": "git_checkout_new_branch"},
+    { "caption": "Git: Checkout Commit", "command": "git_checkout_commit"},
+
+    { "caption": "Git: Merge", "command": "git_merge"},
+
+    { "caption": "Git: Add Remote", "command": "git_remote_add"},
+    { "caption": "Git: Remote", "command": "git_remote"},
+    { "caption": "Git: Fetch", "command": "git_fetch"},
+    { "caption": "Git: Push", "command": "git_push_pull_all", "args": {"command": "push"}},
+    { "caption": "Git: Push Current Branch", "command": "git_push_current_branch"},
+    { "caption": "Git: Pull", "command": "git_push_pull_all", "args": {"command": "pull"}},
+    { "caption": "Git: Pull Current Branch", "command": "git_pull_current_branch"},
+
+    { "caption": "Git: Log", "command": "git_log", "args": {}},
+    { "caption": "Git: Quick Log", "command": "git_quick_log" },
+    { "caption": "Git: Quick Log Current File", "command": "git_quick_log_current_file"},
+
+    { "caption": "Git: Show", "command": "git_show"},
+
+    { "caption": "Legit: Branches", "command": "legit_branches"},
+    { "caption": "Legit: Sync", "command": "legit_sync"},
+    { "caption": "Legit: Switch", "command": "legit_switch"},
+    { "caption": "Legit: Publish", "command": "legit_publish"},
+    { "caption": "Legit: Unpublish", "command": "legit_unpublish"},
+    { "caption": "Legit: Graft", "command": "legit_graft"},
+    { "caption": "Legit: Sprout", "command": "legit_sprout"},
+    { "caption": "Legit: Harvest", "command": "legit_harvest"}
+]

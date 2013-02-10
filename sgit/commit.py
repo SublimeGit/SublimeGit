@@ -1,0 +1,112 @@
+# coding: utf-8
+import sublime
+from sublime_plugin import WindowCommand, EventListener
+
+from .util import find_or_create_view, write_view, read_view, ensure_writeable, noop
+from .cmd import GitCmd
+from .helpers import GitStatusHelper
+from .status import GIT_WORKING_DIR_CLEAN
+
+
+GIT_COMMIT_VIEW_TITLE = "COMMIT_EDITMSG"
+GIT_COMMIT_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Commit Message.tmLanguage'
+GIT_COMMIT_VIEW_SETTINGS = {
+    'rulers': [72],
+    'wrap_width': 72,
+    'word_wrap': False,
+}
+
+GIT_NOTHING_STAGED = 'No changes added to commit. Use s on files/sections in the status view to stage changes.'
+GIT_COMMIT_TEMPLATE = """
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+{status}"""
+
+
+class GitCommit(object):
+
+    windows = {}
+
+
+class GitCommitWindowCmd(GitCmd, GitStatusHelper):
+
+    def get_commit_template(self, add=False):
+        cmd = ['commit', '--dry-run', '--status', '-a' if add else None]
+        status = self.git_string(cmd)
+        msg = GIT_COMMIT_TEMPLATE.format(status=status)
+        return msg
+
+    def show_commit_panel(self, content):
+        panel = self.window.get_output_panel('git-commit')
+        write_view(panel, content)
+        self.window.run_command('show_panel', {'panel': 'output.git-commit'})
+
+
+class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
+
+    def run(self, add=False):
+        staged = self.has_staged_changes()
+        dirty = self.has_unstaged_changes()
+
+        if not add and not staged:
+            sublime.error_message(GIT_NOTHING_STAGED)
+            return
+        elif add and (not staged and not dirty):
+            sublime.error_message(GIT_WORKING_DIR_CLEAN)
+            return
+
+        view = find_or_create_view(self.window, GIT_COMMIT_VIEW_TITLE,
+                                    syntax=GIT_COMMIT_VIEW_SYNTAX,
+                                    settings=GIT_COMMIT_VIEW_SETTINGS,
+                                    scratch=True)
+        content = self.get_commit_template(add)
+        with ensure_writeable(view):
+            write_view(view, content)
+
+        GitCommit.windows[view.id()] = (self.window, add)
+
+        self.window.focus_view(view)
+        view.sel().clear()
+        view.sel().add(sublime.Region(0))
+
+
+class GitCommitEventListener(EventListener):
+
+    def on_close(self, view):
+        if view.name() == GIT_COMMIT_VIEW_TITLE and view.id() in GitCommit.windows:
+            message = read_view(view)
+            window, add = GitCommit.windows[view.id()]
+            window.run_command('git_commit_perform', {'message': message, 'add': add})
+
+
+class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
+
+    def run(self, message, add=False):
+        cmd = ['commit', '--cleanup=strip', '-a' if add else None, '-F', '-']
+        stdout = self.git_string(cmd, stdin=message)
+        self.show_commit_panel(stdout)
+        self.window.run_command('git_status_refresh')
+
+    def is_visible(self):
+        return False
+
+
+class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
+
+    def run(self):
+        staged = self.has_staged_changes()
+        dirty = self.has_unstaged_changes()
+
+        if not staged and not dirty:
+            sublime.error_message(GIT_WORKING_DIR_CLEAN.capitalize())
+            return
+
+        def on_done(msg=None):
+            if not msg:
+                msg = ''
+            cmd = ['commit', '-F', '-'] if staged else ['commit', '-a', '-F', '-']
+            stdout = self.git_string(cmd, stdin=msg)
+            self.show_commit_panel(stdout)
+            self.window.run_command('git_status_refresh', {'focus': False})
+
+        self.window.show_input_panel("Commit message:", '', on_done, noop, on_done)

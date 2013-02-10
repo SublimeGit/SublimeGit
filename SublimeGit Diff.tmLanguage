@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>git-diff</string>
+	</array>
+	<key>name</key>
+	<string>SublimeGit Diff</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>begin</key>
+			<string>^(diff --git )(\w+/.+) (\w+/.+)\n</string>
+			<key>beginCaptures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>meta.diff</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>meta.diff.git-diff.header.from-file</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>meta.diff.git-diff.header.to-file</string>
+				</dict>
+			</dict>
+			<key>end</key>
+			<string>^757c4c04-cf6c-4f8f-b704-4873aee4066d$</string>
+			<key>name</key>
+			<string>source.git-diff.command</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>meta.diff.git-diff.header.extended.index.from-sha</string>
+						</dict>
+						<key>2</key>
+						<dict>
+							<key>name</key>
+							<string>meta.diff.git-diff.header.extended.index.to-sha</string>
+						</dict>
+						<key>3</key>
+						<dict>
+							<key>name</key>
+							<string>meta.diff.git-diff.header.extended.index.mode</string>
+						</dict>
+					</dict>
+					<key>match</key>
+					<string>^index (\w+)..(\w+) ?(\d+)?\n</string>
+					<key>name</key>
+					<string>meta.diff.git-diff.header.extended.index</string>
+				</dict>
+				<dict>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>meta.diff.git-diff.header.extended.modechange.mode</string>
+						</dict>
+					</dict>
+					<key>match</key>
+					<string>^(:?old mode|new mode|deleted file mode|new file mode) (\d+)\n</string>
+					<key>name</key>
+					<string>meta.diff.git-diff.header.extended.modechange</string>
+				</dict>
+				<dict>
+					<key>captures</key>
+					<dict>
+						<key>1</key>
+						<dict>
+							<key>name</key>
+							<string>meta.diff.git-diff.header.extended.pathchange.path</string>
+						</dict>
+					</dict>
+					<key>match</key>
+					<string>^(:?copy from|copy to|rename from|rename to) (.+)\n</string>
+					<key>name</key>
+					<string>meta.diff.git-diff.header.extended.pathchange</string>
+				</dict>
+				<dict>
+					<key>include</key>
+					<string>source.diff</string>
+				</dict>
+			</array>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>source.git-diff</string>
+	<key>uuid</key>
+	<string>757c4c04-cf6c-4f8f-b704-4873aee4066d</string>
+</dict>
+</plist>

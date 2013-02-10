@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>git-show</string>
+	</array>
+	<key>name</key>
+	<string>SublimeGit Show</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>include</key>
+			<string>source.git-diff</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>source.git-show.commit.sha</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^commit (\w+)\n</string>
+			<key>name</key>
+			<string>source.git-show.commit</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>source.git-show.author.name</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>source.git-show.author.email</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^Author: (.+) &lt;(.+)&gt;\n</string>
+			<key>name</key>
+			<string>source.git-show.author</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>source.git-show.date.date</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^Date:   (.+)\n</string>
+			<key>name</key>
+			<string>source.git-show.date</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>source.git-show</string>
+	<key>uuid</key>
+	<string>d5310b2b-bd7e-42aa-9928-1a460c4c51fd</string>
+</dict>
+</plist>

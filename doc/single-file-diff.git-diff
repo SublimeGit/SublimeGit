@@ -1,0 +1,80 @@
+diff --git a/SublimeGit Status.tmLanguage b/SublimeGit Status.tmLanguage
+index ac5c9cd..868f163 100644
+--- a/SublimeGit Status.tmLanguage	
++++ b/SublimeGit Status.tmLanguage	
+@@ -12,7 +12,7 @@
+ 	<array>
+ 		<dict>
+ 			<key>begin</key>
+-			<string>^(Untracked files:\n)</string>
++			<string>^(Stashes:\n)</string>
+ 			<key>beginCaptures</key>
+ 			<dict>
+ 				<key>1</key>
+@@ -24,7 +24,7 @@
+ 			<key>end</key>
+ 			<string>^\n$</string>
+ 			<key>name</key>
+-			<string>meta.git-status.untracked_files</string>
++			<string>meta.git-status.stashes</string>
+ 			<key>patterns</key>
+ 			<array>
+ 				<dict>
+@@ -33,11 +33,21 @@
+ 						<key>1</key>
+ 						<dict>
+ 							<key>name</key>
+-							<string>meta.git-status.file</string>
++							<string>meta.git-status.stash.name</string>
++						</dict>
++						<key>2</key>
++						<dict>
++							<key>name</key>
++							<string>meta.git-status.stash.branch</string>
++						</dict>
++						<key>3</key>
++						<dict>
++							<key>name</key>
++							<string>meta.git-status.stash.title</string>
+ 						</dict>
+ 					</dict>
+ 					<key>match</key>
+-					<string>\t(.+)\n</string>
++					<string>\t(.+): On (.+): (.+)\n</string>
+ 					<key>name</key>
+ 					<string>meta.git-status.line</string>
+ 				</dict>
+@@ -45,7 +55,7 @@
+ 		</dict>
+ 		<dict>
+ 			<key>begin</key>
+-			<string>^(Stashes:\n)</string>
++			<string>^(Untracked files:\n)</string>
+ 			<key>beginCaptures</key>
+ 			<dict>
+ 				<key>1</key>
+@@ -57,9 +67,23 @@
+ 			<key>end</key>
+ 			<string>^\n$</string>
+ 			<key>name</key>
+-			<string>meta.git-status.stashes</string>
++			<string>meta.git-status.untracked_files</string>
+ 			<key>patterns</key>
+ 			<array>
++				<dict>
++					<key>captures</key>
++					<dict>
++						<key>1</key>
++						<dict>
++							<key>name</key>
++							<string>meta.git-status.file</string>
++						</dict>
++					</dict>
++					<key>match</key>
++					<string>\t(.+)\n</string>
++					<key>name</key>
++					<string>meta.git-status.line</string>
++				</dict>
+ 			</array>
+ 		</dict>
+ 		<dict>
