@@ -22,6 +22,7 @@ GIT_STATUS_VIEW_SETTINGS = {
     'translate_tabs_to_spaces': False,
     'draw_white_space': 'none',
     'word_wrap': False,
+    'git_status': True,
 }
 
 STASHES = "stashes"

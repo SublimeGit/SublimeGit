@@ -82,11 +82,13 @@ class Cmd(object):
     def resolve_cwd(self):
         cwd = self.get_cwd()
         if not cwd:
+            logger.debug('No cwd found')
             sublime.error_message(self.WORKING_DIR_ERROR)
             raise SublimeGitException("Could not find working dir")
 
         repo = find_repo_dir(cwd)
         if not repo:
+            logger.debug('Cwd %s does not contain a repo', cwd)
             if sublime.ok_cancel_dialog(self.get_init_dialog(cwd), 'Initialize repository'):
                 self.get_window().run_command('git_init')
             raise SublimeGitException("Could not find git repository in working_dir: %s" % cwd)
@@ -164,6 +166,7 @@ class Cmd(object):
     # sync commands
     def cmd(self, cmd, stdin=None, cwd=None):
         if not cwd:
+            logger.debug('No cwd given. Trying to resolve cwd')
             cwd = self.resolve_cwd()
 
         command = self.clean_command(cmd)

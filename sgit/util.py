@@ -1,8 +1,12 @@
 # coding: utf-8
 from os import path, getenv
 from contextlib import contextmanager
+import logging
 
 import sublime
+
+
+logger = logging.getLogger(__name__)
 
 
 # Misc helpers
@@ -122,6 +126,10 @@ class StatusSpinner(object):
 # CWD helpers
 
 def find_cwd(window):
+    if not window:
+        return None
+
+    view = window.active_view()
     if window:
         view = window.active_view()
         if view and view.file_name():
@@ -152,6 +160,7 @@ def find_possible_roots(directory):
 
 def find_repo_dir(directory):
     for d in find_possible_roots(directory):
+        logger.debug('Looking for git dir in %s' % d)
         if path.exists(d) and path.isdir(d):
             return path.dirname(d)
 
