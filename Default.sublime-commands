@@ -8,7 +8,6 @@
     { "caption": "Git: Switch Repo", "command": "git_switch_repo"},
 
     { "caption": "Git: Status", "command": "git_status"},
-    { "caption": "Git: Refresh Status", "command": "git_status_refresh"},
     { "caption": "Git: Quick Status", "command": "git_quick_status"},
 
     { "caption": "Git: Diff", "command": "git_diff"},

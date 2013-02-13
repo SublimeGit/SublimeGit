@@ -7,7 +7,7 @@ import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 
 from .util import abbreviate_dir
-from .util import find_view_by_settings, write_view, ensure_writeable
+from .util import find_view_by_settings
 from .util import noop, get_setting
 from .cmd import GitCmd
 from .helpers import GitStatusHelper, GitRemoteHelper, GitStashHelper
@@ -80,7 +80,7 @@ GIT_STATUS_HELP = """
 #    z = create stash from worktree"""
 
 
-class GitStatusWindowCmd(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper):
+class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper):
 
     def build_status(self):
         repo_dir = self.get_repo(self.get_window(), silent=False)
@@ -156,14 +156,13 @@ class GitStatusWindowCmd(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelpe
         return status
 
 
-class GitStatusCommand(WindowCommand, GitStatusWindowCmd):
+class GitStatusCommand(WindowCommand, GitStatusBuilder):
 
     def run(self):
-        status = self.build_status()
-        if not status:
+        repo = self.get_repo(self.window, silent=False)
+        if not repo:
             return
 
-        repo = self.get_repo(self.window)
         title = GIT_STATUS_VIEW_TITLE_PREFIX + os.path.basename(repo)
 
         view = find_view_by_settings(self.window, git_view='status', git_repo=repo)
@@ -181,31 +180,31 @@ class GitStatusCommand(WindowCommand, GitStatusWindowCmd):
             for key, val in GIT_STATUS_VIEW_SETTINGS.items():
                 view.settings().set(key, val)
 
-        with ensure_writeable(view):
-            write_view(view, status)
-        self.window.focus_view(view)
-        self.window.run_command('git_status_move', {'goto': 'file:1'})
+        view.run_command('git_status_refresh', {'goto': 'file:1'})
 
 
-class GitStatusRefreshCommand(WindowCommand, GitStatusWindowCmd):
+class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
 
-    def run(self, goto=None, focus=True):
-        view = find_view_by_settings(self.window, git_view='status')
-        if not view:
-            return
+    def is_visible(self):
+        return False
 
+    def run(self, edit, goto=None, focus=True):
         status = self.build_status()
         if not status:
             return
 
-        with ensure_writeable(view):
-            write_view(view, status)
+        self.view.set_read_only(False)
+        if self.view.size() > 0:
+            self.view.erase(edit, sublime.Region(0, self.view.size()))
+        self.view.insert(edit, 0, status)
+        self.view.set_read_only(True)
+
         if focus:
-            self.window.focus_view(view)
-            if goto:
-                self.window.run_command('git_status_move', {'goto': goto})
-            else:
-                self.window.run_command('git_status_move', {'goto': GOTO_DEFAULT})
+            self.view.window().focus_view(self.view)
+        if goto:
+            self.view.run_command('git_status_move', {'goto': goto})
+        else:
+            self.view.run_command('git_Status_move', {'goto': GOTO_DEFAULT})
 
 
 class GitStatusEventListener(EventListener):
@@ -402,6 +401,9 @@ class GitStatusTextCmd(GitCmd):
 
 
 class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
+
+    def is_visible(self):
+        return False
 
     def run(self, edit, goto="file:1"):
         what, which, where = self.parse_goto(goto)
