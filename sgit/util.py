@@ -1,6 +1,5 @@
 # coding: utf-8
 from os import path
-from contextlib import contextmanager
 import logging
 
 import sublime
@@ -11,22 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 # Callback helpers
+
 def noop(*args, **kwargs):
     pass
 
 
 # View helpers
-@contextmanager
-def ensure_writeable(view):
-    read_only = view.is_read_only()
-    view.set_read_only(False)
-    yield
-    view.set_read_only(read_only)
-
-
-def read_view(view):
-    return view.substr(sublime.Region(0, view.size()))
-
 
 def find_view_by_settings(window, **kwargs):
     for view in window.views():

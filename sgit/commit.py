@@ -2,7 +2,7 @@
 import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 
-from .util import find_view_by_settings, read_view, noop
+from .util import find_view_by_settings, noop
 from .cmd import GitCmd
 from .helpers import GitStatusHelper
 from .status import GIT_WORKING_DIR_CLEAN
@@ -97,7 +97,7 @@ class GitCommitEventListener(EventListener):
 
     def on_close(self, view):
         if view.settings().get('git_view') == 'commit' and view.id() in GitCommit.windows:
-            message = read_view(view)
+            message = view.substr(sublime.Region(0, view.size()))
             window, add = GitCommit.windows[view.id()]
             window.run_command('git_commit_perform', {'message': message, 'add': add})
 
