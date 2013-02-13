@@ -4,7 +4,6 @@ from functools import partial
 import sublime
 from sublime_plugin import WindowCommand
 
-from .util import create_panel
 from .cmd import GitCmd
 from .helpers import GitBranchHelper, GitErrorHelper
 
@@ -25,7 +24,9 @@ class GitMergeCommand(WindowCommand, GitCmd, GitBranchHelper, GitErrorHelper):
 
         exit_code, stdout = self.git(['merge', branch])
         if exit_code == 0:
-            create_panel(self.window, 'git-merge', stdout)
+            panel = self.window.get_output_panel('git-merge')
+            panel.run_command('git_panel_write', {'content': stdout})
+            self.window.run_command('show_panel', {'panel': 'output.git-merge'})
         else:
             sublime.error_message(self.format_error_message(stdout))
         self.window.run_command('git_status_refresh')

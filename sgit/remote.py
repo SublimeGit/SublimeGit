@@ -4,7 +4,7 @@ from functools import partial
 import sublime
 from sublime_plugin import WindowCommand
 
-from .util import append_view, StatusSpinner, get_setting, noop
+from .util import StatusSpinner, get_setting, noop
 from .cmd import GitCmd
 from .helpers import GitRemoteHelper
 
@@ -48,8 +48,7 @@ class GitFetchCommand(WindowCommand, GitCmd, GitRemoteHelper):
     def on_data(self, d):
         if not self.panel_shown:
             self.window.run_command('show_panel', {'panel': 'output.git-fetch'})
-        append_view(self.panel, d)
-        self.panel.show(self.panel.size())
+        self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
 class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
@@ -107,8 +106,7 @@ class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
     def on_data(self, d):
         if not self.panel_shown:
             self.window.run_command('show_panel', {'panel': 'output.git-push'})
-        append_view(self.panel, d)
-        self.panel.show(self.panel.size())
+        self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
 class GitPullCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
@@ -167,8 +165,7 @@ class GitPullCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
     def on_data(self, d):
         if not self.panel_shown:
             self.window.run_command('show_panel', {'panel': 'output.git-pull'})
-        append_view(self.panel, d)
-        self.panel.show(self.panel.size())
+        self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
 class GitPushPullAllCommand(WindowCommand, GitCmd, GitRemoteHelper):
@@ -205,8 +202,7 @@ class GitPushPullAllCommand(WindowCommand, GitCmd, GitRemoteHelper):
     def on_data(self, d):
         if not self.panel_shown:
             self.window.run_command('show_panel', {'panel': 'output.%s' % self.panel_name})
-        append_view(self.panel, d)
-        self.panel.show(self.panel.size())
+        self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
 class GitRemoteAddCommand(WindowCommand, GitCmd):
@@ -324,5 +320,4 @@ class GitRemoteCommand(WindowCommand, GitCmd, GitRemoteHelper):
     def on_data(self, d):
         if not self.panel_shown:
             self.window.run_command('show_panel', {'panel': 'output.git-remote'})
-        append_view(self.panel, d)
-        self.panel.show(self.panel.size())
+        self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})

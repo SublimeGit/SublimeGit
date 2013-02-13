@@ -62,7 +62,7 @@ class GitInitCommand(WindowCommand, GitCmd):
 
         output = self.git_string(['init'], cwd=directory)
         panel = self.window.get_output_panel('git-init')
-        panel.run_command('git_panel_output', {'output': output})
+        panel.run_command('git_panel_write', {'content': output})
         self.window.run_command('show_panel', {'panel': 'output.git-init'})
 
 

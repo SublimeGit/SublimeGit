@@ -28,42 +28,12 @@ def read_view(view):
     return view.substr(sublime.Region(0, view.size()))
 
 
-def write_view(view, content):
-    edit = view.begin_edit()
-    if view.size() > 0:
-        view.erase(edit, sublime.Region(0, view.size()))
-    view.insert(edit, 0, content)
-    view.end_edit(edit)
-
-
-def append_view(view, content, scroll=False):
-    edit = view.begin_edit()
-    view.insert(edit, view.size(), content)
-    view.end_edit(edit)
-    if scroll:
-        view.show(view.size())
-
-
 def find_view_by_settings(window, **kwargs):
     for view in window.views():
         s = view.settings()
         matches = [s.get(k) == v for k, v in kwargs.items()]
         if all(matches):
             return view
-
-
-# Panel helpers
-def create_panel(window, name, content=None, show=True):
-    panel = window.get_output_panel(name)
-    if content:
-        write_view(panel, content)
-    if show:
-        show_panel(window, name)
-    return panel
-
-
-def show_panel(window, name):
-    window.run_command('show_panel', {'panel': 'output.%s' % name})
 
 
 # progress helper
@@ -101,17 +71,28 @@ class StatusSpinner(object):
 
 # Panel Helper
 
-class GitPanelOutputCommand(TextCommand):
+class GitPanelWriteCommand(TextCommand):
 
     def is_visible(self):
         return False
 
-    def run(self, edit, output=''):
+    def run(self, edit, content=''):
         self.view.set_read_only(False)
         if self.view.size() > 0:
             self.view.erase(edit, sublime.Region(0, self.view.size()))
-        self.view.insert(edit, 0, output)
+        self.view.insert(edit, 0, content)
         self.view.set_read_only(True)
+
+
+class GitPanelAppendCommand(TextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit, content='', scroll=False):
+        self.view.insert(edit, self.view.size(), content)
+        if scroll:
+            self.view.show(self.view.size())
 
 
 # Directory helpers

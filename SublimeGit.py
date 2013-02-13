@@ -56,7 +56,7 @@ if reloaded:
 # import commands and listeners
 from sgit import DebugReloader
 
-from sgit.util import GitPanelOutputCommand
+from sgit.util import GitPanelWriteCommand, GitPanelAppendCommand
 
 #from sgit.cli import GitCliCommand, GitCliAsyncCommand
 
@@ -82,8 +82,8 @@ from sgit.status import GitStatusBarEventListener, GitStatusEventListener
 
 from sgit.add import GitQuickAddCommand, GitAddCurrentFileCommand
 
-from sgit.commit import (GitCommitCommand, GitCommitTemplateCommand,
-    GitCommitPerformCommand, GitQuickCommitCommand)
+from sgit.commit import (GitCommitCommand, GitCommitPerformCommand,
+    GitQuickCommitCommand)
 from sgit.commit import GitCommitEventListener
 
 from sgit.stash import (GitStashCommand, GitSnapshotCommand,

@@ -2,7 +2,7 @@
 import sublime
 from sublime_plugin import WindowCommand
 
-from ..util import noop, create_panel, show_panel, append_view, StatusSpinner
+from ..util import noop, StatusSpinner
 from ..cmd import Cmd
 
 
@@ -39,7 +39,7 @@ class LegitWindowCmd(LegitCmd):
         self.window.show_quick_panel(choices, on_done, sublime.MONOSPACE_FONT)
 
     def run_async_legit_with_panel(self, cmd, progress, panel_name):
-        self.panel = create_panel(self.window, panel_name, show=False)
+        self.panel = self.window.get_output_panel(panel_name)
         self.panel_name = panel_name
         self.panel_shown = False
 
@@ -49,9 +49,8 @@ class LegitWindowCmd(LegitCmd):
 
     def on_data(self, d):
         if not self.panel_shown:
-            show_panel(self.window, self.panel_name)
-        append_view(self.panel, d)
-        self.panel.show(self.panel.size())
+            self.window.run_command('show_panel', {'panel': 'output.%s' % self.panel_name})
+        self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
 class LegitSwitchCommand(WindowCommand, LegitWindowCmd):
@@ -61,7 +60,9 @@ class LegitSwitchCommand(WindowCommand, LegitWindowCmd):
 
     def switch(self, branch):
         out = self.legit_string(['switch', branch])
-        create_panel(self.window, 'legit-switch', out)
+        panel = self.window.get_output_panel('legit-switch')
+        panel.run_command('git_panel_write', {'content': out})
+        self.window.run_command('show_panel', {'panel': 'output.legit-switch'})
 
 
 class LegitSyncCommand(WindowCommand, LegitWindowCmd):
@@ -111,7 +112,9 @@ class LegitHarvestCommand(WindowCommand, LegitWindowCmd):
             into_branch = into_branch.strip()
             if into_branch:
                 out = self.legit_string(['harvest', branch, into_branch])
-                create_panel(self.window, 'legit-harvest', out)
+                panel = self.window.get_output_panel('legit-harvest')
+                panel.run_command('git_panel_write', {'content': out})
+                self.window.run_command('show_panel', {'panel': 'output.legit-harvest'})
 
         self.show_branches_panel(on_done)
 
@@ -129,7 +132,9 @@ class LegitSproutCommand(WindowCommand, LegitWindowCmd):
             new_branch = new_branch.strip()
             if new_branch:
                 out = self.legit_string(['sprout', branch, new_branch])
-                create_panel(self.window, 'legit-sprout', out)
+                panel = self.window.get_output_panel('legit-sprout')
+                panel.run_command('git_panel_write', {'content': out})
+                self.window.run_command('show_panel', {'panel': 'output.legit-sprout'})
 
         self.window.show_input_panel('New branch:', '', on_done, noop, noop)
 
@@ -141,7 +146,9 @@ class LegitGraftCommand(WindowCommand, LegitWindowCmd):
 
     def graft(self, branch):
         out = self.legit_string(['graft', branch])
-        create_panel(self.window, 'legit-graft', out)
+        panel = self.window.get_output_panel('legit-graft')
+        panel.run_command('git_panel_write', {'content': out})
+        self.window.run_command('show_panel', {'panel': 'output.legit-graft'})
 
 
 class LegitBranchesCommand(WindowCommand, LegitWindowCmd):

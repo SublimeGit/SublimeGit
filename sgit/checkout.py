@@ -4,7 +4,7 @@ from functools import partial
 import sublime
 from sublime_plugin import WindowCommand
 
-from .util import noop, create_panel
+from .util import noop
 from .cmd import GitCmd
 from .helpers import GitBranchHelper, GitErrorHelper, GitLogHelper
 
@@ -37,7 +37,9 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
 
         exit_code, stdout = self.git(['checkout', branch])
         if exit_code == 0:
-            create_panel(self.window, 'git-checkout', stdout)
+            panel = self.window.get_output_panel('git-checkout')
+            panel.run_command('git_panel_write', {'content': stdout})
+            self.window.run_command('show_panel', {'panel': 'output.git-checkout'})
         else:
             sublime.error_message(self.format_error_message(stdout))
         self.window.run_command('git_status_refresh')

@@ -38,7 +38,7 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
 
     def show_commit_panel(self, content):
         panel = self.window.get_output_panel('git-commit')
-        panel.run_command('git_panel_output', {'output': content})
+        panel.run_command('git_panel_write', {'content': content})
         self.window.run_command('show_panel', {'panel': 'output.git-commit'})
 
 
