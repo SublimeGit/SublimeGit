@@ -1,8 +1,8 @@
 # coding: utf-8
 import sublime
-from sublime_plugin import WindowCommand, EventListener
+from sublime_plugin import WindowCommand, TextCommand, EventListener
 
-from .util import find_view_by_settings, write_view, read_view, ensure_writeable, noop
+from .util import find_view_by_settings, read_view, noop
 from .cmd import GitCmd
 from .helpers import GitStatusHelper
 from .status import GIT_WORKING_DIR_CLEAN
@@ -38,7 +38,7 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
 
     def show_commit_panel(self, content):
         panel = self.window.get_output_panel('git-commit')
-        write_view(panel, content)
+        panel.run_command('git_panel_output', {'output': content})
         self.window.run_command('show_panel', {'panel': 'output.git-commit'})
 
 
@@ -72,15 +72,25 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
             for key, val in GIT_COMMIT_VIEW_SETTINGS.items():
                 view.settings().set(key, val)
 
-        content = self.get_commit_template(add)
-        with ensure_writeable(view):
-            write_view(view, content)
+        template = self.get_commit_template(add)
+        view.run_command('git_commit_template', {'template': template})
 
         GitCommit.windows[view.id()] = (self.window, add)
 
         self.window.focus_view(view)
         view.sel().clear()
         view.sel().add(sublime.Region(0))
+
+
+class GitCommitTemplateCommand(TextCommand):
+
+    def is_visible(self):
+        return True
+
+    def run(self, edit, template=''):
+        if self.view.size() > 0:
+            self.view.erase(edit, sublime.Region(0, self.view.size()))
+        self.view.insert(edit, 0, template)
 
 
 class GitCommitEventListener(EventListener):
