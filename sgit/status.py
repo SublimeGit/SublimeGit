@@ -213,7 +213,7 @@ class GitStatusEventListener(EventListener):
             goto = None
             if view.sel():
                 goto = "point:%s" % view.sel()[0].begin()
-            # view.window().run_command('git_status_refresh', {'goto': goto})
+            view.run_command('git_status_refresh', {'goto': goto})
 
 
 class GitStatusBarEventListener(EventListener, GitCmd):
