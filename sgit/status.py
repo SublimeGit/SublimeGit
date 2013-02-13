@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 GOTO_DEFAULT = 'file:1'
 
-GIT_STATUS_VIEW_TITLE = '*git-status*'
+GIT_STATUS_VIEW_TITLE_PREFIX = '*git-status*: '
 GIT_STATUS_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Status.tmLanguage'
 GIT_STATUS_VIEW_SETTINGS = {
     'translate_tabs_to_spaces': False,
@@ -164,11 +164,13 @@ class GitStatusCommand(WindowCommand, GitStatusWindowCmd):
             return
 
         repo = self.get_repo(self.window)
+        title = GIT_STATUS_VIEW_TITLE_PREFIX + os.path.basename(repo)
 
         view = find_view_by_settings(self.window, git_view='status', git_repo=repo)
         if not view:
             view = self.window.new_file()
-            view.set_name(GIT_STATUS_VIEW_TITLE)
+
+            view.set_name(title)
             view.set_syntax_file(GIT_STATUS_VIEW_SYNTAX)
             view.set_scratch(True)
             view.set_read_only(True)
@@ -213,7 +215,7 @@ class GitStatusEventListener(EventListener):
             goto = None
             if view.sel():
                 goto = "point:%s" % view.sel()[0].begin()
-            view.window().run_command('git_status_refresh', {'goto': goto})
+            # view.window().run_command('git_status_refresh', {'goto': goto})
 
 
 class GitStatusBarEventListener(EventListener, GitCmd):

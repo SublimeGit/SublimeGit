@@ -76,7 +76,7 @@ from sgit.status import (GitStatusCommand, GitStatusRefreshCommand, GitQuickStat
     GitStatusUnstageCommand, GitStatusDiscardCommand,
     GitStatusOpenFileCommand, GitStatusDiffCommand, GitStatusIgnoreCommand,
     GitStatusStashCmd, GitStatusStashApplyCommand, GitStatusStashPopCommand)
-from sgit.status import GitStatusEventListener, GitStatusBarEventListener
+from sgit.status import GitStatusBarEventListener, GitStatusEventListener
 
 from sgit.add import GitQuickAddCommand, GitAddCurrentFileCommand
 

@@ -22,7 +22,7 @@ class GitDiffCommand(WindowCommand, GitCmd, GitDiffHelper):
 
         if diff:
             title = self.get_view_title(path, cached)
-            git_view = 'diff' + '-cached' if cached else ''
+            git_view = 'diff%s' % ('-cached' if cached else '')
 
             view = find_view_by_settings(self.window, git_view=git_view, git_repo=repo, git_diff=path)
             if not view:
