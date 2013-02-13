@@ -72,14 +72,12 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
             for key, val in GIT_COMMIT_VIEW_SETTINGS.items():
                 view.settings().set(key, val)
 
-        template = self.get_commit_template(add)
-        view.run_command('git_commit_template', {'template': template})
-
         GitCommit.windows[view.id()] = (self.window, add)
-
         self.window.focus_view(view)
-        view.sel().clear()
-        view.sel().add(sublime.Region(0))
+
+        template = self.get_commit_template(add)
+        print template
+        view.run_command('git_commit_template', {'template': template})
 
 
 class GitCommitTemplateCommand(TextCommand):
@@ -91,6 +89,8 @@ class GitCommitTemplateCommand(TextCommand):
         if self.view.size() > 0:
             self.view.erase(edit, sublime.Region(0, self.view.size()))
         self.view.insert(edit, 0, template)
+        self.view.sel().clear()
+        self.view.sel().add(sublime.Region(0))
 
 
 class GitCommitEventListener(EventListener):

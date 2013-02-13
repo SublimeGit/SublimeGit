@@ -57,7 +57,6 @@ class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
 
         commit = hashes[idx]
         exit_code, stdout = self.git(['checkout', commit])
-        print "%s" % str([stdout])
         if exit_code == 0:
             sublime.message_dialog(stdout)
         else:

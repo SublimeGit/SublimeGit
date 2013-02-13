@@ -203,7 +203,7 @@ class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
         if goto:
             self.view.run_command('git_status_move', {'goto': goto})
         else:
-            self.view.run_command('git_Status_move', {'goto': GOTO_DEFAULT})
+            self.view.run_command('git_status_move', {'goto': GOTO_DEFAULT})
 
 
 class GitStatusEventListener(EventListener):

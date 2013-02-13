@@ -53,13 +53,9 @@ class GitDiffRefreshCommand(TextCommand, GitCmd, GitDiffHelper):
         cached = cached if cached else self.view.settings().get('git_diff_cached')
 
         if path is None or cached is None:
-            print "missing shit"
             return
 
         diff = self.get_diff(path, cached)
-        if not diff:
-            print "missing diff"
-
         if diff:
             self.view.set_read_only(False)
             if self.view.size() > 0:
