@@ -1,5 +1,5 @@
 # coding: utf-8
-from os import path, getenv
+from os import path
 from contextlib import contextmanager
 import logging
 
@@ -7,14 +7,6 @@ import sublime
 
 
 logger = logging.getLogger(__name__)
-
-
-# Misc helpers
-def maybe_int(val):
-    try:
-        return int(val)
-    except ValueError:
-        return val
 
 
 # Callback helpers
@@ -51,29 +43,12 @@ def append_view(view, content, scroll=False):
         view.show(view.size())
 
 
-def scroll_to_bottom(view):
-    view.show(view.size())
-
-
-def find_view(window, title):
-    views = [v for v in window.views() if v.name() == title]
-    if views:
-        return views[0]
-
-
-def find_or_create_view(window, title, syntax=None, scratch=False, read_only=False, settings=None):
-    view = find_view(window, title)
-    if not view:
-        view = window.new_file()
-        view.set_name(title)
-        if syntax:
-            view.set_syntax_file(syntax)
-        view.set_scratch(scratch)
-        view.set_read_only(read_only)
-        if settings:
-            for s, v in settings.items():
-                view.settings().set(s, v)
-    return view
+def find_view_by_settings(window, **kwargs):
+    for view in window.views():
+        s = view.settings()
+        matches = [s.get(k) == v for k, v in kwargs.items()]
+        if all(matches):
+            return view
 
 
 # Panel helpers
@@ -123,46 +98,13 @@ class StatusSpinner(object):
         sublime.set_timeout(self.progress, 0)
 
 
-# CWD helpers
-
-def find_cwd(window):
-    if not window:
-        return None
-
-    view = window.active_view()
-    if window:
-        view = window.active_view()
-        if view and view.file_name():
-            return path.realpath(path.dirname(view.file_name()))
-        elif window.folders():
-            return window.folders()[0]
-    #elif view and view.settings().has('git_repo_dir'):
-    #    return view.settings().get('git_repo_dir')
-    return None
-
-
 # Directory helpers
 
 def abbreviate_dir(dirname):
-    user_dir = getenv('HOME')
+    user_dir = path.expanduser('~')
     if dirname.startswith(user_dir):
-        return dirname.replace(user_dir, '~', 1)
+        return '~' + dirname[len(user_dir):]
     return dirname
-
-
-def find_possible_roots(directory):
-    while directory and path.basename(directory):
-        yield path.join(directory, '.git')
-        directory = path.dirname(directory)
-    if directory:
-        yield path.join(directory, '.git')
-
-
-def find_repo_dir(directory):
-    for d in find_possible_roots(directory):
-        logger.debug('Looking for git dir in %s' % d)
-        if path.exists(d) and path.isdir(d):
-            return path.dirname(d)
 
 
 # settings helpers

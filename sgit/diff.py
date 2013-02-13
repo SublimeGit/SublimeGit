@@ -1,7 +1,7 @@
 # coding: utf-8
 from sublime_plugin import WindowCommand
 
-from .util import find_or_create_view, write_view, ensure_writeable
+from .util import find_view_by_settings, write_view, ensure_writeable
 from .cmd import GitCmd
 from .helpers import GitDiffHelper
 
@@ -18,13 +18,24 @@ class GitDiffCommand(WindowCommand, GitCmd, GitDiffHelper):
 
     def run(self, path=None, cached=False):
         diff = self.get_diff(path, cached)
+        repo = self.get_repo(self.window)
 
         if diff:
             title = self.get_view_title(path, cached)
-            view = find_or_create_view(self.window, title,
-                                        syntax=GIT_DIFF_VIEW_SYNTAX,
-                                        scratch=True,
-                                        read_only=True)
+            git_view = 'diff' + '-cached' if cached else ''
+
+            view = find_view_by_settings(self.window, git_view=git_view, git_repo=repo, git_diff=path)
+            if not view:
+                view = self.window.new_file()
+                view.set_name(title)
+                view.set_syntax_file(GIT_DIFF_VIEW_SYNTAX)
+                view.set_scratch(True)
+                view.set_read_only(True)
+
+                view.settings().set('git_view', git_view)
+                view.settings().set('git_repo', repo)
+                view.settings().set('git_diff', path)
+
             with ensure_writeable(view):
                 write_view(view, diff)
 

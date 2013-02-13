@@ -4,12 +4,10 @@ import os
 import sublime
 from sublime_plugin import WindowCommand
 
-from .util import noop, write_view, find_repo_dir
+from .util import noop, write_view, abbreviate_dir
 from .cmd import GitCmd
 
 
-GIT_INIT_CONFIRM_MSG = """A git repository already exists in %s.
-Are you sure you want to initialize a repository?"""
 GIT_INIT_NO_DIR_ERROR = "No directory provided. Aborting git init."
 GIT_INIT_DIR_NOT_EXISTS_MSG = "The directory %s does not exist. Create directory?"
 GIT_INIT_NOT_ISDIR_ERROR = "%s is not a directory. Aborting git init."
@@ -19,16 +17,24 @@ GIT_INIT_DIR_LABEL = "Directory:"
 
 class GitInitCommand(WindowCommand, GitCmd):
 
+    def get_dir_candidate(self):
+        if self.window:
+            if self.window.folders():
+                return self.window.folders()[0]
+
+            active_dir = self.get_dir_from_view(self.window.active_view())
+            if active_dir:
+                return active_dir
+
+            for view in self.window.views():
+                view_dir = self.get_dir_from_view(view)
+                if view_dir:
+                    return view_dir
+        return os.path.expanduser('~')
+
     def run(self):
-        repo_dir = find_repo_dir(self.get_cwd())
-        if repo_dir:
-            init_anyway = sublime.ok_cancel_dialog(GIT_INIT_CONFIRM_MSG % repo_dir, 'Init anyway')
-            if not init_anyway:
-                return
-
-        working_dir = self.get_cwd()
-        initial_text = working_dir if working_dir else ''
-
+        dir_candidate = self.get_dir_candidate()
+        initial_text = dir_candidate if dir_candidate else ''
         self.window.show_input_panel(GIT_INIT_DIR_LABEL, initial_text, self.on_done, noop, noop)
 
     def on_done(self, directory):
@@ -58,3 +64,23 @@ class GitInitCommand(WindowCommand, GitCmd):
         panel = self.window.get_output_panel('git-init')
         write_view(panel, output)
         self.window.run_command('show_panel', {'panel': 'output.git-init'})
+
+
+class GitSwitchRepoCommand(WindowCommand, GitCmd):
+
+    def run(self):
+        repos = list(self.git_repos_from_window(self.window))
+        choices = []
+        for repo in repos:
+            basename = os.path.basename(repo)
+            repo_dir = abbreviate_dir(repo)
+            choices.append([basename, repo_dir])
+
+        def on_done(idx):
+            if idx != -1:
+                self.on_repo(repos[idx])
+
+        self.window.show_quick_panel(choices, on_done)
+
+    def on_repo(self, repo):
+        self.set_window_setting(self.window, 'git_repo', repo)

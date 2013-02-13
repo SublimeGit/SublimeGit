@@ -24,7 +24,7 @@ LOAD_ORDER = [
     # commands
     'sgit.help',
     'sgit.cli',
-    'sgit.init',
+    'sgit.repo',
     'sgit.diff',
     'sgit.show',
     'sgit.log',
@@ -58,7 +58,7 @@ from sgit import DebugReloader
 
 #from sgit.cli import GitCliCommand, GitCliAsyncCommand
 
-from sgit.init import GitInitCommand
+from sgit.repo import GitInitCommand, GitSwitchRepoCommand
 
 from sgit.diff import GitDiffCommand
 

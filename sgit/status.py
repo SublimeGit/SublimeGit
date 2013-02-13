@@ -1,13 +1,14 @@
 # coding: utf-8
 import os
 import logging
+from functools import partial
 
 import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 
-from .util import abbreviate_dir, find_repo_dir, find_cwd
-from .util import find_or_create_view, find_view, write_view, ensure_writeable
-from .util import noop, maybe_int, get_setting
+from .util import abbreviate_dir
+from .util import find_view_by_settings, write_view, ensure_writeable
+from .util import noop, get_setting
 from .cmd import GitCmd
 from .helpers import GitStatusHelper, GitRemoteHelper, GitStashHelper
 
@@ -82,11 +83,15 @@ GIT_STATUS_HELP = """
 class GitStatusWindowCmd(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper):
 
     def build_status(self):
+        repo_dir = self.get_repo(self.get_window(), silent=False)
+        if not repo_dir:
+            return
+
         branch = self.get_current_branch()
         remote = self.get_remote(branch)
         remote_url = self.get_remote_url(remote)
 
-        abbrev_dir = abbreviate_dir(find_repo_dir(self.get_cwd()))
+        abbrev_dir = abbreviate_dir(repo_dir)
 
         head_rc, head = self.git(['log', '--max-count=1', '--abbrev-commit', '--pretty=oneline'])
 
@@ -155,12 +160,25 @@ class GitStatusCommand(WindowCommand, GitStatusWindowCmd):
 
     def run(self):
         status = self.build_status()
+        if not status:
+            return
 
-        view = find_or_create_view(self.window, GIT_STATUS_VIEW_TITLE,
-                                    syntax=GIT_STATUS_VIEW_SYNTAX,
-                                    settings=GIT_STATUS_VIEW_SETTINGS,
-                                    scratch=True,
-                                    read_only=True)
+        repo = self.get_repo(self.window)
+
+        view = find_view_by_settings(self.window, git_view='status', git_repo=repo)
+        if not view:
+            view = self.window.new_file()
+            view.set_name(GIT_STATUS_VIEW_TITLE)
+            view.set_syntax_file(GIT_STATUS_VIEW_SYNTAX)
+            view.set_scratch(True)
+            view.set_read_only(True)
+
+            view.settings().set('git_view', 'status')
+            view.settings().set('git_repo', repo)
+
+            for key, val in GIT_STATUS_VIEW_SETTINGS.items():
+                view.settings().set(key, val)
+
         with ensure_writeable(view):
             write_view(view, status)
         self.window.focus_view(view)
@@ -170,23 +188,28 @@ class GitStatusCommand(WindowCommand, GitStatusWindowCmd):
 class GitStatusRefreshCommand(WindowCommand, GitStatusWindowCmd):
 
     def run(self, goto=None, focus=True):
-        view = find_view(self.window, GIT_STATUS_VIEW_TITLE)
-        if view:
-            status = self.build_status()
-            with ensure_writeable(view):
-                write_view(view, status)
-            if focus:
-                self.window.focus_view(view)
-                if goto:
-                    self.window.run_command('git_status_move', {'goto': goto})
-                else:
-                    self.window.run_command('git_status_move', {'goto': GOTO_DEFAULT})
+        view = find_view_by_settings(self.window, git_view='status')
+        if not view:
+            return
+
+        status = self.build_status()
+        if not status:
+            return
+
+        with ensure_writeable(view):
+            write_view(view, status)
+        if focus:
+            self.window.focus_view(view)
+            if goto:
+                self.window.run_command('git_status_move', {'goto': goto})
+            else:
+                self.window.run_command('git_status_move', {'goto': GOTO_DEFAULT})
 
 
 class GitStatusEventListener(EventListener):
 
     def on_activated(self, view):
-        if view.name() == GIT_STATUS_VIEW_TITLE:
+        if view.settings().get('git_view') == 'status':
             goto = None
             if view.sel():
                 goto = "point:%s" % view.sel()[0].begin()
@@ -202,13 +225,13 @@ class GitStatusBarEventListener(EventListener, GitCmd):
         self.persistent = get_setting('git_persistent_status_bar_message', False)
 
     def on_activated(self, view):
-        self.set_status(view)
+        sublime.set_timeout(partial(self.set_status, view), 100)
 
     def on_load(self, view):
-        self.set_status(view)
+        sublime.set_timeout(partial(self.set_status, view), 100)
 
     def set_status(self, view):
-        repo = find_repo_dir(find_cwd(view.window()))
+        repo = self.get_repo(view.window())
         if repo:
             branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo)
             branch = branch[11:] if branch.startswith('refs/heads/') else None
@@ -389,18 +412,26 @@ class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
         elif what == "stash":
             self.move_to_stash(which, where)
         elif what == "point":
-            point = maybe_int(which)
-            if point:
+            try:
+                point = int(which)
                 self.move_to_point(point)
+            except ValueError:
+                pass
 
     def parse_goto(self, goto):
         what, which, where = None, None, None
         parts = goto.split(':')
         what = parts[0]
         if len(parts) > 1:
-            which = maybe_int(parts[1])
+            try:
+                which = int(parts[1])
+            except ValueError:
+                which = parts[1]
         if len(parts) > 2:
-            where = maybe_int(parts[2])
+            try:
+                where = int(parts[2])
+            except ValueError:
+                where = parts[2]
         return (what, which, where)
 
     def move_to_point(self, point):
@@ -586,13 +617,14 @@ class GitStatusUnstageCommand(TextCommand, GitStatusTextCmd):
 class GitStatusOpenFileCommand(TextCommand, GitStatusTextCmd):
 
     def run(self, edit):
-        repo = find_repo_dir(self.get_cwd())
-        files = self.get_selected_files()
-        window = self.view.window()
+        repo = self.view.settings().get('git_repo')
+        if repo:
+            files = self.get_selected_files()
+            window = self.view.window()
 
-        for s, f in files:
-            filename = os.path.join(repo, f)
-            window.open_file(filename, sublime.TRANSIENT)
+            for s, f in files:
+                filename = os.path.join(repo, f)
+                window.open_file(filename, sublime.TRANSIENT)
 
 
 class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
@@ -648,7 +680,7 @@ class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
         return sublime.ok_cancel_dialog(msg, 'Add to .gitignore')
 
     def add_to_gitignore(self, patterns):
-        repo_dir = find_repo_dir(self.get_cwd())
+        repo_dir = self.view.settings().get('git_repo')
         if repo_dir:
             gitignore = os.path.join(repo_dir, '.gitignore')
             contents = []

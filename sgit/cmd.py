@@ -9,10 +9,14 @@ from functools import partial
 
 import sublime
 
-from .util import find_cwd, find_possible_roots, find_repo_dir, get_executable, get_setting
+from .util import get_executable, get_setting
 
 
 logger = logging.getLogger(__name__)
+
+
+GIT_INIT_DIALOG = ("Could not find any git repositories based on the open files and folders. "
+                   "Do you want to initialize a repository?")
 
 
 class SublimeGitException(Exception):
@@ -71,29 +75,115 @@ class Cmd(object):
     started_at = datetime.today()
     last_popup_at = None
 
-    # working dir stuff
-    def get_cwd(self):
-        return find_cwd(self.get_window())
-
+    # helper for getting window in text- and windowcommands
     def get_window(self):
         return self.view.window() if hasattr(self, 'view') else self.window
 
-    # repo dir stuff
-    def resolve_cwd(self):
-        cwd = self.get_cwd()
-        if not cwd:
-            logger.debug('No cwd found')
-            sublime.error_message(self.WORKING_DIR_ERROR)
-            raise SublimeGitException("Could not find working dir")
+    # per-window state
+    @property
+    def window_settings(self):
+        if not hasattr(self, '_settings'):
+            self._settings = sublime.load_settings('SublimeGitWindowSettings')
+        return self._settings
 
-        repo = find_repo_dir(cwd)
-        if not repo:
-            logger.debug('Cwd %s does not contain a repo', cwd)
-            if sublime.ok_cancel_dialog(self.get_init_dialog(cwd), 'Initialize repository'):
-                self.get_window().run_command('git_init')
-            raise SublimeGitException("Could not find git repository in working_dir: %s" % cwd)
+    def get_window_setting(self, window, key, default=None):
+        return self.window_settings.get(key, {}).get(str(window.id()), default)
 
-        return repo
+    def set_window_setting(self, window, key, value):
+        vals = self.window_settings.get(key, {})
+        vals[str(window.id())] = value
+        self.window_settings.set(key, vals)
+
+    # working dir remake
+    def get_dir_from_view(self, view=None):
+        if view and view.file_name():
+            return os.path.realpath(os.path.dirname(view.file_name()))
+
+    def get_dirs_from_window_folders(self, window=None):
+        if window:
+            return set(f for f in window.folders())
+        return set()
+
+    def get_dirs_from_window_views(self, window=None):
+        if window:
+            view_dirs = [self.get_dir_from_view(v) for v in window.views()]
+            return set(d for d in view_dirs if d)
+        return set()
+
+    def get_dirs(self, window=None):
+        dirs = set()
+        if window:
+            dirs |= self.get_dirs_from_window_folders(window)
+            dirs |= self.get_dirs_from_window_views(window)
+        return dirs
+
+    def get_dirs_prioritized(self, window=None):
+        dirs = list()
+        if window:
+            all_dirs = self.get_dirs(window)
+            active_view_dir = self.get_dir_from_view(window.active_view())
+            if active_view_dir:
+                dirs.append(active_view_dir)
+                all_dirs.discard(active_view_dir)
+            for d in sorted(list(all_dirs), key=lambda x: len(x), reverse=True):
+                dirs.append(d)
+        return dirs
+
+    # path walking
+    def all_dirnames(self, directory):
+        dirnames = [directory]
+        while directory and directory != os.path.dirname(directory):
+            directory = os.path.dirname(directory)
+            dirnames.append(directory)
+        return dirnames
+
+    # git repos
+    def is_git_repo(self, directory):
+        git_dir = os.path.join(directory, '.git')
+        return os.path.exists(git_dir) and os.path.isdir(git_dir)
+
+    def find_git_repos(self, directories):
+        repos = set()
+        for directory in directories:
+            for dirname in self.all_dirnames(directory):
+                if self.is_git_repo(dirname):
+                    repos.add(dirname)
+        return repos
+
+    def git_repos_from_window(self, window=None):
+        repos = set()
+        if window:
+            dirs = self.get_dirs_prioritized(window)
+            for repo in self.find_git_repos(dirs):
+                repos.add(repo)
+        return repos
+
+    def get_repo(self, window=None, silent=True):
+        if window:
+            active_view = window.active_view()
+            if active_view:
+                active_view_repo = active_view.settings().get('git_repo')
+                if active_view_repo:
+                    return active_view_repo
+
+            window_repo = self.get_window_setting(window, 'git_repo')
+            if window_repo:
+                return window_repo
+
+            any_repos = self.git_repos_from_window(window)
+            if len(any_repos) == 1:
+                only_repo = any_repos.pop()
+                self.set_window_setting(window, 'git_repo', only_repo)
+                return only_repo
+
+            if silent:
+                return
+
+            if any_repos:
+                self.get_window().run_command('git_switch_repo')
+            else:
+                if sublime.ok_cancel_dialog(GIT_INIT_DIALOG, 'Initialize repository'):
+                    self.get_window().run_command('git_init')
 
     # license stuff
     def __get_license(self):
@@ -166,8 +256,9 @@ class Cmd(object):
     # sync commands
     def cmd(self, cmd, stdin=None, cwd=None):
         if not cwd:
-            logger.debug('No cwd given. Trying to resolve cwd')
-            cwd = self.resolve_cwd()
+            cwd = self.get_repo(self.get_window(), silent=False)
+            if not cwd:
+                raise SublimeGitException("Could not find repo.")
 
         command = self.clean_command(cmd)
         try:
@@ -205,7 +296,9 @@ class Cmd(object):
     # async commands
     def cmd_async(self, cmd, cwd=None, **callbacks):
         if not cwd:
-            cwd = self.resolve_cwd()
+            cwd = self.get_repo(self.get_window(), silent=False)
+            if not cwd:
+                return
 
         command = self.clean_command(cmd)
 
@@ -241,23 +334,15 @@ class Cmd(object):
         return thread
 
     # messages
-    WORKING_DIR_ERROR = "Could not find an active working dir. Please open a file or folder"
     EXECUTABLE_ERROR = ("Executable '{bin}' was not found in PATH. Current PATH:\n\n"
                         "{path}\n\n"
                         "Try adjusting the git_executables['{executable}'] setting.")
-    INIT_DIALOG = ("Could not find a git repository. Looked in:\n\n"
-                   "{dirs}\n\n"
-                   "Do you want to initialize a repository?")
 
     def get_executable_error(self):
         path = "\n".join(os.environ.get('PATH', '').split(':'))
         return self.EXECUTABLE_ERROR.format(executable=self.executable,
                                             path=path,
                                             bin=self.bin)
-
-    def get_init_dialog(self, cwd):
-        dirs = [d[:-4] for d in find_possible_roots(cwd)]
-        return self.INIT_DIALOG.format(dirs="\n".join(dirs))
 
 
 class GitCmd(Cmd):

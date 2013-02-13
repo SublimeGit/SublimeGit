@@ -2,7 +2,7 @@
 import sublime
 from sublime_plugin import WindowCommand
 
-from ..util import noop, create_panel, show_panel, append_view, scroll_to_bottom, StatusSpinner
+from ..util import noop, create_panel, show_panel, append_view, StatusSpinner
 from ..cmd import Cmd
 
 
@@ -51,7 +51,7 @@ class LegitWindowCmd(LegitCmd):
         if not self.panel_shown:
             show_panel(self.window, self.panel_name)
         append_view(self.panel, d)
-        scroll_to_bottom(self.panel)
+        self.panel.show(self.panel.size())
 
 
 class LegitSwitchCommand(WindowCommand, LegitWindowCmd):

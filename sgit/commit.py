@@ -2,7 +2,7 @@
 import sublime
 from sublime_plugin import WindowCommand, EventListener
 
-from .util import find_or_create_view, write_view, read_view, ensure_writeable, noop
+from .util import find_view_by_settings, write_view, read_view, ensure_writeable, noop
 from .cmd import GitCmd
 from .helpers import GitStatusHelper
 from .status import GIT_WORKING_DIR_CLEAN
@@ -45,6 +45,10 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
 class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
 
     def run(self, add=False):
+        repo = self.get_repo(self.window)
+        if not repo:
+            return
+
         staged = self.has_staged_changes()
         dirty = self.has_unstaged_changes()
 
@@ -55,10 +59,19 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
             sublime.error_message(GIT_WORKING_DIR_CLEAN)
             return
 
-        view = find_or_create_view(self.window, GIT_COMMIT_VIEW_TITLE,
-                                    syntax=GIT_COMMIT_VIEW_SYNTAX,
-                                    settings=GIT_COMMIT_VIEW_SETTINGS,
-                                    scratch=True)
+        view = find_view_by_settings(self.window, git_view='commit', git_repo='repo')
+        if not view:
+            view = self.window.new_file()
+            view.set_name(GIT_COMMIT_VIEW_TITLE)
+            view.set_syntax_file(GIT_COMMIT_VIEW_SYNTAX)
+            view.set_scratch(True)
+
+            view.settings().set('git_view', 'commit')
+            view.settings().set('git_repo', repo)
+
+            for key, val in GIT_COMMIT_VIEW_SETTINGS.items():
+                view.settings().set(key, val)
+
         content = self.get_commit_template(add)
         with ensure_writeable(view):
             write_view(view, content)
@@ -73,7 +86,7 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
 class GitCommitEventListener(EventListener):
 
     def on_close(self, view):
-        if view.name() == GIT_COMMIT_VIEW_TITLE and view.id() in GitCommit.windows:
+        if view.settings().get('git_view') == 'commit' and view.id() in GitCommit.windows:
             message = read_view(view)
             window, add = GitCommit.windows[view.id()]
             window.run_command('git_commit_perform', {'message': message, 'add': add})
