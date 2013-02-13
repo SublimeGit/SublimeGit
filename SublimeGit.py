@@ -60,7 +60,7 @@ from sgit import DebugReloader
 
 from sgit.repo import GitInitCommand, GitSwitchRepoCommand
 
-from sgit.diff import GitDiffCommand
+from sgit.diff import GitDiffCommand, GitDiffRefreshCommand
 
 from sgit.show import GitShowCommand
 

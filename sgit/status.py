@@ -180,6 +180,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
             for key, val in GIT_STATUS_VIEW_SETTINGS.items():
                 view.settings().set(key, val)
 
+        self.window.focus_view(view)
         view.run_command('git_status_refresh', {'goto': 'file:1'})
 
 
@@ -188,7 +189,7 @@ class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
     def is_visible(self):
         return False
 
-    def run(self, edit, goto=None, focus=True):
+    def run(self, edit, goto=None):
         status = self.build_status()
         if not status:
             return
@@ -199,8 +200,6 @@ class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
         self.view.insert(edit, 0, status)
         self.view.set_read_only(True)
 
-        if focus:
-            self.view.window().focus_view(self.view)
         if goto:
             self.view.run_command('git_status_move', {'goto': goto})
         else:
