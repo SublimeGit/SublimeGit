@@ -4,7 +4,7 @@ import os
 import sublime
 from sublime_plugin import WindowCommand
 
-from .util import noop, write_view, abbreviate_dir
+from .util import noop, abbreviate_dir
 from .cmd import GitCmd
 
 
@@ -62,7 +62,7 @@ class GitInitCommand(WindowCommand, GitCmd):
 
         output = self.git_string(['init'], cwd=directory)
         panel = self.window.get_output_panel('git-init')
-        write_view(panel, output)
+        panel.run_command('git_panel_output', {'output': output})
         self.window.run_command('show_panel', {'panel': 'output.git-init'})
 
 

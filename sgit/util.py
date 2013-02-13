@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import logging
 
 import sublime
+from sublime_plugin import TextCommand
 
 
 logger = logging.getLogger(__name__)
@@ -96,6 +97,21 @@ class StatusSpinner(object):
     def start(self):
         self.thread.start()
         sublime.set_timeout(self.progress, 0)
+
+
+# Panel Helper
+
+class GitPanelOutputCommand(TextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit, output=''):
+        self.view.set_read_only(False)
+        if self.view.size() > 0:
+            self.view.erase(edit, sublime.Region(0, self.view.size()))
+        self.view.insert(edit, 0, output)
+        self.view.set_read_only(True)
 
 
 # Directory helpers

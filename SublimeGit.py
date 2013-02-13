@@ -56,6 +56,8 @@ if reloaded:
 # import commands and listeners
 from sgit import DebugReloader
 
+from sgit.util import GitPanelOutputCommand
+
 #from sgit.cli import GitCliCommand, GitCliAsyncCommand
 
 from sgit.repo import GitInitCommand, GitSwitchRepoCommand
