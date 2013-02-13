@@ -1,7 +1,8 @@
 # coding: utf-8
-from sublime_plugin import WindowCommand
+import sublime
+from sublime_plugin import WindowCommand, TextCommand
 
-from .util import noop, find_view_by_settings, ensure_writeable, write_view
+from .util import noop, find_view_by_settings
 from .cmd import GitCmd
 from .helpers import GitShowHelper
 
@@ -10,7 +11,7 @@ GIT_SHOW_TITLE_PREFIX = '*git-show*: '
 GIT_SHOW_SYNTAX = 'Packages/SublimeGit/SublimeGit Show.tmLanguage'
 
 
-class GitShowCommand(WindowCommand, GitCmd, GitShowHelper):
+class GitShowCommand(WindowCommand, GitCmd):
 
     def run(self, obj=None):
         if not obj:
@@ -19,12 +20,14 @@ class GitShowCommand(WindowCommand, GitCmd, GitShowHelper):
             self.show(obj)
 
     def show(self, obj):
-        repo = self.get_repo(self.window)
-        show = self.get_show(obj)
+        if not obj:
+            return
 
-        if show and repo:
+        repo = self.get_repo(self.window)
+
+        if repo:
             title = GIT_SHOW_TITLE_PREFIX + obj
-            view = find_view_by_settings(self.window, git_view='show', git_repo=repo, git_show=obj)
+            view = find_view_by_settings(self.window, git_view='show', git_repo=repo, git_show_obj=obj)
             if not view:
                 view = self.window.new_file()
                 view.set_name(title)
@@ -34,7 +37,23 @@ class GitShowCommand(WindowCommand, GitCmd, GitShowHelper):
 
                 view.settings().set('git_view', 'show')
                 view.settings().set('git_repo', repo)
-                view.settings().set('git_show', obj)
+                view.settings().set('git_show_obj', obj)
 
-            with ensure_writeable(view):
-                write_view(view, show)
+            view.run_command('git_show_refresh', {'obj': obj})
+
+
+class GitShowRefreshCommand(TextCommand, GitCmd, GitShowHelper):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit, obj=None):
+        obj = obj or self.view.settings().get('git_show_obj')
+        show = self.get_show(obj)
+
+        if show:
+            self.view.set_read_only(False)
+            if self.view.size() > 0:
+                self.view.erase(edit, sublime.Region(0, self.view.size()))
+            self.view.insert(edit, 0, show)
+            self.view.set_read_only(True)

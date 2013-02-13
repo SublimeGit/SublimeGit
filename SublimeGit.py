@@ -62,7 +62,7 @@ from sgit.repo import GitInitCommand, GitSwitchRepoCommand
 
 from sgit.diff import GitDiffCommand, GitDiffRefreshCommand
 
-from sgit.show import GitShowCommand
+from sgit.show import GitShowCommand, GitShowRefreshCommand
 
 from sgit.help import GitHelpCommand, GitVersionCommand
 
