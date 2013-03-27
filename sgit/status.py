@@ -52,7 +52,8 @@ STATUS_LABELS = {
     'C': 'Copied    ',
     'U': 'Unmerged  ',
     '?': 'Untracked ',
-    '!': 'Ignored   '
+    '!': 'Ignored   ',
+    'T': 'Typechange'
 }
 
 GIT_WORKING_DIR_CLEAN = "Nothing to commit (working directory clean)"
