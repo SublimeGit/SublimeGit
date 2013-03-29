@@ -10,6 +10,10 @@ GIT_ADD_ALL_UNSTAGED = "+ All unstaged files"
 
 
 class GitQuickAddCommand(WindowCommand, GitCmd):
+    """ Autodoc?
+
+    Test
+    """
 
     def run(self):
         status = self.get_status_list()
@@ -47,6 +51,13 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
 
 
 class GitAddCurrentFileCommand(TextCommand, GitCmd):
+    """ Adds current file to git
+
+    :shortcut OS X: ``ctrl+k``
+    :shortcut Windows: ``ctrl+k``
+
+    Hejsa mere info
+    """
 
     def run(self, edit):
         filename = self.view.file_name()

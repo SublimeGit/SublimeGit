@@ -158,6 +158,9 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
 
 
 class GitStatusCommand(WindowCommand, GitStatusBuilder):
+    """
+    Wut
+    """
 
     def run(self):
         repo = self.get_repo(self.window, silent=False)
@@ -250,6 +253,7 @@ class GitStatusBarEventListener(EventListener, GitCmd):
 
 
 class GitQuickStatusCommand(WindowCommand, GitCmd):
+    """Test"""
 
     def run(self):
         status = self.git_lines(['status', '--porcelain', '--untracked-files=all'])

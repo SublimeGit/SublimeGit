@@ -16,6 +16,7 @@ GIT_INIT_DIR_LABEL = "Directory:"
 
 
 class GitInitCommand(WindowCommand, GitCmd):
+    """ """
 
     def get_dir_candidate(self):
         if self.window:
@@ -67,6 +68,7 @@ class GitInitCommand(WindowCommand, GitCmd):
 
 
 class GitSwitchRepoCommand(WindowCommand, GitCmd):
+    """ """
 
     def run(self):
         repos = list(self.git_repos_from_window(self.window))
