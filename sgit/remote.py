@@ -230,6 +230,10 @@ class GitRemoteAddCommand(WindowCommand, GitCmd):
 
 
 class GitRemoteCommand(WindowCommand, GitCmd, GitRemoteHelper):
+    """
+    Manage git remotes
+
+    """
 
     SHOW = 'Show'
     RM = 'Remove'
