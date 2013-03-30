@@ -16,7 +16,29 @@ GIT_INIT_DIR_LABEL = "Directory:"
 
 
 class GitInitCommand(WindowCommand, GitCmd):
-    """ """
+    """
+    Initializes a git repository in a specified directory.
+
+    An input panel will be shown in the bottom of the Sublime Text
+    window, allowing you to edit the directory which will be initialized
+    as a git repository. After choosing the directory, press ``enter``
+    to complete. To abort, press ``esc``.
+
+    If the directory does not already exist, you will be asked if you
+    want to create it. If the path already exists, but it is not a
+    directory, or if it is a directory and already contains git repository,
+    the command will exit with an error message.
+
+    .. note::
+        The initial suggestion for the directory is calculated in the
+        following way:
+
+        1. The first open folder, if any.
+        2. The directory name of the currently active file, if any.
+        3. The directory name of the first open file which has a filename,
+           if any.
+        4. The user directory of the currently logged in user.
+    """
 
     def get_dir_candidate(self):
         if self.window:
@@ -68,7 +90,59 @@ class GitInitCommand(WindowCommand, GitCmd):
 
 
 class GitSwitchRepoCommand(WindowCommand, GitCmd):
-    """ """
+    """
+    Switch the active repository for the current Sublime Text window.
+
+    In SublimeGit, each window has an active repository. The first time
+    you execute a git command, SublimeGit will try to find out which
+    repository should be the active one for the current window. If there
+    are multiple possible repositories, you will be presented with a list
+    to choose from. Your selection will then be set as the active repository
+    for the window.
+
+    If you generally only have one folder open per window in Sublime
+    Text and don't use git submodules, then you probably won't have
+    to switch repositories manually. However, there are some situations
+    where it can be necessary to do so:
+
+    **Nested git repositories**
+        If you are using git submodules, or some kind of package manager
+        which uses git checkouts in a subfolder of your project to hold
+        packages (such as Composer for PHP), and you want to explicitly
+        specify that you are working inside the nested repository.
+    **Multiple folders or files**
+        If you have multiple folders or multiple files, which are managed
+        with git, open in the same Sublime Text window, and you want to
+        switch the repository that you are currently working on.
+
+    .. note::
+
+        **How does SublimeGit find my repositories?**
+
+        Excellent question. If there isn't already an active repository
+        for the window, SublimeGit will try it's best to guess which
+        repository you are working on. In general it works something like
+        this:
+
+        * Find a list of all possible directories:
+
+          * The directory of the active view, if any.
+          * The directories of any open folders.
+          * The directories of any open files.
+
+        * Generate a list of all of the parents of these directories.
+        * Check to see if any of the directories or their parents are
+          git repositories.
+        * Select a repository:
+
+          * If there is only one repository then use that.
+          * If there are more than one repository, present a list to
+            choose from.
+
+        While it would be nice to be able to use the project path of
+        the current project to decide which repository to use, this
+        is not straightforward in Sublime Text 2.
+    """
 
     def run(self):
         repos = list(self.git_repos_from_window(self.window))

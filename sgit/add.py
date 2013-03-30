@@ -10,9 +10,41 @@ GIT_ADD_ALL_UNSTAGED = "+ All unstaged files"
 
 
 class GitQuickAddCommand(WindowCommand, GitCmd):
-    """ Autodoc?
+    """
+    Adds one or more files to the staging area by selecting them
+    from the quick bar.
 
-    Test
+    A list of modified files are presented in the quickbar. Each
+    file is marked with a letter, indicating it's status:
+
+    * **M** = modified
+    * **A** = added
+    * **D** = deleted
+    * **R** = renamed
+    * **C** = copied
+    * **?** = untracked
+
+    To add a file from the list, either click the file with the
+    mouse, or use arrow up/arrow down or searching until you have
+    the file you are looking for, and then press ``enter``. After
+    adding a file, the status list will update, allowing you to
+    select another file to add. To dismiss the status list, press
+    ``esc``.
+
+    When there are no more files to add, the status list will show
+    the usual git message for a clean working dir. To dismiss the
+    list press ``enter`` or ``esc``.
+
+    There are two special options at the bottom of the status list.
+    To go to them quickly, press arrow up which will select the
+    bottom-most option. These options are:
+
+    **+ All unstaged files**
+        This option will add all changes to files git already knows
+        about (all the files not marked with **?**).
+    **+ All files**
+        This option will add all changes to files git already knows
+        about, as well as all new files (files marked with **?**).
     """
 
     def run(self):
@@ -51,12 +83,17 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
 
 
 class GitAddCurrentFileCommand(TextCommand, GitCmd):
-    """ Adds current file to git
+    """
+    This command adds the currently open file to the git
+    staging area. It the --force switch, so the file will be
+    added even if it matches a repository .gitignore pattern,
+    or a global .gitignore pattern.
 
-    :shortcut OS X: ``ctrl+k``
-    :shortcut Windows: ``ctrl+k``
+    The file must have already been saved, otherwise it won't
+    exist on the filesystem, and can't be added to git.
 
-    Hejsa mere info
+    If the command completes successfully, no output will be
+    given.
     """
 
     def run(self, edit):
