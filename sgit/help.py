@@ -10,6 +10,7 @@ except:
 import sublime
 from sublime_plugin import WindowCommand
 
+from .util import get_setting
 from .cmd import GitCmd
 
 
@@ -92,15 +93,23 @@ class GitHelpCommand(WindowCommand, GitCmd):
             sublime.error_message('Directory %s does not exist. Have you deleted the git documentation?' % doc_path)
             return
 
-        doc_files = self.get_doc_files(doc_path)
-        choices = self.format_choices(doc_files, fancy=True)
+        use_fancy = get_setting('git_use_fancy_help', True)
+        if hasattr(self, '_use_fancy'):
+            if use_fancy != self._use_fancy:
+                self._choices = None
+
+        self._use_fancy = use_fancy
+
+        if not getattr(self, '_choices', None):
+            doc_files = self.get_doc_files(doc_path)
+            self._choices = self.format_choices(doc_files, fancy=use_fancy)
 
         def on_done(idx):
             if idx != -1:
-                text, url = choices[idx]
+                text, url = self._choices[idx]
                 webbrowser.open(url)
 
-        self.window.show_quick_panel([t for t, u in choices], on_done)
+        self.window.show_quick_panel([t for t, u in self._choices], on_done)
 
 
 class GitVersionCommand(WindowCommand, GitCmd):

@@ -67,6 +67,23 @@
     },
 
     /*
+     * Fancy Help
+     *
+     * If set to true, the Git: Help command will try to
+     * parse the individual help files to give nicer output
+     * in the quickbar.
+     *
+     * There is a performance impact on the first run in each
+     * session. Afterwards, the list is cached, and will be
+     * shown instantly.
+     *
+     * If you are on a slow computer, turning this off might
+     * speed up the first run of the Git: Help command
+     * significantly.
+     */
+    "git_use_fancy_help": true,
+
+    /*
      * Extensions
      *
      * SublimeGit ships with extensions for:
