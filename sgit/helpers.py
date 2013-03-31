@@ -29,6 +29,13 @@ class GitRemoteHelper(GitBranchHelper):
     def get_remotes(self):
         return self.git_lines(['remote', '-v'])
 
+    def get_remote_names(self, remotes):
+        names = set()
+        for r in remotes:
+            name, url, action = r.split()
+            names.append(name)
+        return sorted(list(names))
+
     def format_quick_remotes(self, remotes):
         data = {}
         for r in remotes:
@@ -171,9 +178,5 @@ class GitLogHelper(object):
         hashes = [l[1] for l in log]
         choices = []
         for subject, sha, name, email, dt, reldt in log:
-            choices.append([
-                    subject,
-                    '%s by %s <%s>' % (sha[0:8], name, email),
-                    '%s (%s)' % (reldt, dt)
-                ])
+            choices.append([subject, '%s by %s <%s>' % (sha[0:8], name, email), '%s (%s)' % (reldt, dt)])
         return hashes, choices

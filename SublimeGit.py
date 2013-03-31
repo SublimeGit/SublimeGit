@@ -71,7 +71,8 @@ from sgit.help import GitHelpCommand, GitVersionCommand
 from sgit.log import GitLogCommand, GitQuickLogCommand, GitQuickLogCurrentFileCommand
 
 from sgit.remote import (GitPushCurrentBranchCommand, GitPullCurrentBranchCommand,
-    GitPushPullAllCommand, GitFetchCommand, GitRemoteCommand, GitRemoteAddCommand)
+    GitPushPullAllCommand, GitFetchCommand, GitPullCommand, GitPushCommand,
+    GitRemoteCommand, GitRemoteAddCommand)
 
 from sgit.status import (GitStatusCommand, GitStatusRefreshCommand, GitQuickStatusCommand,
     GitStatusMoveCommand, GitStatusStageCommand,

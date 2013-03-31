@@ -81,7 +81,7 @@
      * speed up the first run of the Git: Help command
      * significantly.
      */
-    "git_use_fancy_help": true,
+    "git_help_fancy_list": true,
 
     /*
      * Extensions

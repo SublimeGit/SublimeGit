@@ -9,7 +9,7 @@ from .cmd import GitCmd
 from .helpers import GitRemoteHelper
 
 
-NO_REMOTES = "No remotes have been configured. Please run Git: Add Remote to add a remote."
+NO_REMOTES = "No remotes have been configured. Remotes can be added with the Git: Add Remote command. Do you want to add a remote now?"
 DELETE_REMOTE = "Are you sure you want to delete the remote %s?"
 
 NO_ORIGIN_REMOTE = "You are not on any branch and no origin has been configured. Please run Git: Remote Add to add a remote."
@@ -19,6 +19,18 @@ REMOTE_SHOW_TITLE_PREFIX = '*git-remote*: '
 
 
 class GitFetchCommand(WindowCommand, GitCmd, GitRemoteHelper):
+    """
+    Fetches git objects from the remote repository
+
+    If the current branch is configured with a remote, this remote
+    will be used for fetching. If there are no remotes specified for
+    the current branch, the command will fall back to origin.
+
+    In the situation where the current branch does not have a remote,
+    and no origin is specified, a list of available remotes will be
+    presented to choose from. If there are no remotes configured,
+    you will be asked if you want to create a remote.
+    """
 
     def run(self):
         remote = self.get_current_remote_or_origin()
@@ -27,7 +39,9 @@ class GitFetchCommand(WindowCommand, GitCmd, GitRemoteHelper):
             remotes = self.get_remotes()
             choices = self.format_quick_remotes(remotes)
             if not remotes:
-                return sublime.error_message(NO_REMOTES)
+                if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                    self.window.run_command('git_remote_add')
+                    return
 
             def on_done(idx):
                 if idx != -1:
@@ -52,6 +66,43 @@ class GitFetchCommand(WindowCommand, GitCmd, GitRemoteHelper):
 
 
 class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
+    """
+    Push the current branch to a remote
+
+    This is the command to use if you are pushing a branch to a remote
+    for the first time. Will push the current branch to a specified branch
+    on the given remote, creating the remote branch if it doesn't already
+    exist. Can also optionally set up the current branch to track the
+    remote branch for future push, pull and fetch commands.
+
+    If tracking has already been set up for the current branch, it
+    will be used.
+
+    If the current branch does not have a remote, origin will be used
+    if it exists, otherwise you will be asked to select a remote. If
+    there are no remotes, you will be asked to add one.
+
+    If remote tracking has not been set up for the current branch,
+    you will be asked to supply a name to use for the branch on the
+    remote. By default, the current branch name will be suggested.
+
+    :setting git_set_upstream_on_push: If set to ``true``, the flag
+        ``--set-upstream`` will be used when pushing the branch.
+        This will set up the branch to track the remote branch, so
+        that argument-less pull, push and fetch will work. Set to
+        ``false`` to disable. Default: ``true``
+
+    .. warning::
+
+        Trying to push when in a detached head state will give an error
+        message. This is not generally something you want to do.
+
+    .. note::
+
+        This command shares a lot of similarities with the excellent
+        git-publish command, which can be found at
+        https://github.com/gavinbeatty/git-publish.
+    """
 
     def run(self):
         branch = self.get_current_branch()
@@ -63,7 +114,9 @@ class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
         if not branch_remote:
             remotes = self.get_remotes()
             if not remotes:
-                return sublime.error_message(NO_REMOTES)
+                if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                    self.window.run_command('git_remote_add')
+                    return
             choices = self.format_quick_remotes(remotes)
 
             def on_done(idx):
@@ -110,6 +163,9 @@ class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
 
 
 class GitPullCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
+    """
+    Pull the current branch from a remote
+    """
 
     def run(self):
         branch = self.get_current_branch()
@@ -118,7 +174,9 @@ class GitPullCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
         if not branch_remote:
             remotes = self.get_remotes()
             if not remotes:
-                return sublime.error_message(NO_REMOTES)
+                if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                    self.window.run_command('git_remote_add')
+                    return
             choices = self.format_quick_remotes(remotes)
 
             def on_done(idx):
@@ -205,10 +263,44 @@ class GitPushPullAllCommand(WindowCommand, GitCmd, GitRemoteHelper):
         self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
-class GitRemoteAddCommand(WindowCommand, GitCmd):
+class GitPushCommand(GitPushPullAllCommand):
 
     def run(self):
-        self.window.show_input_panel('Name:', '', self.on_name, noop, noop)
+        return super(GitPushCommand, self).run('push')
+
+
+class GitPullCommand(GitPushPullAllCommand):
+
+    def run(self):
+        return super(GitPullCommand, self).run('pull')
+
+
+class GitRemoteAddCommand(WindowCommand, GitCmd, GitRemoteHelper):
+    """
+    Add a named git remote at a given URL
+
+    You will be asked to provide the name and url of the remote (see below).
+    Press ``enter`` to select the value. If you want to cancel, press ``esc``.
+
+    After completion, the Git: Remote command will be run, to allow for
+    further management of remotes.
+
+    **Name:**
+        The name of the remote. By convention, the name *origin* is used
+        for the "main" remote. Therefore, if your repository does not
+        have any remotes, the initial suggestion for the name will be *origin*.
+    **Url:**
+        The git url of the remote repository, in any format that git understands.
+    """
+
+    def run(self):
+        initial = ''
+
+        remotes = self.get_remotes()
+        if not remotes:
+            initial = 'origin'
+
+        self.window.show_input_panel('Name:', initial, self.on_name, noop, noop)
 
     def on_name(self, name):
         name = name.strip()
@@ -233,11 +325,49 @@ class GitRemoteCommand(WindowCommand, GitCmd, GitRemoteHelper):
     """
     Manage git remotes
 
+    Presents s list of remotes, including their push and pull urls.
+    Select the remote to perform an action on it. After an action has
+    been performed, the list will show up again to allow for further
+    editing of remotes. To cancel, press ``esc``.
+
+    Available actions:
+
+    **Show**
+        Show information about the remote. This includes the
+        push and pull urls, the current HEAD, the branches tracked,
+        and the local branches which are set up for push and pull.
+
+        The result will be displayed in a panel in the bottom of
+        the Sublime Text window.
+
+    **Rename**
+        Rename the selected remote. An input field will appear
+        allowing you to write a new name for the remote. If a new
+        name is not provided, or ``esc`` is pressed, the action
+        will be aborted.
+
+    **Remove**
+        Remove the selected remote. All remote-tracking branches,
+        and configuration for the remote is removed. You will be
+        asked for confirmation before removing the remote.
+
+    **Set URL**
+        Change the URL for the selected remote. An input fiels
+        will appear allowing you to specify a new URL. The given
+        URL will be used for both the push and pull URL. If a new
+        URL isn't specified, or ``esc`` is pressed, the URL will
+        not be updated.
+
+    **Prune**
+        Delete all stale remote-tracking branches for the selected
+        remote. Any remote-tracking branches in the local repository
+        which are no longer in the remote repository will be removed.
+
     """
 
     SHOW = 'Show'
-    RM = 'Remove'
     RENAME = 'Rename'
+    RM = 'Remove'
     SET_URL = 'Set URL'
     PRUNE = 'Prune'
 
@@ -260,7 +390,9 @@ class GitRemoteCommand(WindowCommand, GitCmd, GitRemoteHelper):
     def run(self):
         remotes = self.get_remotes()
         if not remotes:
-            return sublime.error_message(NO_REMOTES)
+            if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                self.window.run_command('git_remote_add')
+                return
         choices = self.format_quick_remotes(remotes)
         self.window.show_quick_panel(choices, partial(self.remote_panel_done, choices))
 

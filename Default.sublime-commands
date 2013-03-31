@@ -33,9 +33,9 @@
     { "caption": "Git: Add Remote", "command": "git_remote_add"},
     { "caption": "Git: Remote", "command": "git_remote"},
     { "caption": "Git: Fetch", "command": "git_fetch"},
-    { "caption": "Git: Push", "command": "git_push_pull_all", "args": {"command": "push"}},
+    { "caption": "Git: Push", "command": "git_push"},
     { "caption": "Git: Push Current Branch", "command": "git_push_current_branch"},
-    { "caption": "Git: Pull", "command": "git_push_pull_all", "args": {"command": "pull"}},
+    { "caption": "Git: Pull", "command": "git_pull"},
     { "caption": "Git: Pull Current Branch", "command": "git_pull_current_branch"},
 
     { "caption": "Git: Log", "command": "git_log", "args": {}},

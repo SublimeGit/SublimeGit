@@ -18,6 +18,34 @@ MANPAGE_RE = re.compile(r'\(\d\) Manual Page\s*')
 
 
 class GitHelpCommand(WindowCommand, GitCmd):
+    """
+    Search through installed Git documentation.
+
+    Every standard install of git contains a full set of manual pages
+    in both text and html formats. This commands presents a list
+    of available documentation in a quick bar to allow for easy access.
+
+    When a document has been selected, a webbrowser will be opened to
+    show the help file. To abort the list without opening the document,
+    press ``esc``.
+
+    .. :setting git_help_format: Text or html?
+
+    :setting git_help_fancy_list: If set to ``true``, SublimeGit will
+        try to parse the help document to show a nicer list containing
+        a small excerpt from each document. This has a small performance
+        cost the first time the list is generated. Set to ``false`` to
+        fall back to simple format. Default: ``true``
+
+    .. note::
+
+        To find the location the installed documentation, you can
+        execute::
+
+            $ git --html-path
+            /usr/local/Cellar/git/1.7.11.3/share/doc/git-doc
+
+    """
 
     def get_doc_files(self, doc_path):
         files = []
@@ -93,7 +121,7 @@ class GitHelpCommand(WindowCommand, GitCmd):
             sublime.error_message('Directory %s does not exist. Have you deleted the git documentation?' % doc_path)
             return
 
-        use_fancy = get_setting('git_use_fancy_help', True)
+        use_fancy = get_setting('git_help_fancy_list', True)
         if hasattr(self, '_use_fancy'):
             if use_fancy != self._use_fancy:
                 self._choices = None
@@ -113,6 +141,15 @@ class GitHelpCommand(WindowCommand, GitCmd):
 
 
 class GitVersionCommand(WindowCommand, GitCmd):
+    """
+    Shows the version of git which is installed
+
+    This corresponds to running::
+
+        $ git --version
+        git version 1.7.11.3
+
+    """
 
     def run(self):
         version = self.git_string(['--version'], cwd=os.path.realpath(''))
