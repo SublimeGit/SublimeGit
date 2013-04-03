@@ -108,7 +108,7 @@ class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
         cmd = ['commit', '--cleanup=strip', '-a' if add else None, '-F', '-']
         stdout = self.git_string(cmd, stdin=message)
         self.show_commit_panel(stdout)
-        self.window.run_command('git_status_refresh')
+        self.window.run_command('git_status', {'refresh_only': True})
 
     def is_visible(self):
         return False
@@ -130,6 +130,6 @@ class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
             cmd = ['commit', '-F', '-'] if staged else ['commit', '-a', '-F', '-']
             stdout = self.git_string(cmd, stdin=msg)
             self.show_commit_panel(stdout)
-            self.window.run_command('git_status_refresh', {'focus': False})
+            self.window.run_command('git_status', {'refresh_only': True})
 
         self.window.show_input_panel("Commit message:", '', on_done, noop, on_done)

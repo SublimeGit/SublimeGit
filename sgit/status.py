@@ -162,7 +162,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
     Wut
     """
 
-    def run(self):
+    def run(self, refresh_only=False):
         repo = self.get_repo(self.window, silent=False)
         if not repo:
             return
@@ -170,7 +170,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
         title = GIT_STATUS_VIEW_TITLE_PREFIX + os.path.basename(repo)
 
         view = find_view_by_settings(self.window, git_view='status', git_repo=repo)
-        if not view:
+        if not view and not refresh_only:
             view = self.window.new_file()
 
             view.set_name(title)
@@ -184,8 +184,9 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
             for key, val in GIT_STATUS_VIEW_SETTINGS.items():
                 view.settings().set(key, val)
 
-        self.window.focus_view(view)
-        view.run_command('git_status_refresh', {'goto': 'file:1'})
+        if view is not None:
+            self.window.focus_view(view)
+            view.run_command('git_status_refresh', {'goto': 'file:1'})
 
 
 class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
@@ -194,6 +195,9 @@ class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
         return False
 
     def run(self, edit, goto=None):
+        if not self.view.settings().get('git_view') == 'status':
+            return
+
         status = self.build_status()
         if not status:
             return

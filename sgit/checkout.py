@@ -42,7 +42,7 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
             self.window.run_command('show_panel', {'panel': 'output.git-checkout'})
         else:
             sublime.error_message(self.format_error_message(stdout))
-        self.window.run_command('git_status_refresh')
+        self.window.run_command('git_status', {'refresh_only': True})
 
 
 class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
@@ -83,4 +83,4 @@ class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
                 return
 
         self.git(['checkout', b, branch])
-        self.window.run_command('git_status_refresh')
+        self.window.run_command('git_status', {'refresh_only': True})

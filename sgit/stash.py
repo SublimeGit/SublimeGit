@@ -34,7 +34,7 @@ class GitStashWindowCmd(GitCmd, GitStashHelper, GitErrorHelper):
                     sublime.error_message(self.format_error_message(stdout))
                 window = sublime.active_window()
                 if window:
-                    window.run_command('git_status_refresh')
+                    window.run_command('git_status', {'refresh_only': True})
 
         return inner
 
@@ -45,7 +45,7 @@ class GitStashCommand(WindowCommand, GitStashWindowCmd):
         def on_done(title):
             title = title.strip()
             self.git(['stash', 'save', '--', title])
-            self.window.run_command('git_status_refresh')
+            self.window.run_command('git_status', {'refresh_only': True})
 
         if self.git_exit_code(['diff', '--exit-code', '--quiet']) != 0:
             self.window.show_input_panel('Stash title:', '', on_done, noop, noop)
@@ -59,7 +59,7 @@ class GitSnapshotCommand(WindowCommand, GitStashWindowCmd):
         snapshot = time.strftime("Snapshot at %Y-%m-%d %H:%M:%S")
         self.git(['stash', 'save', '--', snapshot])
         self.git(['stash', 'apply', '-q', 'stash@{0}'])
-        self.window.run_command('git_status_refresh')
+        self.window.run_command('git_status', {'refresh_only': True})
 
 
 class GitStashPopCommand(WindowCommand, GitStashWindowCmd):
