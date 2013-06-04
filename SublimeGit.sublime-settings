@@ -1,5 +1,5 @@
 {
-    "log_level": "DEBUG",
+    "log_level": "WARNING",
     "encoding": "utf-8",
 
     /*
