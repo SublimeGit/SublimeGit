@@ -2,8 +2,8 @@
 import sublime
 from sublime_plugin import WindowCommand
 
-from ..util import noop, StatusSpinner
-from ..cmd import Cmd
+from .util import noop, StatusSpinner
+from .cmd import Cmd
 
 
 class LegitCmd(Cmd):

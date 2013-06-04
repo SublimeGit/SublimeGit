@@ -37,8 +37,8 @@ LOAD_ORDER = [
     'sgit.merge',
 
     # extensions
-    'sgit.legit',
-    'sgit.git_flow'
+    'sgit.plugins.legit',
+    'sgit.plugins.git_flow'
 ]
 
 needs_reload = [n for n, m in sys.modules.items() if n[0:4] == 'sgit' and m is not None]
@@ -96,9 +96,9 @@ from sgit.merge import GitMergeCommand
 
 # import legit if enabled
 if settings.get('git_extensions', {}).get('legit', True):
-    from sgit.legit import (LegitSwitchCommand, LegitSyncCommand, LegitPublishCommand,
-                            LegitUnpublishCommand, LegitHarvestCommand, LegitSproutCommand,
-                            LegitGraftCommand, LegitBranchesCommand)
+    from sgit.plugins.legit import (LegitSwitchCommand, LegitSyncCommand, LegitPublishCommand,
+                                    LegitUnpublishCommand, LegitHarvestCommand, LegitSproutCommand,
+                                    LegitGraftCommand, LegitBranchesCommand)
 
 
 # shut down logging
