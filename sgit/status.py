@@ -446,14 +446,14 @@ class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
                 where = parts[2]
         return (what, which, where)
 
-    def move_to_point(self, point):
-        #self.view.show(point, True)
+    def move_to_point(self, point, show=True):
+        if show:
+            self.view.show(point, True)
         self.view.sel().clear()
         self.view.sel().add(sublime.Region(point))
-        self.view.show_at_center(point)
 
-    def move_to_region(self, region):
-        self.move_to_point(self.view.line(region).begin())
+    def move_to_region(self, region, show=True):
+        self.move_to_point(self.view.line(region).begin(), show=show)
 
     def prev_region(self, regions, point):
         before = [r for r in regions if self.view.line(r).end() < point]
@@ -508,7 +508,7 @@ class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
                 self.move_to_stash(1)
             elif self.view.find(GIT_WORKING_DIR_CLEAN, 0, sublime.LITERAL):
                 region = self.view.find(GIT_WORKING_DIR_CLEAN, 0, sublime.LITERAL)
-                self.move_to_region(region)
+                self.move_to_region(region, show=False)
         elif which in ('next', 'prev'):
             point = self.get_first_point()
             regions = self.get_all_file_regions()
