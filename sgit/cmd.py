@@ -253,6 +253,14 @@ class Cmd(object):
     def clean_command(self, cmd):
         return [c for c in cmd if c]
 
+    def startupinfo(self):
+        startupinfo = None
+        if hasattr(subprocess, 'STARTUPINFO'):
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+        return startupinfo
+
     # sync commands
     def cmd(self, cmd, stdin=None, cwd=None):
         if not cwd:
@@ -268,18 +276,12 @@ class Cmd(object):
             if stdin:
                 stdin = stdin.encode(encoding)
 
-            startupinfo = None
-            if hasattr(subprocess, 'STARTUPINFO'):
-                startupinfo = subprocess.STARTUPINFO()
-                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                startupinfo.wShowWindow = subprocess.SW_HIDE
-
             os.chdir(cwd)
             proc = subprocess.Popen(command,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
-                                    startupinfo=startupinfo)
+                                    startupinfo=self.startupinfo())
             stdout, stderr = proc.communicate(stdin)
 
             logger.debug("out: (%s) %s", proc.returncode, [stdout[:100]])
@@ -316,7 +318,8 @@ class Cmd(object):
                 os.chdir(cwd)
                 proc = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT)
+                                        stderr=subprocess.STDOUT,
+                                        startupinfo=self.startupinfo())
 
                 for line in iter(proc.stdout.readline, ''):
                     logger.debug('async-out: %s', line.strip())
