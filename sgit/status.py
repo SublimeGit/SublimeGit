@@ -83,8 +83,8 @@ GIT_STATUS_HELP = """
 
 class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper):
 
-    def build_status(self):
-        repo_dir = self.get_repo(self.get_window(), silent=False)
+    def build_status(self, silent=False):
+        repo_dir = self.get_repo(self.get_window(), silent=silent)
         if not repo_dir:
             return
 
@@ -163,7 +163,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
     """
 
     def run(self, refresh_only=False):
-        repo = self.get_repo(self.window, silent=False)
+        repo = self.get_repo(self.window, silent=True if refresh_only else False)
         if not repo:
             return
 
@@ -198,7 +198,7 @@ class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
         if not self.view.settings().get('git_view') == 'status':
             return
 
-        status = self.build_status()
+        status = self.build_status(silent=True)
         if not status:
             return
 
