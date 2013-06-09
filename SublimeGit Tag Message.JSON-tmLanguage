@@ -1,0 +1,12 @@
+{
+    "name": "SublimeGit Tag Message",
+    "scopeName": "text.git-tag",
+    "fileTypes": ["TAG_EDITMSG"],
+    "patterns": [
+        {
+            "name": "comment.line.number-sign.git-commit",
+            "match": "^\\s*#(.*)"
+        }
+    ],
+    "uuid": "eeb0b58c-d1ef-4757-b880-1f96e2def71c"
+}

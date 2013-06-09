@@ -101,6 +101,14 @@ if settings.get('git_extensions', {}).get('legit', True):
                                     LegitGraftCommand, LegitBranchesCommand)
 
 
+# import git-flow if enabled
+if settings.get('git_extensions', {}).get('git_flow', True):
+    from sgit.plugins.git_flow import (GitFlowInitCommand,
+                                       GitFlowFeatureCommand, GitFlowFeatureStartCommand, GitFlowFeatureFinishCommand,
+                                       GitFlowReleaseCommand, GitFlowReleaseStartCommand, GitFlowReleaseFinishCommand,
+                                       GitFlowHotfixStartCommand, GitFlowHotfixFinishCommand)
+
+
 # shut down logging
 def unload_handler():
     logging.shutdown()

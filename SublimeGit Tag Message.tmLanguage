@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>TAG_EDITMSG</string>
+	</array>
+	<key>name</key>
+	<string>SublimeGit Tag Message</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>match</key>
+			<string>^\s*#(.*)</string>
+			<key>name</key>
+			<string>comment.line.number-sign.git-commit</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>text.git-tag</string>
+	<key>uuid</key>
+	<string>eeb0b58c-d1ef-4757-b880-1f96e2def71c</string>
+</dict>
+</plist>
