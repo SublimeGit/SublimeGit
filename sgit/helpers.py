@@ -166,15 +166,17 @@ class GitLogHelper(object):
                             '%ad%n'  # auth date\n
                             '%ar')   # auth date relative
 
-    def get_quick_log(self, path=None):
+    def get_quick_log(self, path=None, follow=False):
         cmd = ['log', '--no-color', '-z', '--date=local', '--format=%s' % self.GIT_QUICK_LOG_FORMAT]
+        if follow:
+            cmd.append('--follow')
         if path:
             cmd.extend(['--', path])
         out = self.git_string(cmd)
         return [s.split('\n') for s in out.split(self.NULL) if s]
 
-    def format_quick_log(self, path=None):
-        log = self.get_quick_log(path)
+    def format_quick_log(self, path=None, follow=False):
+        log = self.get_quick_log(path, follow)
         hashes = [l[1] for l in log]
         choices = []
         for subject, sha, name, email, dt, reldt in log:
