@@ -447,13 +447,10 @@ class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
         return (what, which, where)
 
     def move_to_point(self, point):
-        print "show", point
-        self.view.show(point, True)
-        print "clear sel"
+        #self.view.show(point, True)
         self.view.sel().clear()
-        print "add sel", point
         self.view.sel().add(sublime.Region(point))
-        print "done"
+        self.view.show_at_center(point)
 
     def move_to_region(self, region):
         self.move_to_point(self.view.line(region).begin())
