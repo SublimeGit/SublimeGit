@@ -447,7 +447,7 @@ class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
         return (what, which, where)
 
     def move_to_point(self, point):
-        self.view.show(point)
+        self.view.show(point, True)
         self.view.sel().clear()
         self.view.sel().add(sublime.Region(point))
 
