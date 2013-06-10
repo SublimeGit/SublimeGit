@@ -2,35 +2,8 @@
     /*** GIT STATUS ***/
 
     // Refresh
-    { "keys": ["super+r"], "command": "git_status_refresh",
+    { "keys": ["ctrl+r"], "command": "git_status_refresh",
         "context": [{ "key": "selector", "operator": "equal", "operand": "text.git-status" }]
-    },
-
-    // Section shortcuts
-    { "keys": ["ctrl+1"], "command": "git_status_move", "args": {"goto": "section:stashes"},
-        "context": [
-            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
-        ]
-    },
-    { "keys": ["ctrl+2"], "command": "git_status_move", "args": {"goto": "section:untracked_files"},
-        "context": [
-            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
-        ]
-    },
-    { "keys": ["ctrl+3"], "command": "git_status_move", "args": {"goto": "section:unstaged_changes"},
-        "context": [
-            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
-        ]
-    },
-    { "keys": ["ctrl+4"], "command": "git_status_move", "args": {"goto": "section:staged_changes"},
-        "context": [
-            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
-        ]
-    },
-    { "keys": ["ctrl+5"], "command": "git_status_move", "args": {"goto": "section:unpushed_commits"},
-        "context": [
-            { "key": "selector", "operator": "equal", "operand": "text.git-status" }
-        ]
     },
 
     // Stage command (global)
@@ -50,7 +23,7 @@
     /** GIT COMMIT **/
 
     // overwrite some stuff
-    { "keys": ["super+s"], "command": "noop", "context": [{ "key": "selector", "operator": "equal", "operand": "text.git-commit"}]}
+    { "keys": ["ctrl+s"], "command": "noop", "context": [{ "key": "selector", "operator": "equal", "operand": "text.git-commit"}]}
 
     /** END GIT COMMIT **/
 ]
