@@ -212,9 +212,9 @@ class Cmd(object):
                 return True
         return False
 
-    URL = 'http://sublime-git.dk'
+    URL = 'https://sublimegit.net'
     LICENSE_POPUP = "SublimeGit Evaluation\n\nI hope you are enjoying SublimeGit. " +\
-                    "If you are, please consider buying a license at http://sublimegit.net"
+                    "If you are, please consider buying a license at https://sublimegit.net"
 
     def __license_popup(self):
         if sublime.ok_cancel_dialog(self.LICENSE_POPUP, 'Buy SublimeGit'):
