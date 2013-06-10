@@ -18,6 +18,9 @@ class GitCheckoutWindowCmd(GitCmd, GitBranchHelper, GitLogHelper, GitErrorHelper
 
 
 class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         branches = self.get_branches()
@@ -46,6 +49,9 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
 
 
 class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         hashes, choices = self.format_quick_log()
@@ -64,6 +70,9 @@ class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
 
 
 class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.window.show_input_panel("Branch:", "", self.on_done, noop, noop)

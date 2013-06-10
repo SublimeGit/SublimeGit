@@ -54,12 +54,9 @@
     { "caption": "Legit: Harvest", "command": "legit_harvest"},
 
     { "caption": "Git-flow: Init With Defaults", "command": "git_flow_init"},
-    { "caption": "Git-flow: Feature", "command": "git_flow_feature"},
     { "caption": "Git-flow: Feature Start", "command": "git_flow_feature_start"},
     { "caption": "Git-flow: Feature Start From Commit", "command": "git_flow_feature_start", "args": {"base": true}},
     { "caption": "Git-flow: Feature Finish", "command": "git_flow_feature_finish"},
-    { "caption": "Git-flow: Feature Publish", "command": "git_flow_feature_publish"},
-    { "caption": "Git-flow: Feature Pull", "command": "git_flow_feature_pull"},
 
     { "caption": "Git-flow: Release Start", "command": "git_flow_release_start"},
     { "caption": "Git-flow: Release Start From Commit", "command": "git_flow_release_start", "args": {"base": true}},

@@ -54,6 +54,9 @@ class LegitWindowCmd(LegitCmd):
 
 
 class LegitSwitchCommand(WindowCommand, LegitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.show_branches_panel(self.switch)
@@ -66,6 +69,9 @@ class LegitSwitchCommand(WindowCommand, LegitWindowCmd):
 
 
 class LegitSyncCommand(WindowCommand, LegitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, select_branch=False):
         if select_branch:
@@ -82,6 +88,9 @@ class LegitSyncCommand(WindowCommand, LegitWindowCmd):
 
 
 class LegitPublishCommand(WindowCommand, LegitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.show_branches_panel(self.publish, filter=('unpublished',))
@@ -91,6 +100,9 @@ class LegitPublishCommand(WindowCommand, LegitWindowCmd):
 
 
 class LegitUnpublishCommand(WindowCommand, LegitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.show_branches_panel(self.unpublish, filter=('published',))
@@ -100,6 +112,9 @@ class LegitUnpublishCommand(WindowCommand, LegitWindowCmd):
 
 
 class LegitHarvestCommand(WindowCommand, LegitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, select_branch=False):
         if select_branch:
@@ -120,6 +135,9 @@ class LegitHarvestCommand(WindowCommand, LegitWindowCmd):
 
 
 class LegitSproutCommand(WindowCommand, LegitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, select_branch=False):
         if select_branch:
@@ -140,6 +158,9 @@ class LegitSproutCommand(WindowCommand, LegitWindowCmd):
 
 
 class LegitGraftCommand(WindowCommand, LegitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.show_branches_panel(self.graft, filter=('unpublished',))
@@ -152,6 +173,9 @@ class LegitGraftCommand(WindowCommand, LegitWindowCmd):
 
 
 class LegitBranchesCommand(WindowCommand, LegitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.show_branches_panel(noop)

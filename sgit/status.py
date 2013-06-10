@@ -159,6 +159,7 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
 
 class GitStatusCommand(WindowCommand, GitStatusBuilder):
     """
+    Documentation coming soon.
     """
 
     def run(self, refresh_only=False):
@@ -257,6 +258,7 @@ class GitStatusBarEventListener(EventListener, GitCmd):
 
 class GitQuickStatusCommand(WindowCommand, GitCmd):
     """
+    Documentation coming soon.
     """
 
     def run(self):

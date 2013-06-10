@@ -164,7 +164,7 @@ class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
 
 class GitPullCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
     """
-    Pull the current branch from a remote
+    Documentation coming soon.
     """
 
     def run(self):
@@ -264,12 +264,18 @@ class GitPushPullAllCommand(WindowCommand, GitCmd, GitRemoteHelper):
 
 
 class GitPushCommand(GitPushPullAllCommand):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         return super(GitPushCommand, self).run('push')
 
 
 class GitPullCommand(GitPushPullAllCommand):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         return super(GitPullCommand, self).run('pull')

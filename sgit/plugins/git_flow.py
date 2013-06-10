@@ -107,18 +107,27 @@ class GitFlowFinishCommand(GitFlowWindowCmd):
 # Start commands
 
 class GitFlowFeatureStartCommand(WindowCommand, GitFlowStartCommand):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, base=False):
         self.start('feature', base)
 
 
 class GitFlowReleaseStartCommand(WindowCommand, GitFlowStartCommand):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, base=False):
         self.start('release', base)
 
 
 class GitFlowHotfixStartCommand(WindowCommand, GitFlowStartCommand):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, base=False):
         self.start('hotfix', base)
@@ -127,18 +136,27 @@ class GitFlowHotfixStartCommand(WindowCommand, GitFlowStartCommand):
 # Finish commands
 
 class GitFlowFeatureFinishCommand(WindowCommand, GitFlowFinishCommand):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.finish('feature')
 
 
 class GitFlowReleaseFinishCommand(WindowCommand, GitFlowFinishCommand):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.finish('release')
 
 
 class GitFlowHotfixFinishCommand(WindowCommand, GitFlowFinishCommand):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.finish('hotfix')
@@ -147,18 +165,27 @@ class GitFlowHotfixFinishCommand(WindowCommand, GitFlowFinishCommand):
 # Features
 
 class GitFlowFeatureCommand(WindowCommand, GitFlowWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.show_branches_panel(noop, 'feature')
 
 
 class GitFlowFeaturePublishCommand(WindowCommand, GitFlowWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         pass
 
 
 class GitFlowFeaturePullCommand(WindowCommand, GitFlowWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         pass
@@ -167,6 +194,9 @@ class GitFlowFeaturePullCommand(WindowCommand, GitFlowWindowCmd):
 # Releases
 
 class GitFlowReleaseCommand(WindowCommand, GitFlowWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.show_branches_panel(noop, 'release')

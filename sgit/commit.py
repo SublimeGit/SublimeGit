@@ -43,6 +43,9 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
 
 
 class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, add=False):
         repo = self.get_repo(self.window)
@@ -115,6 +118,9 @@ class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
 
 
 class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         staged = self.has_staged_changes()

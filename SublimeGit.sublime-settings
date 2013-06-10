@@ -52,7 +52,7 @@
      *
      * If you can't put these executables in your path you
      * can change them to absolute paths here. Be aware
-     * that each item in the list will be quoted on it's
+     * that each item in the list will be quoted on its
      * own. Examples:
      *
      * ['/usr/local/bin/git']
@@ -62,8 +62,7 @@
     "git_executables": {
         "git": ["git"],
         "git_flow": ["git-flow"],
-        "legit": ["legit"],
-        "hub": ["hub"]
+        "legit": ["legit"]
     },
 
     /*
@@ -101,7 +100,6 @@
      */
     "git_extensions": {
         "git_flow": true,
-        "legit": true,
-        "hub": true
+        "legit": true
     }
 }
