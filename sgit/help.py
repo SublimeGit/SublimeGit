@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import re
+import logging
 import webbrowser
 try:
     from xml.etree import cElementTree as ET
@@ -13,6 +14,8 @@ from sublime_plugin import WindowCommand
 from .util import get_setting
 from .cmd import GitCmd
 
+
+logger = logging.getLogger(__name__)
 
 MANPAGE_RE = re.compile(r'\(\d\) Manual Page\s*')
 
@@ -115,8 +118,18 @@ class GitHelpCommand(WindowCommand, GitCmd):
 
         return text
 
+    def get_doc_path(self):
+        git_html_path = get_setting('git_help_html_path', None)
+        if git_html_path:
+            logger.debug('Got git html path from settings: %s', git_html_path)
+            return git_html_path
+        else:
+            git_html_path = self.git_string(['--html-path'], cwd=os.path.realpath(''))
+            logger.debug('Got git html path from git: %s', git_html_path)
+            return git_html_path
+
     def run(self):
-        doc_path = self.git_string(['--html-path'], cwd=os.path.realpath(''))
+        doc_path = self.get_doc_path()
         if not os.path.exists(doc_path):
             sublime.error_message('Directory %s does not exist. Have you deleted the git documentation?' % doc_path)
             return

@@ -83,6 +83,20 @@
     "git_help_fancy_list": true,
 
     /*
+     * Git Html path
+     *
+     * Usually, git will give the path to the included html
+     * help files when called like this:
+     *
+     * git --html-path
+     *
+     * If this doesn't work, you can set the path explicitly
+     * here. Set to null to default to asking git.
+     */
+
+    "git_help_html_path": null,
+
+    /*
      * Extensions
      *
      * SublimeGit ships with extensions for:
