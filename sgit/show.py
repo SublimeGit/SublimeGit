@@ -12,6 +12,9 @@ GIT_SHOW_SYNTAX = 'Packages/SublimeGit/SublimeGit Show.tmLanguage'
 
 
 class GitShowCommand(WindowCommand, GitCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, obj=None):
         if not obj:

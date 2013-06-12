@@ -9,6 +9,9 @@ from .helpers import GitBranchHelper, GitErrorHelper
 
 
 class GitMergeCommand(WindowCommand, GitCmd, GitBranchHelper, GitErrorHelper):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         branches = self.get_branches()

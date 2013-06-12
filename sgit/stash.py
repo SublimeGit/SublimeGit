@@ -40,6 +40,9 @@ class GitStashWindowCmd(GitCmd, GitStashHelper, GitErrorHelper):
 
 
 class GitStashCommand(WindowCommand, GitStashWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         def on_done(title):
@@ -54,6 +57,9 @@ class GitStashCommand(WindowCommand, GitStashWindowCmd):
 
 
 class GitSnapshotCommand(WindowCommand, GitStashWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         snapshot = time.strftime("Snapshot at %Y-%m-%d %H:%M:%S")
@@ -63,12 +69,18 @@ class GitSnapshotCommand(WindowCommand, GitStashWindowCmd):
 
 
 class GitStashPopCommand(WindowCommand, GitStashWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.pop_or_apply_from_panel('pop')
 
 
 class GitStashApplyCommand(WindowCommand, GitStashWindowCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         self.pop_or_apply_from_panel('apply')

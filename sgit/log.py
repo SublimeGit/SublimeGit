@@ -11,6 +11,9 @@ GIT_LOG_FORMAT = '--format=%s%n%H by %an <%aE>%n%ar (%ad)'
 
 
 class GitLogCommand(WindowCommand, GitCmd):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         #print self.git_string(['log', '--graph', "--pretty=format:%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset", '--abbrev-commit', '--date=relative'])
@@ -20,6 +23,9 @@ class GitLogCommand(WindowCommand, GitCmd):
 
 
 class GitQuickLogCommand(WindowCommand, GitCmd, GitLogHelper):
+    """
+    Documentation coming soon.
+    """
 
     def run(self):
         hashes, choices = self.format_quick_log()
@@ -34,6 +40,9 @@ class GitQuickLogCommand(WindowCommand, GitCmd, GitLogHelper):
 
 
 class GitQuickLogCurrentFileCommand(TextCommand, GitCmd, GitLogHelper):
+    """
+    Documentation coming soon.
+    """
 
     def run(self, edit):
         filename = self.view.file_name()
