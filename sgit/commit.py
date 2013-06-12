@@ -119,7 +119,16 @@ class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
 
 class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
     """
-    Documentation coming soon.
+    Quickly commit changes with a one-line commit message.
+
+    If there are any staged changes, only those changes will be added. If there
+    are no staged changes, any changed files that git know about will be added
+    in the commit.
+
+    If the working directory is clean, an error will be shown indicating it.
+
+    After entering the commit message, press enter to commit, or esc to cancel.
+    An empty commit message will also result in the commit being cancelled.
     """
 
     def run(self):
@@ -138,4 +147,4 @@ class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
             self.show_commit_panel(stdout)
             self.window.run_command('git_status', {'refresh_only': True})
 
-        self.window.show_input_panel("Commit message:", '', on_done, noop, on_done)
+        self.window.show_input_panel("Commit message:", '', on_done, noop, noop)
