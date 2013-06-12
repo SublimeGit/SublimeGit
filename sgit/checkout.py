@@ -13,13 +13,16 @@ GIT_BRANCH_EXISTS_MSG = "The branch %s already exists. Do you want to overwrite 
 
 
 class GitCheckoutWindowCmd(GitCmd, GitBranchHelper, GitLogHelper, GitErrorHelper):
-
     pass
 
 
 class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
     """
-    Documentation coming soon.
+    Check out an existing branch.
+
+    This command allows you to select a branch from the quick bar
+    to check out. The currently active branch (if any) is marked with an
+    asterisk (*) to the left of its name.
     """
 
     def run(self):
@@ -50,7 +53,14 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
 
 class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
     """
-    Documentation coming soon.
+    Check out a specific commit.
+
+    This command allows you to check out a specific commit. The list
+    of commits will be presented in the quick bar, containing the first
+    line of the commit message, the abbreviated sha1, as well as a relative
+    and absolute date in the local timezone.
+
+    After checkout, you will be in a detached head state.
     """
 
     def run(self):
@@ -71,7 +81,15 @@ class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
 
 class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
     """
-    Documentation coming soon.
+    Create a new branch from the current HEAD and switch to it.
+
+    This command will show an input panel allowing you to name your new
+    branch. After giving the branch a name, pressing enter will create
+    the new branch and check it out. Pressing esc will cancel.
+
+    If a branch with the given name already exists, you will be asked if
+    you want to overwrite the branch. Selecting cancel will exit silently,
+    without making any changes.
     """
 
     def run(self):
