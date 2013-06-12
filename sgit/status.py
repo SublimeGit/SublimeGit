@@ -258,7 +258,28 @@ class GitStatusBarEventListener(EventListener, GitCmd):
 
 class GitQuickStatusCommand(WindowCommand, GitCmd):
     """
-    Documentation coming soon.
+    Show an abbreviated status in the quick bar.
+
+    As an alternative to the full status window, a list of changed files is presented
+    the quick bar. Next to each filename there is an abbreviation, denoting the files
+    status.
+
+    This status contains 2 characters, X and Y. For paths with merge conflicts, X and Y show the
+    modification states of each side of the merge. For paths that do not have merge conflicts,
+    X shows the status of the index, and Y shows the status of the work tree.
+
+    The statuses are as follows:
+
+    * **' '** = unmodified
+    * **M** = modified
+    * **A** = added
+    * **D** = deleted
+    * **R** = renamed
+    * **C** = copied
+    * **U** = updated but unmerged
+    * **?** = untracked
+
+    Selecting an entry in the list will bring up a diff view of the file.
     """
 
     def run(self):
