@@ -40,6 +40,10 @@ class GitHelpCommand(WindowCommand, GitCmd):
         cost the first time the list is generated. Set to ``false`` to
         fall back to simple format. Default: ``true``
 
+    :setting git_help_html_path: If set to a directory, SublimeGit will
+        look in the given directory for git help files. Set to ``null``
+        to make SublimeGit auto-detect the location of the help files.
+
     .. note::
 
         To find the location the installed documentation, you can
