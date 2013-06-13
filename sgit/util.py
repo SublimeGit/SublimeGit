@@ -8,6 +8,10 @@ from sublime_plugin import TextCommand
 
 logger = logging.getLogger(__name__)
 
+# Constants
+
+SETTINGS_FILE = 'SublimeGit.sublime-settings'
+
 
 # Callback helpers
 
@@ -96,7 +100,7 @@ def abbreviate_dir(dirname):
 # settings helpers
 
 def get_settings():
-    return sublime.load_settings("SublimeGit.sublime-settings")
+    return sublime.load_settings(SETTINGS_FILE)
 
 
 def get_setting(key, default=None):

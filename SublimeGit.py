@@ -36,9 +36,12 @@ LOAD_ORDER = [
     'sgit.checkout',
     'sgit.merge',
 
+    # meta
+    'sgit.sublimegit',
+
     # extensions
     'sgit.plugins.legit',
-    'sgit.plugins.git_flow'
+    'sgit.plugins.git_flow',
 ]
 
 needs_reload = [n for n, m in sys.modules.items() if n[0:4] == 'sgit' and m is not None]
@@ -93,6 +96,10 @@ from sgit.checkout import (GitCheckoutBranchCommand, GitCheckoutCommitCommand,
                            GitCheckoutNewBranchCommand)
 
 from sgit.merge import GitMergeCommand
+
+from sgit.sublimegit import (SublimeGitInstallLicenseCommand, SublimeGitBuyLicenseCommand,
+                             SublimeGitDocumentationCommand)
+
 
 # import legit if enabled
 if settings.get('git_extensions', {}).get('legit', True):

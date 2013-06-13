@@ -44,6 +44,10 @@
 
     { "caption": "Git: Show", "command": "git_show"},
 
+    { "caption": "SublimeGit: Install License", "command": "sublime_git_install_license"},
+    { "caption": "SublimeGit: Buy License", "command": "sublime_git_buy_license"},
+    { "caption": "SublimeGit: Documentation", "command": "sublime_git_documentation"},
+
     { "caption": "Legit: Branches", "command": "legit_branches"},
     { "caption": "Legit: Sync", "command": "legit_sync"},
     { "caption": "Legit: Switch", "command": "legit_switch"},

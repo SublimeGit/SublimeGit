@@ -212,7 +212,7 @@ class Cmd(object):
                 return True
         return False
 
-    URL = 'https://sublimegit.net'
+    URL = 'https://sublimegit.net/buy?utm_source=sublimegit&utm_medium=popup&utm_campaign=buy'
     LICENSE_POPUP = "SublimeGit Evaluation\n\nI hope you are enjoying SublimeGit. " +\
                     "If you are, please consider buying a license at https://sublimegit.net"
 
