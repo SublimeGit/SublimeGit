@@ -91,7 +91,7 @@ class SublimeGitInstallLicenseCommand(WindowCommand, Cmd):
         settings.set('product_key', key)
 
         sublime.save_settings(SETTINGS_FILE)
-        sublime.message_dialog("Thank you. Your license has been installed.")
+        sublime.message_dialog("Thank you. Your license has been installed. Please restart Sublime Text.")
 
 
 class SublimeGitBuyLicenseCommand(WindowCommand):
