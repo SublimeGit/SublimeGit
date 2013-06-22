@@ -1,4 +1,5 @@
 # coding: utf-8
+import sys
 import re
 import logging
 import webbrowser
@@ -96,10 +97,11 @@ class SublimeGitBuyLicenseCommand(WindowCommand):
     Buy SublimeGit. We love you!
     """
 
-    URL = "https://sublimegit.net/buy?utm_source=sublimegit&utm_medium=command&utm_campaign=buy"
+    URL = "https://sublimegit.net/buy?utm_source=st%s&utm_medium=command&utm_campaign=buy"
 
     def run(self):
-        webbrowser.open(self.URL)
+        url = self.URL % sys.version_info[0]
+        webbrowser.open(url)
 
 
 class SublimeGitDocumentationCommand(WindowCommand):
@@ -107,7 +109,8 @@ class SublimeGitDocumentationCommand(WindowCommand):
     Open a webbrowser to the online SublimeGit documentation.
     """
 
-    URL = "https://docs.sublimegit.net/?utm_source=sublimegit&utm_medium=command&utm_campaign=docs"
+    URL = "https://docs.sublimegit.net/?utm_source=st%s&utm_medium=command&utm_campaign=docs"
 
     def run(self):
-        webbrowser.open(self.URL)
+        url = self.URL % sys.version_info[0]
+        webbrowser.open(url)

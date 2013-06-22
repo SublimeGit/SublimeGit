@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import sys
 import subprocess
 import logging
 import threading
@@ -169,12 +170,15 @@ class Cmd(object):
         return False
 
     URL = 'https://sublimegit.net/buy?utm_source=sublimegit&utm_medium=popup&utm_campaign=buy'
+    URL = 'https://sublimegit.net/buy?utm_source=st%s&utm_medium=popup&utm_campaign=buy'
     LICENSE_POPUP = "SublimeGit Evaluation\n\nI hope you are enjoying SublimeGit. " +\
                     "If you are, please consider buying a license at https://sublimegit.net"
 
     def __license_popup(self):
+        url = self.URL % sys.version_info[0]
         if sublime.ok_cancel_dialog(self.LICENSE_POPUP, 'Buy SublimeGit'):
-            webbrowser.open(self.URL)
+            sublime.error_message(url)
+            #webbrowser.open(url)
 
     def __check_license(self):
         seconds_since_start = (datetime.today() - Cmd.started_at).seconds
