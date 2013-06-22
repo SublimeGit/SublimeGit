@@ -24,7 +24,7 @@ def noop(*args, **kwargs):
 def find_view_by_settings(window, **kwargs):
     for view in window.views():
         s = view.settings()
-        matches = [s.get(k) == v for k, v in kwargs.items()]
+        matches = [s.get(k) == v for k, v in list(kwargs.items())]
         if all(matches):
             return view
 

@@ -48,9 +48,6 @@ class SublimeGitInstallLicenseCommand(WindowCommand, Cmd):
         email = settings.get('email', '')
         key = settings.get('product_key')
 
-        print email
-        print key
-
         if email and key:
             msg = SUBLIMEGIT_LICENSE_EXISTS % (email, key)
             if not sublime.ok_cancel_dialog(msg, 'Overwrite'):

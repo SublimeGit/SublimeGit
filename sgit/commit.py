@@ -16,8 +16,8 @@ GIT_COMMIT_VIEW_SETTINGS = {
     'word_wrap': False,
 }
 
-GIT_NOTHING_STAGED = 'No changes added to commit. Use s on files/sections in the status view to stage changes.'
-GIT_COMMIT_TEMPLATE = """
+GIT_NOTHING_STAGED = u'No changes added to commit. Use s on files/sections in the status view to stage changes.'
+GIT_COMMIT_TEMPLATE = u"""
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
 {status}"""
@@ -72,14 +72,13 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
             view.settings().set('git_view', 'commit')
             view.settings().set('git_repo', repo)
 
-            for key, val in GIT_COMMIT_VIEW_SETTINGS.items():
+            for key, val in list(GIT_COMMIT_VIEW_SETTINGS.items()):
                 view.settings().set(key, val)
 
         GitCommit.windows[view.id()] = (self.window, add)
         self.window.focus_view(view)
 
         template = self.get_commit_template(add)
-        print template
         view.run_command('git_commit_template', {'template': template})
 
 

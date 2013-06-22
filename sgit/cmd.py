@@ -10,7 +10,7 @@ from functools import partial
 import sublime
 
 from .util import get_executable, get_setting
-
+from .compat import with_metaclass
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +70,8 @@ class CmdBase(type):
         return new_class
 
 
-class Cmd(object):
-    __metaclass__ = CmdBase
+class Cmd(with_metaclass(CmdBase, object)):
+    #__metaclass__ = CmdBase
     started_at = datetime.today()
     last_popup_at = None
 
@@ -289,7 +289,7 @@ class Cmd(object):
             self.__check_license()
 
             return (proc.returncode, stdout.decode(encoding))
-        except OSError, e:
+        except OSError as e:
             sublime.error_message(self.get_executable_error())
             raise SublimeGitException("Could not execute command: %s" % e)
 
@@ -335,7 +335,7 @@ class Cmd(object):
                     if callable(on_error):
                         sublime.set_timeout(partial(on_error, proc.returncode), 0)
 
-            except OSError, e:
+            except OSError as e:
                 logger.debug('async-exception: %s' % e)
                 if callable(on_exception):
                     sublime.set_timeout(partial(on_exception, e), 0)

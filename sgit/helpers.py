@@ -42,7 +42,7 @@ class GitRemoteHelper(GitBranchHelper):
             name, url, action = r.split()
             data.setdefault(name, {})[action] = "%s %s" % (url, action)
         choices = []
-        for remote, urls in data.items():
+        for remote, urls in list(data.items()):
             choices.append([remote, urls.get('(fetch)', None), urls.get('(push)', None)])
         return choices
 

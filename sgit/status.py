@@ -182,7 +182,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
             view.settings().set('git_view', 'status')
             view.settings().set('git_repo', repo)
 
-            for key, val in GIT_STATUS_VIEW_SETTINGS.items():
+            for key, val in list(GIT_STATUS_VIEW_SETTINGS.items()):
                 view.settings().set(key, val)
 
         if view is not None:
@@ -408,7 +408,7 @@ class GitStatusTextCmd(GitCmd):
         return sections
 
     def section_at_point(self, point):
-        for s in SECTIONS.keys():
+        for s in list(SECTIONS.keys()):
             if self.view.score_selector(point, SECTION_SELECTOR_PREFIX + s) > 0:
                 return s
 
@@ -499,7 +499,7 @@ class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
             if sections and len(sections) >= which:
                 section = sections[which - 1]
                 self.move_to_region(section)
-        elif which in SECTIONS.keys():
+        elif which in list(SECTIONS.keys()):
             sections = self.get_sections()
             for section in sections:
                 if self.section_at_region(section) == which:

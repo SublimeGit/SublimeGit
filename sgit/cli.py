@@ -12,7 +12,7 @@ class GitCliCommand(WindowCommand, GitCmd):
 
         def on_done(args):
             if args:
-                print "%s %s" % (cmd, args)
+                pass
 
         self.window.show_input_panel(cmd, '', on_done, noop, noop)
 
@@ -24,6 +24,6 @@ class GitCliAsyncCommand(WindowCommand, GitCmd):
 
         def on_done(args):
             if args:
-                print args
+                pass
 
         self.window.show_input_panel(cmd, '', on_done, noop, noop)

@@ -44,7 +44,7 @@ LOAD_ORDER = [
     'sgit.plugins.git_flow',
 ]
 
-needs_reload = [n for n, m in sys.modules.items() if n[0:4] == 'sgit' and m is not None]
+needs_reload = [n for n, m in list(sys.modules.items()) if n[0:4] == 'sgit' and m is not None]
 
 reloaded = []
 for module in LOAD_ORDER:
