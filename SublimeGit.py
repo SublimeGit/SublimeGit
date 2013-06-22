@@ -60,9 +60,17 @@ if sys.version_info[0] == 2:
     lvl = getattr(logging, settings.get('log_level', '').upper(), logging.WARNING)
     logger.setLevel(lvl)
 
-    from sgit import *
-    from sgit.git_extensions.legit import *
-    from sgit.git_extensions.git_flow import *
+    try:
+        from sgit2 import *
+        from sgit2.git_extensions.legit import *
+        from sgit2.git_extensions.git_flow import *
+    except ImportError as e:
+        try:
+            from sgit import *
+            from sgit.git_extensions.legit import *
+            from sgit.git_extensions.git_flow import *
+        except ImportError:
+            raise e
 
     # Enable plugins
     git_extensions.legit.enabled = ext.get('legit', True)
@@ -71,9 +79,17 @@ if sys.version_info[0] == 2:
     def unload_handler():
         logging.shutdown()
 else:
-    from .sgit import *
-    from .sgit.git_extensions.legit import *
-    from .sgit.git_extensions.git_flow import *
+    try:
+        from .sgit3 import *
+        from .sgit3.git_extensions.legit import *
+        from .sgit3.git_extensions.git_flow import *
+    except ImportError as e:
+        try:
+            from .sgit import *
+            from .sgit.git_extensions.legit import *
+            from .sgit.git_extensions.git_flow import *
+        except ImportError:
+            raise e
 
     def plugin_loaded():
         settings = sublime.load_settings('SublimeGit.sublime-settings')
