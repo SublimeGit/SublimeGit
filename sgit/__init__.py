@@ -47,3 +47,8 @@ from .merge import GitMergeCommand
 
 from .sublimegit import (SublimeGitInstallLicenseCommand, SublimeGitBuyLicenseCommand,
                          SublimeGitDocumentationCommand)
+
+
+# import plugins
+
+from . import git_extensions

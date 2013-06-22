@@ -6,7 +6,20 @@ from ..util import noop, StatusSpinner
 from ..cmd import LegitCmd
 
 
+enabled = True
+
+
+__all__ = ['LegitSwitchCommand', 'LegitSyncCommand', 'LegitPublishCommand', 'LegitUnpublishCommand',
+           'LegitHarvestCommand', 'LegitSproutCommand', 'LegitGraftCommand', 'LegitBranchesCommand']
+
+
 class LegitWindowCmd(LegitCmd):
+
+    def is_visible(self):
+        return enabled
+
+    def is_enabled(self):
+        return enabled
 
     def get_branch_choices(self, filter=('published', 'unpublished')):
         lines = self.legit_lines(['branches'])
@@ -48,7 +61,7 @@ class LegitWindowCmd(LegitCmd):
         self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
-class LegitSwitchCommand(WindowCommand, LegitWindowCmd):
+class LegitSwitchCommand(LegitWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -63,7 +76,7 @@ class LegitSwitchCommand(WindowCommand, LegitWindowCmd):
         self.window.run_command('show_panel', {'panel': 'output.legit-switch'})
 
 
-class LegitSyncCommand(WindowCommand, LegitWindowCmd):
+class LegitSyncCommand(LegitWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -82,7 +95,7 @@ class LegitSyncCommand(WindowCommand, LegitWindowCmd):
         self.run_async_legit_with_panel(['sync', branch], progress, 'legit-sync')
 
 
-class LegitPublishCommand(WindowCommand, LegitWindowCmd):
+class LegitPublishCommand(LegitWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -94,7 +107,7 @@ class LegitPublishCommand(WindowCommand, LegitWindowCmd):
         self.run_async_legit_with_panel(['publish', branch], "Publishing %s" % branch, 'legit-publish')
 
 
-class LegitUnpublishCommand(WindowCommand, LegitWindowCmd):
+class LegitUnpublishCommand(LegitWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -106,7 +119,7 @@ class LegitUnpublishCommand(WindowCommand, LegitWindowCmd):
         self.run_async_legit_with_panel(['unpublish', branch], "Unpublishing %s" % branch, 'legit-unpublish')
 
 
-class LegitHarvestCommand(WindowCommand, LegitWindowCmd):
+class LegitHarvestCommand(LegitWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -129,7 +142,7 @@ class LegitHarvestCommand(WindowCommand, LegitWindowCmd):
         self.show_branches_panel(on_done)
 
 
-class LegitSproutCommand(WindowCommand, LegitWindowCmd):
+class LegitSproutCommand(LegitWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -152,7 +165,7 @@ class LegitSproutCommand(WindowCommand, LegitWindowCmd):
         self.window.show_input_panel('New branch:', '', on_done, noop, noop)
 
 
-class LegitGraftCommand(WindowCommand, LegitWindowCmd):
+class LegitGraftCommand(LegitWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -167,7 +180,7 @@ class LegitGraftCommand(WindowCommand, LegitWindowCmd):
         self.window.run_command('show_panel', {'panel': 'output.legit-graft'})
 
 
-class LegitBranchesCommand(WindowCommand, LegitWindowCmd):
+class LegitBranchesCommand(LegitWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """

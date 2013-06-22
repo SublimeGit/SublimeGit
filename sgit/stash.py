@@ -9,7 +9,7 @@ from .cmd import GitCmd
 from .helpers import GitStashHelper, GitErrorHelper
 
 
-class GitStashWindowCmd(GitStashHelper, GitErrorHelper, GitCmd):
+class GitStashWindowCmd(GitCmd, GitStashHelper, GitErrorHelper):
 
     def pop_or_apply_from_panel(self, action):
         stashes = self.get_stashes()

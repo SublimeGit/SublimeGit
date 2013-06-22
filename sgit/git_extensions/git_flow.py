@@ -4,15 +4,24 @@ import sublime
 from sublime_plugin import WindowCommand
 
 from ..util import noop, StatusSpinner
-from ..cmd import Cmd
+from ..cmd import GitFlowCmd
 
 
-class GitFlowCmd(Cmd):
-    __executable__ = 'git_flow'
-    __bin__ = ['git-flow']
+enabled = True
+
+
+__all__ = ['GitFlowInitCommand', 'GitFlowFeatureCommand', 'GitFlowFeatureStartCommand', 'GitFlowFeatureFinishCommand',
+           'GitFlowReleaseCommand', 'GitFlowReleaseStartCommand', 'GitFlowReleaseFinishCommand', 'GitFlowHotfixStartCommand',
+           'GitFlowHotfixFinishCommand']
 
 
 class GitFlowWindowCmd(GitFlowCmd):
+
+    def is_visible(self):
+        return enabled
+
+    def is_enabled(self):
+        return enabled
 
     def get_branch_choices(self, kind):
         lines = self.git_flow_lines([kind])
@@ -58,7 +67,7 @@ class GitFlowWindowCmd(GitFlowCmd):
         self.window.run_command('git_status', {'refresh_only': True})
 
 
-class GitFlowInitCommand(WindowCommand, GitFlowWindowCmd):
+class GitFlowInitCommand(GitFlowWindowCmd, WindowCommand):
 
     def run(self, defaults=True):
         self.run_async_gitflow_with_panel(['init', '-d'], "Initializing git-flow", "git-flow-init")
@@ -106,7 +115,7 @@ class GitFlowFinishCommand(GitFlowWindowCmd):
 
 # Start commands
 
-class GitFlowFeatureStartCommand(WindowCommand, GitFlowStartCommand):
+class GitFlowFeatureStartCommand(GitFlowStartCommand, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -115,7 +124,7 @@ class GitFlowFeatureStartCommand(WindowCommand, GitFlowStartCommand):
         self.start('feature', base)
 
 
-class GitFlowReleaseStartCommand(WindowCommand, GitFlowStartCommand):
+class GitFlowReleaseStartCommand(GitFlowStartCommand, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -124,7 +133,7 @@ class GitFlowReleaseStartCommand(WindowCommand, GitFlowStartCommand):
         self.start('release', base)
 
 
-class GitFlowHotfixStartCommand(WindowCommand, GitFlowStartCommand):
+class GitFlowHotfixStartCommand(GitFlowStartCommand, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -135,7 +144,7 @@ class GitFlowHotfixStartCommand(WindowCommand, GitFlowStartCommand):
 
 # Finish commands
 
-class GitFlowFeatureFinishCommand(WindowCommand, GitFlowFinishCommand):
+class GitFlowFeatureFinishCommand(GitFlowFinishCommand, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -144,7 +153,7 @@ class GitFlowFeatureFinishCommand(WindowCommand, GitFlowFinishCommand):
         self.finish('feature')
 
 
-class GitFlowReleaseFinishCommand(WindowCommand, GitFlowFinishCommand):
+class GitFlowReleaseFinishCommand(GitFlowFinishCommand, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -153,7 +162,7 @@ class GitFlowReleaseFinishCommand(WindowCommand, GitFlowFinishCommand):
         self.finish('release')
 
 
-class GitFlowHotfixFinishCommand(WindowCommand, GitFlowFinishCommand):
+class GitFlowHotfixFinishCommand(GitFlowFinishCommand, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -164,7 +173,7 @@ class GitFlowHotfixFinishCommand(WindowCommand, GitFlowFinishCommand):
 
 # Features
 
-class GitFlowFeatureCommand(WindowCommand, GitFlowWindowCmd):
+class GitFlowFeatureCommand(GitFlowWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -173,7 +182,7 @@ class GitFlowFeatureCommand(WindowCommand, GitFlowWindowCmd):
         self.show_branches_panel(noop, 'feature')
 
 
-class GitFlowFeaturePublishCommand(WindowCommand, GitFlowWindowCmd):
+class GitFlowFeaturePublishCommand(GitFlowWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -182,7 +191,7 @@ class GitFlowFeaturePublishCommand(WindowCommand, GitFlowWindowCmd):
         pass
 
 
-class GitFlowFeaturePullCommand(WindowCommand, GitFlowWindowCmd):
+class GitFlowFeaturePullCommand(GitFlowWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """
@@ -193,7 +202,7 @@ class GitFlowFeaturePullCommand(WindowCommand, GitFlowWindowCmd):
 
 # Releases
 
-class GitFlowReleaseCommand(WindowCommand, GitFlowWindowCmd):
+class GitFlowReleaseCommand(GitFlowWindowCmd, WindowCommand):
     """
     Documentation coming soon.
     """

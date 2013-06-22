@@ -1,21 +1,11 @@
 # coding: utf-8
-import os
 import sys
 import logging
 
 import sublime
 
 # set up some logging
-#settings = sublime.load_settings('SublimeGit.sublime-settings')
-
-#loglevel = getattr(logging, settings.get('log_level', '').upper(), logging.WARNING)
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="[%(asctime)s - %(levelname)s - %(name)s] %(message)s",
-    filename=os.path.join(os.path.dirname(__file__), 'sgit.log')
-)
-
-
+logging.basicConfig(level=logging.DEBUG, format="[%(asctime)s - %(levelname)s - %(name)s] %(message)s")
 logger = logging.getLogger('sgit')
 
 # reload modules if necessary
@@ -46,8 +36,8 @@ LOAD_ORDER = [
     'sgit.sublimegit',
 
     # extensions
-    'sgit.plugins.legit',
-    'sgit.plugins.git_flow',
+    'sgit.git_extensions.legit',
+    'sgit.git_extensions.git_flow',
 ]
 
 needs_reload = [n for n, m in list(sys.modules.items()) if n[0:4] == 'sgit' and m is not None]
@@ -63,26 +53,39 @@ if reloaded:
 
 # import commands and listeners
 if sys.version_info[0] == 2:
+    settings = sublime.load_settings('SublimeGit.sublime-settings')
+    ext = settings.get('git_extensions', {})
+
+    # set log level
+    lvl = getattr(logging, settings.get('log_level', '').upper(), logging.WARNING)
+    logger.setLevel(lvl)
+
     from sgit import *
+    from sgit.git_extensions.legit import *
+    from sgit.git_extensions.git_flow import *
+
+    # Enable plugins
+    git_extensions.legit.enabled = ext.get('legit', True)
+    git_extensions.git_flow.enabled = ext.get('git_flow', True)
+
+    def unload_handler():
+        logging.shutdown()
 else:
     from .sgit import *
+    from .sgit.plugins.legit import *
+    from .sgit.plugins.git_flow import *
 
+    def plugin_loaded():
+        settings = sublime.load_settings('SublimeGit.sublime-settings')
+        ext = settings.get('git_extensions', {})
 
-# import legit if enabled
-# if settings.get('git_extensions', {}).get('legit', True):
-#     from sgit.plugins.legit import (LegitSwitchCommand, LegitSyncCommand, LegitPublishCommand,
-#                                     LegitUnpublishCommand, LegitHarvestCommand, LegitSproutCommand,
-#                                     LegitGraftCommand, LegitBranchesCommand)
+        # set log level
+        lvl = getattr(logging, settings.get('log_level', '').upper(), logging.WARNING)
+        logger.setLevel(lvl)
 
+        # Enable plugins
+        plugins.legit.enabled = ext.get('legit', True)
+        plugins.git_flow.enabled = ext.get('git_flow', True)
 
-# # import git-flow if enabled
-# if settings.get('git_extensions', {}).get('git_flow', True):
-#     from sgit.plugins.git_flow import (GitFlowInitCommand,
-#                                        GitFlowFeatureCommand, GitFlowFeatureStartCommand, GitFlowFeatureFinishCommand,
-#                                        GitFlowReleaseCommand, GitFlowReleaseStartCommand, GitFlowReleaseFinishCommand,
-#                                        GitFlowHotfixStartCommand, GitFlowHotfixFinishCommand)
-
-
-# shut down logging
-def unload_handler():
-    logging.shutdown()
+    def plugin_unloaded():
+        logging.shutdown()
