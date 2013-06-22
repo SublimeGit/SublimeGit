@@ -263,22 +263,22 @@ class GitPushPullAllCommand(WindowCommand, GitCmd, GitRemoteHelper):
         self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
-class GitPushCommand(GitPushPullAllCommand):
+class GitPushCommand(WindowCommand):
     """
     Documentation coming soon.
     """
 
     def run(self):
-        return super(GitPushCommand, self).run('push')
+        return self.window.run_command('git_push_pull_all', {'command': 'push'})
 
 
-class GitPullCommand(GitPushPullAllCommand):
+class GitPullCommand(WindowCommand):
     """
     Documentation coming soon.
     """
 
     def run(self):
-        return super(GitPullCommand, self).run('pull')
+        return self.window.run_command('git_push_pull_all', {'command': 'pull'})
 
 
 class GitRemoteAddCommand(WindowCommand, GitCmd, GitRemoteHelper):

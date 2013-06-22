@@ -312,12 +312,11 @@ class Cmd(with_metaclass(CmdBase, object)):
                 return
 
         command = self.build_command(cmd)
+        encoding = get_setting('encoding', 'utf-8')
 
-        def async_inner(cmd, cwd, on_data=None, on_complete=None, on_error=None, on_exception=None):
+        def async_inner(cmd, cwd, encoding, on_data=None, on_complete=None, on_error=None, on_exception=None):
             try:
                 logger.debug('async-cmd: %s', cmd)
-
-                encoding = get_setting('encoding', 'utf-8')
 
                 os.chdir(cwd)
                 proc = subprocess.Popen(cmd,
@@ -345,7 +344,7 @@ class Cmd(with_metaclass(CmdBase, object)):
                 if callable(on_exception):
                     sublime.set_timeout(partial(on_exception, e), 0)
 
-        thread = threading.Thread(target=partial(async_inner, command, cwd, **callbacks))
+        thread = threading.Thread(target=partial(async_inner, command, cwd, encoding, **callbacks))
         return thread
 
     # messages
