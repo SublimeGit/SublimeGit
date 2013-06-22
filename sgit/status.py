@@ -73,6 +73,7 @@ GIT_STATUS_HELP = """
 #
 # Other:
 #    c = commit, C = commit -a (add unstaged)
+#    i = ignore file, I = ignore pattern
 #    enter = open file
 #    d = view diff
 #
