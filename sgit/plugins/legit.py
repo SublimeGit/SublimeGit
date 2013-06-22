@@ -3,12 +3,7 @@ import sublime
 from sublime_plugin import WindowCommand
 
 from ..util import noop, StatusSpinner
-from ..cmd import Cmd
-
-
-class LegitCmd(Cmd):
-    __executable__ = 'legit'
-    __bin__ = ['legit']
+from ..cmd import LegitCmd
 
 
 class LegitWindowCmd(LegitCmd):

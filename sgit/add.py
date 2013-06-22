@@ -66,7 +66,10 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
                     self.git(['add', '--', filename])
                 else:
                     self.git(['add', '--update', '--', filename])
-            self.window.run_command('git_quick_add')
+
+            def rerun():
+                self.window.run_command('git_quick_add')
+            sublime.set_timeout(rerun, 50)
 
         self.window.show_quick_panel(status, on_done, sublime.MONOSPACE_FONT)
 

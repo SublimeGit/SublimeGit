@@ -9,11 +9,11 @@ from .cmd import GitCmd
 from .helpers import GitRemoteHelper
 
 
-NO_REMOTES = "No remotes have been configured. Remotes can be added with the Git: Add Remote command. Do you want to add a remote now?"
-DELETE_REMOTE = "Are you sure you want to delete the remote %s?"
+NO_REMOTES = u"No remotes have been configured. Remotes can be added with the Git: Add Remote command. Do you want to add a remote now?"
+DELETE_REMOTE = u"Are you sure you want to delete the remote %s?"
 
-NO_ORIGIN_REMOTE = "You are not on any branch and no origin has been configured. Please run Git: Remote Add to add a remote."
-NO_BRANCH_REMOTES = "No remotes have been configured for the branch %s and no origin exists. Please run Git: Remote Add to add a remote."
+NO_ORIGIN_REMOTE = u"You are not on any branch and no origin has been configured. Please run Git: Remote Add to add a remote."
+NO_BRANCH_REMOTES = u"No remotes have been configured for the branch %s and no origin exists. Please run Git: Remote Add to add a remote."
 
 REMOTE_SHOW_TITLE_PREFIX = '*git-remote*: '
 
@@ -408,7 +408,11 @@ class GitRemoteCommand(WindowCommand, GitCmd, GitRemoteHelper):
     def remote_panel_done(self, choices, idx):
         if idx != -1:
             remote = choices[idx][0]
-            self.window.show_quick_panel(self.REMOTE_ACTIONS, partial(self.action_panel_done, remote))
+
+            def on_remote():
+                self.window.show_quick_panel(self.REMOTE_ACTIONS, partial(self.action_panel_done, remote))
+
+            sublime.set_timeout(on_remote, 50)
 
     def action_panel_done(self, remote, idx):
         if idx != -1:
@@ -458,6 +462,7 @@ class GitRemoteCommand(WindowCommand, GitCmd, GitRemoteHelper):
         thread = self.git_async(['remote', 'prune', remote], on_data=self.on_data)
         runner = StatusSpinner(thread, "Pruning %s" % remote)
         runner.start()
+        self.reset()
 
     def on_data(self, d):
         if not self.panel_shown:

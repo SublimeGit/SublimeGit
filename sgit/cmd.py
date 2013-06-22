@@ -10,7 +10,7 @@ from functools import partial
 import sublime
 
 from .util import get_executable, get_setting
-from .compat import with_metaclass
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,58 +23,13 @@ class SublimeGitException(Exception):
     pass
 
 
-class CmdBase(type):
-
-    def __new__(cls, name, bases, attrs):
-        # get executable from attributes and remove it
-        executable = attrs.pop('__executable__', None)
-        bin = attrs.pop('__bin__', [])
-        opts = attrs.pop('__opts__', [])
-
-        # create a class to work with
-        new_class = super(CmdBase, cls).__new__(cls, name, bases, attrs)
-
-        # just return the sucker if it does not have an executable. Nothing to see here!
-        if not executable:
-            return new_class
-
-        # Get the executable from the settings
-        #bin = get_executable(executable, default_bin)
-
-        setattr(new_class, 'executable', executable)
-        setattr(new_class, 'bin', bin)
-        setattr(new_class, 'opts', opts)
-
-        # Make sure that it exists
-        # which -s ex return code
-
-        # add default options to bin
-
-        def CMD(self, cmd, *args, **kwargs):
-            return self.cmd(cmd, *args, **kwargs)
-
-        def CMD_string(self, cmd, *args, **kwargs):
-            return self._string(self.cmd(cmd, *args, **kwargs))
-
-        def CMD_lines(self, cmd, *args, **kwargs):
-            return self._lines(self.cmd(cmd, *args, **kwargs))
-
-        def CMD_exit_code(self, cmd, *args, **kwargs):
-            return self._exit_code(self.cmd(cmd, *args, **kwargs))
-
-        def CMD_async(self, cmd, *args, **kwargs):
-            return self.cmd_async(cmd, *args, **kwargs)
-
-        for f in (CMD, CMD_string, CMD_lines, CMD_exit_code, CMD_async):
-            setattr(new_class, f.__name__.replace('CMD', executable), f)
-
-        return new_class
-
-
-class Cmd(with_metaclass(CmdBase, object)):
-    #__metaclass__ = CmdBase
+class Cmd(object):
     started_at = datetime.today()
     last_popup_at = None
+
+    executable = None
+    bin = []
+    opts = []
 
     # helper for getting window in text- and windowcommands
     def get_window(self):
@@ -360,16 +315,61 @@ class Cmd(with_metaclass(CmdBase, object)):
 
 
 class GitCmd(Cmd):
-    __executable__ = 'git'
-    __bin__ = ['git']
-    __opts__ = ['--no-pager']
+    executable__ = 'git'
+    bin = ['git']
+    opts = ['--no-pager']
+
+    def git(self, cmd, *args, **kwargs):
+        return self.cmd(cmd, *args, **kwargs)
+
+    def git_string(self, cmd, *args, **kwargs):
+        return self._string(self.cmd(cmd, *args, **kwargs))
+
+    def git_lines(self, cmd, *args, **kwargs):
+        return self._lines(self.cmd(cmd, *args, **kwargs))
+
+    def git_exit_code(self, cmd, *args, **kwargs):
+        return self._exit_code(self.cmd(cmd, *args, **kwargs))
+
+    def git_async(self, cmd, *args, **kwargs):
+        return self.cmd_async(cmd, *args, **kwargs)
 
 
 class GitFlowCmd(Cmd):
-    __executable__ = 'git_flow'
-    __bin__ = ['git-flow']
+    executable = 'git_flow'
+    bin = ['git-flow']
+
+    def git_flow(self, cmd, *args, **kwargs):
+        return self.cmd(cmd, *args, **kwargs)
+
+    def git_flow_string(self, cmd, *args, **kwargs):
+        return self._string(self.cmd(cmd, *args, **kwargs))
+
+    def git_flow_lines(self, cmd, *args, **kwargs):
+        return self._lines(self.cmd(cmd, *args, **kwargs))
+
+    def git_flow_exit_code(self, cmd, *args, **kwargs):
+        return self._exit_code(self.cmd(cmd, *args, **kwargs))
+
+    def git_flow_async(self, cmd, *args, **kwargs):
+        return self.cmd_async(cmd, *args, **kwargs)
 
 
-class HubCmd(Cmd):
-    __executable__ = 'hub'
-    __bin__ = ['hub']
+class LegitCmd(Cmd):
+    executable = 'legit'
+    bin = ['legit']
+
+    def legit(self, cmd, *args, **kwargs):
+        return self.cmd(cmd, *args, **kwargs)
+
+    def legit_string(self, cmd, *args, **kwargs):
+        return self._string(self.cmd(cmd, *args, **kwargs))
+
+    def legit_lines(self, cmd, *args, **kwargs):
+        return self._lines(self.cmd(cmd, *args, **kwargs))
+
+    def legit_exit_code(self, cmd, *args, **kwargs):
+        return self._exit_code(self.cmd(cmd, *args, **kwargs))
+
+    def legit_async(self, cmd, *args, **kwargs):
+        return self.cmd_async(cmd, *args, **kwargs)
