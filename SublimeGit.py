@@ -1,14 +1,20 @@
 # coding: utf-8
+import os
 import sys
 import logging
 
 import sublime
 
 # set up some logging
-settings = sublime.load_settings('SublimeGit.sublime-settings')
+#settings = sublime.load_settings('SublimeGit.sublime-settings')
 
-loglevel = getattr(logging, settings.get('log_level', '').upper(), logging.WARNING)
-logging.basicConfig(level=loglevel, format="[%(asctime)s - %(levelname)s - %(name)s] %(message)s")
+#loglevel = getattr(logging, settings.get('log_level', '').upper(), logging.WARNING)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(asctime)s - %(levelname)s - %(name)s] %(message)s",
+    filename=os.path.join(os.path.dirname(__file__), 'sgit.log')
+)
+
 
 logger = logging.getLogger('sgit')
 
@@ -56,64 +62,25 @@ if reloaded:
 
 
 # import commands and listeners
-
-from sgit.util import GitPanelWriteCommand, GitPanelAppendCommand
-
-#from sgit.cli import GitCliCommand, GitCliAsyncCommand
-
-from sgit.repo import GitInitCommand, GitSwitchRepoCommand
-
-from sgit.diff import GitDiffCommand, GitDiffRefreshCommand
-
-from sgit.show import GitShowCommand, GitShowRefreshCommand
-
-from sgit.help import GitHelpCommand, GitVersionCommand
-
-from sgit.log import GitLogCommand, GitQuickLogCommand, GitQuickLogCurrentFileCommand
-
-from sgit.remote import (GitPushCurrentBranchCommand, GitPullCurrentBranchCommand,
-                         GitPushPullAllCommand, GitFetchCommand, GitPullCommand, GitPushCommand,
-                         GitRemoteCommand, GitRemoteAddCommand)
-
-from sgit.status import (GitStatusCommand, GitStatusRefreshCommand, GitQuickStatusCommand,
-                         GitStatusMoveCommand, GitStatusStageCommand,
-                         GitStatusUnstageCommand, GitStatusDiscardCommand,
-                         GitStatusOpenFileCommand, GitStatusDiffCommand,
-                         GitStatusIgnoreCommand, GitStatusStashCmd, GitStatusStashApplyCommand,
-                         GitStatusStashPopCommand)
-from sgit.status import GitStatusBarEventListener, GitStatusEventListener
-
-from sgit.add import GitQuickAddCommand, GitAddCurrentFileCommand
-
-from sgit.commit import (GitCommitCommand, GitCommitTemplateCommand,
-                         GitCommitPerformCommand, GitQuickCommitCommand)
-from sgit.commit import GitCommitEventListener
-
-from sgit.stash import (GitStashCommand, GitSnapshotCommand,
-                        GitStashApplyCommand, GitStashPopCommand)
-
-from sgit.checkout import (GitCheckoutBranchCommand, GitCheckoutCommitCommand,
-                           GitCheckoutNewBranchCommand)
-
-from sgit.merge import GitMergeCommand
-
-from sgit.sublimegit import (SublimeGitInstallLicenseCommand, SublimeGitBuyLicenseCommand,
-                             SublimeGitDocumentationCommand)
+if sys.version_info[0] == 2:
+    from sgit import *
+else:
+    from .sgit import *
 
 
 # import legit if enabled
-if settings.get('git_extensions', {}).get('legit', True):
-    from sgit.plugins.legit import (LegitSwitchCommand, LegitSyncCommand, LegitPublishCommand,
-                                    LegitUnpublishCommand, LegitHarvestCommand, LegitSproutCommand,
-                                    LegitGraftCommand, LegitBranchesCommand)
+# if settings.get('git_extensions', {}).get('legit', True):
+#     from sgit.plugins.legit import (LegitSwitchCommand, LegitSyncCommand, LegitPublishCommand,
+#                                     LegitUnpublishCommand, LegitHarvestCommand, LegitSproutCommand,
+#                                     LegitGraftCommand, LegitBranchesCommand)
 
 
-# import git-flow if enabled
-if settings.get('git_extensions', {}).get('git_flow', True):
-    from sgit.plugins.git_flow import (GitFlowInitCommand,
-                                       GitFlowFeatureCommand, GitFlowFeatureStartCommand, GitFlowFeatureFinishCommand,
-                                       GitFlowReleaseCommand, GitFlowReleaseStartCommand, GitFlowReleaseFinishCommand,
-                                       GitFlowHotfixStartCommand, GitFlowHotfixFinishCommand)
+# # import git-flow if enabled
+# if settings.get('git_extensions', {}).get('git_flow', True):
+#     from sgit.plugins.git_flow import (GitFlowInitCommand,
+#                                        GitFlowFeatureCommand, GitFlowFeatureStartCommand, GitFlowFeatureFinishCommand,
+#                                        GitFlowReleaseCommand, GitFlowReleaseStartCommand, GitFlowReleaseFinishCommand,
+#                                        GitFlowHotfixStartCommand, GitFlowHotfixFinishCommand)
 
 
 # shut down logging

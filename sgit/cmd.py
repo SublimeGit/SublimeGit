@@ -28,7 +28,7 @@ class CmdBase(type):
     def __new__(cls, name, bases, attrs):
         # get executable from attributes and remove it
         executable = attrs.pop('__executable__', None)
-        default_bin = attrs.pop('__bin__', [])
+        bin = attrs.pop('__bin__', [])
         opts = attrs.pop('__opts__', [])
 
         # create a class to work with
@@ -39,10 +39,11 @@ class CmdBase(type):
             return new_class
 
         # Get the executable from the settings
-        bin = get_executable(executable, default_bin)
+        #bin = get_executable(executable, default_bin)
 
         setattr(new_class, 'executable', executable)
         setattr(new_class, 'bin', bin)
+        setattr(new_class, 'opts', opts)
 
         # Make sure that it exists
         # which -s ex return code
@@ -50,19 +51,19 @@ class CmdBase(type):
         # add default options to bin
 
         def CMD(self, cmd, *args, **kwargs):
-            return self.cmd(bin + opts + cmd, *args, **kwargs)
+            return self.cmd(cmd, *args, **kwargs)
 
         def CMD_string(self, cmd, *args, **kwargs):
-            return self._string(self.cmd(bin + opts + cmd, *args, **kwargs))
+            return self._string(self.cmd(cmd, *args, **kwargs))
 
         def CMD_lines(self, cmd, *args, **kwargs):
-            return self._lines(self.cmd(bin + opts + cmd, *args, **kwargs))
+            return self._lines(self.cmd(cmd, *args, **kwargs))
 
         def CMD_exit_code(self, cmd, *args, **kwargs):
-            return self._exit_code(self.cmd(bin + opts + cmd, *args, **kwargs))
+            return self._exit_code(self.cmd(cmd, *args, **kwargs))
 
         def CMD_async(self, cmd, *args, **kwargs):
-            return self.cmd_async(bin + opts + cmd, *args, **kwargs)
+            return self.cmd_async(cmd, *args, **kwargs)
 
         for f in (CMD, CMD_string, CMD_lines, CMD_exit_code, CMD_async):
             setattr(new_class, f.__name__.replace('CMD', executable), f)
@@ -250,8 +251,9 @@ class Cmd(with_metaclass(CmdBase, object)):
         exit, stdout = result
         return exit
 
-    def clean_command(self, cmd):
-        return [c for c in cmd if c]
+    def build_command(self, cmd):
+        bin = get_executable(self.executable, self.bin)
+        return bin + self.opts + [c for c in cmd if c]
 
     def startupinfo(self):
         startupinfo = None
@@ -268,7 +270,7 @@ class Cmd(with_metaclass(CmdBase, object)):
             if not cwd:
                 raise SublimeGitException("Could not find repo.")
 
-        command = self.clean_command(cmd)
+        command = self.build_command(cmd)
         try:
             logger.debug("cmd: %s", command)
 
@@ -309,11 +311,13 @@ class Cmd(with_metaclass(CmdBase, object)):
             if not cwd:
                 return
 
-        command = self.clean_command(cmd)
+        command = self.build_command(cmd)
 
         def async_inner(cmd, cwd, on_data=None, on_complete=None, on_error=None, on_exception=None):
             try:
                 logger.debug('async-cmd: %s', cmd)
+
+                encoding = get_setting('encoding', 'utf-8')
 
                 os.chdir(cwd)
                 proc = subprocess.Popen(cmd,
@@ -321,8 +325,9 @@ class Cmd(with_metaclass(CmdBase, object)):
                                         stderr=subprocess.STDOUT,
                                         startupinfo=self.startupinfo())
 
-                for line in iter(proc.stdout.readline, ''):
+                for line in iter(proc.stdout.readline, b''):
                     logger.debug('async-out: %s', line.strip())
+                    line = line.decode(encoding)
                     if callable(on_data):
                         sublime.set_timeout(partial(on_data, line), 0)
 
