@@ -319,7 +319,7 @@ class Cmd(object):
 
 
 class GitCmd(Cmd):
-    executable__ = 'git'
+    executable = 'git'
     bin = ['git']
     opts = ['--no-pager']
 
