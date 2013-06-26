@@ -97,7 +97,7 @@ class Cmd(object):
     # git repos
     def is_git_repo(self, directory):
         git_dir = os.path.join(directory, '.git')
-        return os.path.exists(git_dir) and os.path.isdir(git_dir)
+        return os.path.exists(git_dir)
 
     def find_git_repos(self, directories):
         repos = set()
@@ -169,7 +169,6 @@ class Cmd(object):
                 return True
         return False
 
-    URL = 'https://sublimegit.net/buy?utm_source=sublimegit&utm_medium=popup&utm_campaign=buy'
     URL = 'https://sublimegit.net/buy?utm_source=st%s&utm_medium=popup&utm_campaign=buy'
     LICENSE_POPUP = "SublimeGit Evaluation\n\nI hope you are enjoying SublimeGit. " +\
                     "If you are, please consider buying a license at https://sublimegit.net"
@@ -177,8 +176,7 @@ class Cmd(object):
     def __license_popup(self):
         url = self.URL % sys.version_info[0]
         if sublime.ok_cancel_dialog(self.LICENSE_POPUP, 'Buy SublimeGit'):
-            sublime.error_message(url)
-            #webbrowser.open(url)
+            webbrowser.open(url)
 
     def __check_license(self):
         seconds_since_start = (datetime.today() - Cmd.started_at).seconds
