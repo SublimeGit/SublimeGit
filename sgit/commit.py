@@ -10,11 +10,6 @@ from .status import GIT_WORKING_DIR_CLEAN
 
 GIT_COMMIT_VIEW_TITLE = "COMMIT_EDITMSG"
 GIT_COMMIT_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Commit Message.tmLanguage'
-GIT_COMMIT_VIEW_SETTINGS = {
-    'rulers': [72],
-    'wrap_width': 72,
-    'word_wrap': False,
-}
 
 GIT_NOTHING_STAGED = u'No changes added to commit. Use s on files/sections in the status view to stage changes.'
 GIT_COMMIT_TEMPLATE = u"""
@@ -77,9 +72,6 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
 
             view.settings().set('git_view', 'commit')
             view.settings().set('git_repo', repo)
-
-            for key, val in list(GIT_COMMIT_VIEW_SETTINGS.items()):
-                view.settings().set(key, val)
 
         GitCommit.windows[view.id()] = (self.window, add)
         self.window.focus_view(view)
