@@ -55,7 +55,8 @@
         {
             "name": "comment.line.number-sign.git-commit",
             "match": "^\\s*#(.*)"
-        }
+        },
+        { "include": "source.git-diff" }
     ],
     "uuid": "803661a4-a9b6-4945-b061-f96f26dd4e84"
 }

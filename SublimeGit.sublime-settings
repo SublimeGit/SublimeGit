@@ -12,6 +12,15 @@
     "git_show_status_help": true,
 
     /*
+     * Verbose commit messages
+     *
+     * If set to true, the diff output for the current commit
+     * will be shown below the commit overview when writing a
+     * commit message.
+     */
+    "git_commit_verbose": false,
+
+    /*
      * Set Git Upstream on Push
      *
      * If set to true, Git: Push will set the upstream for

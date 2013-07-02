@@ -135,6 +135,10 @@
 			<key>name</key>
 			<string>comment.line.number-sign.git-commit</string>
 		</dict>
+		<dict>
+			<key>include</key>
+			<string>source.git-diff</string>
+		</dict>
 	</array>
 	<key>scopeName</key>
 	<string>text.git-commit</string>

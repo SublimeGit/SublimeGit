@@ -2,7 +2,7 @@
 import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 
-from .util import find_view_by_settings, noop
+from .util import find_view_by_settings, noop, get_setting
 from .cmd import GitCmd
 from .helpers import GitStatusHelper
 from .status import GIT_WORKING_DIR_CLEAN
@@ -30,8 +30,14 @@ class GitCommit(object):
 
 class GitCommitWindowCmd(GitCmd, GitStatusHelper):
 
+    @property
+    def is_verbose(self):
+        return get_setting('git_commit_verbose', True)
+
     def get_commit_template(self, add=False):
-        cmd = ['commit', '--dry-run', '--status', '-a' if add else None]
+        cmd = ['commit', '--dry-run', '--status',
+               '--all' if add else None,
+               '--verbose' if self.is_verbose else None]
         status = self.git_string(cmd)
         msg = GIT_COMMIT_TEMPLATE.format(status=status)
         return msg
@@ -107,7 +113,7 @@ class GitCommitEventListener(EventListener):
 class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
 
     def run(self, message, add=False):
-        cmd = ['commit', '--cleanup=strip', '-a' if add else None, '-F', '-']
+        cmd = ['commit', '--cleanup=strip', '-a' if add else None, '--verbose' if self.is_verbose else None, '-F', '-']
         stdout = self.git_string(cmd, stdin=message)
         self.show_commit_panel(stdout)
         self.window.run_command('git_status', {'refresh_only': True})
