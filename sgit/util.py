@@ -91,9 +91,9 @@ class GitPanelAppendCommand(TextCommand):
 # Directory helpers
 
 def abbreviate_dir(dirname):
-    user_dir = path.expanduser('~')
+    user_dir = path.expanduser('~').decode('utf-8')
     if dirname.startswith(user_dir):
-        return '~' + dirname[len(user_dir):]
+        return u'~%s' % dirname[len(user_dir):]
     return dirname
 
 

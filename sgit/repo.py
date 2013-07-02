@@ -53,7 +53,7 @@ class GitInitCommand(WindowCommand, GitCmd):
                 view_dir = self.get_dir_from_view(view)
                 if view_dir:
                     return view_dir
-        return os.path.expanduser('~')
+        return os.path.expanduser('~').decode('utf-8')
 
     def run(self):
         dir_candidate = self.get_dir_candidate()
