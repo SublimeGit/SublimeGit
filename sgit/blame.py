@@ -30,7 +30,7 @@ class GitBlameCommand(TextCommand, GitCmd):
 
         repo = self.get_repo(self.view.window())
         if repo:
-            title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '')
+            title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
             view = find_view_by_settings(self.view.window(), git_view='blame', git_repo=repo,
                                          git_blame_file=filename, git_blame_rev=rev)
 
