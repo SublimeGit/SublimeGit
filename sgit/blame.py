@@ -41,6 +41,7 @@ class GitBlameCommand(TextCommand, GitCmd):
                 view.set_read_only(True)
                 view.set_syntax_file(GIT_BLAME_SYNTAX)
 
+                view.settings().set('word_wrap', False)
                 view.settings().set('git_view', 'blame')
                 view.settings().set('git_repo', repo)
                 view.settings().set('git_blame_file', filename)
