@@ -22,6 +22,7 @@ LOAD_ORDER = [
     'sgit.repo',
     'sgit.diff',
     'sgit.show',
+    'sgit.blame',
     'sgit.log',
     'sgit.stash',
     'sgit.branch',

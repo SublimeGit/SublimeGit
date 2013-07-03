@@ -44,6 +44,8 @@
 
     { "caption": "Git: Show", "command": "git_show"},
 
+    { "caption": "Git: Blame", "command": "git_blame"},
+
     { "caption": "SublimeGit: Install License", "command": "sublime_git_install_license"},
     { "caption": "SublimeGit: Buy License", "command": "sublime_git_buy_license"},
     { "caption": "SublimeGit: Documentation", "command": "sublime_git_documentation"},
