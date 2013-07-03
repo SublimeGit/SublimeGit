@@ -1,4 +1,5 @@
 # coding: utf-8
+import sys
 from os import path
 import logging
 
@@ -11,6 +12,20 @@ logger = logging.getLogger(__name__)
 # Constants
 
 SETTINGS_FILE = 'SublimeGit.sublime-settings'
+
+
+# Compatibility
+
+PY2 = sys.version_info[0] == 2
+
+if PY2:
+    text_type = unicode
+    string_types = (str, unicode)
+    unichr = unichr
+else:
+    text_type = str
+    string_types = (str,)
+    unichr = chr
 
 
 # Callback helpers
@@ -90,10 +105,32 @@ class GitPanelAppendCommand(TextCommand):
 
 # Directory helpers
 
+def get_user_dir():
+    user_dir = ''
+    try:
+        user_dir = path.expanduser(u'~')
+    except:
+        try:
+            user_dir = path.expanduser('~')
+        except:
+            pass
+
+    if not isinstance(user_dir, text_type):
+        try:
+            user_dir = user_dir.decode('utf-8')
+        except:
+            pass
+
+    return user_dir
+
+
 def abbreviate_dir(dirname):
-    user_dir = path.expanduser('~')
-    if dirname.startswith(user_dir):
-        return u'~%s' % dirname[len(user_dir):]
+    user_dir = get_user_dir()
+    try:
+        if dirname.startswith(user_dir):
+            dirname = u'~%s' % dirname[len(user_dir):]
+    except:
+        pass
     return dirname
 
 
