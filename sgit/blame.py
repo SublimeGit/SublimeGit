@@ -39,7 +39,7 @@ class GitBlameCommand(TextCommand, GitCmd):
                 view.set_name(title)
                 view.set_scratch(True)
                 view.set_read_only(True)
-                # view.set_syntax_file(GIT_BLAME_SYNTAX)
+                view.set_syntax_file(GIT_BLAME_SYNTAX)
 
                 view.settings().set('git_view', 'blame')
                 view.settings().set('git_repo', repo)
@@ -102,17 +102,20 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
 
     def format_blame(self, commits, lines):
         content = []
-        template = "{sha} ({author} {date}) {line}"
+        template = "{sha} {file}({author} {date}) {line}"
+
+        files = set(c.get('filename') for _, c in commits.items())
+        max_file = max(len(f) for f in files)
         max_name = max(len(c.get('committer', '')) for _, c in commits.items())
 
         for sha, line in lines:
             commit = commits.get(sha)
             date = self.get_commit_date(commit)
             c = template.format(
-                date=date,
                 sha=sha[:8],
-                filename=commit.get('filename'),
+                file=commit.get('filename').ljust(max_file + 1) if len(files) > 1 else '',
                 author=commit.get('committer', '').ljust(max_name + 1, ' '),
+                date=date.strftime("%a %b %H:%M:%S %Y"),
                 line=line
             )
             content.append(c)
@@ -126,7 +129,6 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
         revision = revision or self.view.settings().get('git_blame_rev')
 
         commits, lines = self.get_blame(filename, revision)
-        print commits
         blame = self.format_blame(commits, lines)
 
         if blame:
