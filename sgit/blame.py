@@ -191,7 +191,7 @@ class GitBlameTextCommand(object):
         selected_commits = {}
         for n in linenums:
             sha, _ = lines[n]
-            if sha not in selected_commits:
+            if sha not in selected_commits and set(sha) != set(['0']):
                 selected_commits[sha] = commits.get(sha)
         return selected_commits
 
