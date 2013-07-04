@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 import sublime
-from sublime_plugin import TextCommand
+from sublime_plugin import TextCommand, WindowCommand, EventListener
 
 from .util import find_view_by_settings
 from .cmd import GitCmd
@@ -12,30 +12,42 @@ GIT_BLAME_TITLE_PREFIX = '*git-blame*: '
 GIT_BLAME_SYNTAX = 'Packages/SublimeGit/SublimeGit Blame.tmLanguage'
 
 
-class GitBlameCommand(TextCommand, GitCmd):
+class GitBlameCache(object):
+    commits = {}
+    lines = {}
+
+
+class GitBlameCommand(WindowCommand, GitCmd):
     """
     Documentation coming soon.
     """
 
-    def run(self, edit):
+    def file_in_git(self, filename):
+        return self.git_exit_code(['ls-files', filename, '--error-unmatch']) == 0
+
+    def run(self, filename=None, revision=None):
         # check if file is saved
-        filename = self.view.file_name()
+        filename = filename if filename else self.window.active_view().file_name()
         if not filename:
             sublime.error_message('Cannot do git-blame on unsaved files.')
             return
 
-        # get newest revision of file
-        # if revision is missing, show error message
-        rev = None
+        # check if file is known to git
+        in_git = self.file_in_git(filename)
+        if not in_git:
+            sublime.error_message('The file %s is not tracked by git.' % filename)
+            return
 
-        repo = self.get_repo(self.view.window())
+        repo = self.get_repo(self.window)
         if repo:
             title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
-            view = find_view_by_settings(self.view.window(), git_view='blame', git_repo=repo,
-                                         git_blame_file=filename, git_blame_rev=rev)
+            if revision:
+                title = '%s @ %s' % (title, revision[:7])
+            view = find_view_by_settings(self.window, git_view='blame', git_repo=repo,
+                                         git_blame_file=filename, git_blame_rev=revision)
 
             if not view:
-                view = self.view.window().new_file()
+                view = self.window.new_file()
                 view.set_name(title)
                 view.set_scratch(True)
                 view.set_read_only(True)
@@ -45,9 +57,9 @@ class GitBlameCommand(TextCommand, GitCmd):
                 view.settings().set('git_view', 'blame')
                 view.settings().set('git_repo', repo)
                 view.settings().set('git_blame_file', filename)
-                view.settings().set('git_blame_rev', rev)
+                view.settings().set('git_blame_rev', revision)
 
-            view.run_command('git_blame_refresh', {'filename': filename, 'revision': rev})
+            view.run_command('git_blame_refresh', {'filename': filename, 'revision': revision})
 
 
 class GitBlameRefreshCommand(TextCommand, GitCmd):
@@ -66,7 +78,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
             value = {'commit': sha, 'file': filename}
         return fieldname, value
 
-    def get_blame(self, filename, revision):
+    def get_blame(self, filename, revision=None):
         data = self.git_lines(['blame', '--porcelain', revision if revision else None, '--', filename])
 
         commits = {}
@@ -85,27 +97,26 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
                 field, val = self.parse_commit_line(item)
                 commits.setdefault(current_commit, {})[field] = val
 
+        abbrev_length = 7
+        while abbrev_length < 40:
+            abbrevs = [c['sha'][:abbrev_length] for c in commits.values()]
+            if len(abbrevs) == len(set(abbrevs)):
+                break
+            abbrev_length += 1
+
+        for k in commits:
+            commits[k]['abbrev'] = commits[k]['sha'][:abbrev_length]
+
         return commits, lines
 
     def get_commit_date(self, commit):
-        date = datetime.fromtimestamp(commit.get('committer-time'))
-        return date
-        # tzoffset = commit.get('committer-tz', '')
-        # tzsign = tzoffset[0]
-        # tzhours = int(tzoffset[1:3])
-        # tzminutes = int(tzoffset[3:])
-
-        # offset = timedelta(minutes=tzhours * 60 + tzminutes)
-        # if tzsign == '-':
-        #     return utcdate - offset
-        # else:
-        #     return utcdate + offset
+        return datetime.fromtimestamp(commit.get('committer-time'))
 
     def format_blame(self, commits, lines):
         content = []
-        template = "{sha} {file}({author} {date}) {line}"
+        template = u"{sha} {file}({author} {date}) {line}"
 
-        files = set(c.get('filename') for _, c in commits.items())
+        files = set(c.get('filename') for _, c in commits.items() if c.get('filename'))
         max_file = max(len(f) for f in files)
         max_name = max(len(c.get('committer', '')) for _, c in commits.items())
 
@@ -113,7 +124,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
             commit = commits.get(sha)
             date = self.get_commit_date(commit)
             c = template.format(
-                sha=sha[:8],
+                sha=commit.get('abbrev'),
                 file=commit.get('filename').ljust(max_file + 1) if len(files) > 1 else '',
                 author=commit.get('committer', '').ljust(max_name + 1, ' '),
                 date=date.strftime("%a %b %H:%M:%S %Y"),
@@ -130,6 +141,9 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
         revision = revision or self.view.settings().get('git_blame_rev')
 
         commits, lines = self.get_blame(filename, revision)
+        GitBlameCache.commits[self.view.id()] = commits
+        GitBlameCache.lines[self.view.id()] = lines
+
         blame = self.format_blame(commits, lines)
 
         if blame:
@@ -138,3 +152,80 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
                 self.view.erase(edit, sublime.Region(0, self.view.size()))
             self.view.insert(edit, 0, blame)
             self.view.set_read_only(True)
+
+
+class GitBlameEventListener(EventListener):
+
+    def on_selection_modified(self, view):
+        if view.settings().get('git_view') == 'blame':
+            commits = GitBlameCache.commits.get(view.id())
+            lines = GitBlameCache.lines.get(view.id())
+
+            if lines and commits:
+                row, col = view.rowcol(view.sel()[0].begin())
+                sha, line = lines[row]
+                commit = commits.get(sha)
+                if commit:
+                    sublime.status_message(commit.get('summary'))
+
+
+class GitBlameTextCommand(object):
+
+    def commits_from_selection(self):
+        lines = GitBlameCache.lines.get(self.view.id())
+        commits = GitBlameCache.commits.get(self.view.id())
+
+        if not lines or not commits:
+            return
+
+        linesets = [self.view.lines(s) for s in self.view.sel()]
+        linenums = set()
+        for lineset in linesets:
+            for l in lineset:
+                row, _ = self.view.rowcol(l.begin())
+                linenums.add(row)
+
+        if not linenums:
+            return
+
+        selected_commits = {}
+        for n in linenums:
+            sha, _ = lines[n]
+            if sha not in selected_commits and set(sha) != set(['0']):
+                selected_commits[sha] = commits.get(sha)
+        return selected_commits
+
+
+class GitBlameShowCommand(TextCommand, GitBlameTextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit):
+        commits = self.commits_from_selection()
+
+        if len(commits) == 0:
+            sublime.error_message('No commits selected.')
+            return
+
+        if len(commits) > 5:
+            if not sublime.ok_cancel_dialog('This will open %s tabs. Are you sure you want to continue?' % len(commits), 'Open tabs'):
+                return
+
+        window = self.view.window()
+        for sha, _ in commits.items():
+            window.run_command('git_show', {'obj': sha})
+
+
+class GitBlameBlameCommand(TextCommand, GitBlameTextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit):
+        commits = self.commits_from_selection()
+
+        window = self.view.window()
+        for sha, c in commits.items():
+            filename = c.get('filename', None)
+            window.run_command('git_blame', {'filename': filename, 'revision': sha})

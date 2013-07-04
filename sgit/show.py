@@ -29,7 +29,7 @@ class GitShowCommand(WindowCommand, GitCmd):
         repo = self.get_repo(self.window)
 
         if repo:
-            title = GIT_SHOW_TITLE_PREFIX + obj
+            title = GIT_SHOW_TITLE_PREFIX + obj[:7] if len(obj) == 40 else obj
             view = find_view_by_settings(self.window, git_view='show', git_repo=repo, git_show_obj=obj)
             if not view:
                 view = self.window.new_file()
