@@ -259,7 +259,7 @@ class Cmd(object):
         return self._lines(self.cmd(*args, **kwargs))
 
     def cmd_exit_code(self, *args, **kwargs):
-        return self._lines(self.cmd(*args, **kwargs))
+        return self._exit_code(self.cmd(*args, **kwargs))
 
     # async commands
     def cmd_async(self, cmd, cwd=None, **callbacks):
