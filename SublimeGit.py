@@ -11,45 +11,47 @@ logger = logging.getLogger('sgit')
 # reload modules if necessary
 LOAD_ORDER = [
     # base
-    'sgit',
-    'sgit.util',
-    'sgit.cmd',
-    'sgit.helpers',
+    '',
+    '.util',
+    '.cmd',
+    '.helpers',
 
     # commands
-    'sgit.help',
-    'sgit.cli',
-    'sgit.repo',
-    'sgit.diff',
-    'sgit.show',
-    'sgit.blame',
-    'sgit.log',
-    'sgit.stash',
-    'sgit.branch',
-    'sgit.remote',
-    'sgit.status',
-    'sgit.add',
-    'sgit.commit',
-    'sgit.checkout',
-    'sgit.merge',
+    '.help',
+    '.cli',
+    '.repo',
+    '.diff',
+    '.show',
+    '.blame',
+    '.log',
+    '.stash',
+    '.branch',
+    '.remote',
+    '.status',
+    '.add',
+    '.commit',
+    '.checkout',
+    '.merge',
 
     # meta
-    'sgit.sublimegit',
+    '.sublimegit',
 
     # extensions
-    'sgit.git_extensions.legit',
-    'sgit.git_extensions.git_flow',
+    '.git_extensions.legit',
+    '.git_extensions.git_flow',
 ]
 
 needs_reload = [n for n, m in list(sys.modules.items()) if n[0:4] == 'sgit' and m is not None]
 
 reloaded = []
-for module in LOAD_ORDER:
-    if module in needs_reload:
-        reloaded.append(module)
-        reload(sys.modules[module])
+for prefix in ('sgit', 'sgit2', 'sgit3'):
+    for postfix in LOAD_ORDER:
+        module = prefix + postfix
+        if module in needs_reload:
+            reloaded.append(module)
+            reload(sys.modules[module])
 if reloaded:
-    logger.debug('Reloaded %s' % ", ".join(reloaded))
+    logger.info('Reloaded %s' % ", ".join(reloaded))
 
 
 # import commands and listeners
