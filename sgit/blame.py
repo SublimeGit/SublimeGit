@@ -217,7 +217,7 @@ class GitBlameShowCommand(TextCommand, GitBlameTextCommand):
             window.run_command('git_show', {'obj': sha})
 
 
-class GitBlameBlameCommand(TextCommand):
+class GitBlameBlameCommand(TextCommand, GitBlameTextCommand):
 
     def is_visible(self):
         return False
