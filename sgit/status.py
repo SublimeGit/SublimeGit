@@ -218,7 +218,7 @@ class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
 class GitStatusEventListener(EventListener):
 
     def on_activated(self, view):
-        if view.settings().get('git_view') == 'status':
+        if view.settings().get('git_view') == 'status' and get_setting('git_update_status_on_focus', True):
             goto = None
             if view.sel():
                 goto = "point:%s" % view.sel()[0].begin()

@@ -12,6 +12,16 @@
     "git_show_status_help": true,
 
     /*
+     * Update Status View on Focus
+     *
+     * If set to true, the status view will be updated whenever
+     * it comes back in focus. If you have a slow computer, or
+     * your git status command runs slow for any other reason, you
+     * might want to set this to false.
+     */
+    "git_update_status_on_focus": true,
+
+    /*
      * Verbose commit messages
      *
      * If set to true, the diff output for the current commit
