@@ -53,25 +53,33 @@ class Cmd(object):
 
     # working dir remake
     def get_dir_from_view(self, view=None):
+        d = None
         if view and view.file_name():
-            return os.path.realpath(os.path.dirname(view.file_name()))
+            d = os.path.realpath(os.path.dirname(view.file_name()))
+        logger.debug('get_dir_from_view(view=%s): %s', view, d)
+        return d
 
     def get_dirs_from_window_folders(self, window=None):
+        dirs = set()
         if window:
-            return set(f for f in window.folders())
-        return set()
+            dirs = set(f for f in window.folders())
+        logger.debug('get_dirs_from_window_folders(window=%s): %s', window, dirs)
+        return dirs
 
     def get_dirs_from_window_views(self, window=None):
+        dirs = set()
         if window:
             view_dirs = [self.get_dir_from_view(v) for v in window.views()]
-            return set(d for d in view_dirs if d)
-        return set()
+            dirs = set(d for d in view_dirs if d)
+        logger.debug('get_dirs_from_window_views(window=%s): %s', window, dirs)
+        return dirs
 
     def get_dirs(self, window=None):
         dirs = set()
         if window:
             dirs |= self.get_dirs_from_window_folders(window)
             dirs |= self.get_dirs_from_window_views(window)
+        logger.debug('get_dirs(window=%s): %s', window, dirs)
         return dirs
 
     def get_dirs_prioritized(self, window=None):
@@ -84,6 +92,7 @@ class Cmd(object):
                 all_dirs.discard(active_view_dir)
             for d in sorted(list(all_dirs), key=lambda x: len(x), reverse=True):
                 dirs.append(d)
+        logger.debug('get_dirs_prioritized(window=%s): %s', window, dirs)
         return dirs
 
     # path walking
@@ -92,6 +101,7 @@ class Cmd(object):
         while directory and directory != os.path.dirname(directory):
             directory = os.path.dirname(directory)
             dirnames.append(directory)
+        logger.debug('all_dirs(directory=%s): %s', directory, dirnames)
         return dirnames
 
     # git repos
@@ -121,16 +131,19 @@ class Cmd(object):
             if active_view:
                 active_view_repo = active_view.settings().get('git_repo')
                 if active_view_repo:
+                    logger.debug('get_repo(window=%s, silent=%s): %s (view settings)', window, silent, active_view_repo)
                     return active_view_repo
 
             window_repo = self.get_window_setting(window, 'git_repo')
             if window_repo:
+                logger.debug('get_repo(window=%s, silent=%s): %s (window settings)', window, silent, window_repo)
                 return window_repo
 
             any_repos = self.git_repos_from_window(window)
             if len(any_repos) == 1:
                 only_repo = any_repos.pop()
                 self.set_window_setting(window, 'git_repo', only_repo)
+                logger.debug('get_repo(window=%s, silent=%s): %s (only repo)', window, silent, only_repo)
                 return only_repo
 
             if silent:
