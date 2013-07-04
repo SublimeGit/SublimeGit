@@ -8,6 +8,7 @@ from functools import partial
 import sublime
 from sublime_plugin import WindowCommand
 
+from . import __version__
 from .cmd import Cmd
 from .util import noop, get_settings, SETTINGS_FILE
 
@@ -90,6 +91,15 @@ class SublimeGitInstallLicenseCommand(WindowCommand, Cmd):
 
         sublime.save_settings(SETTINGS_FILE)
         sublime.message_dialog("Thank you. Your license has been installed. Please restart Sublime Text.")
+
+
+class SublimeGitVersionCommand(WindowCommand):
+    """
+    Show the currently installed version of SublimeGit.
+    """
+
+    def run(self):
+        sublime.error_message("You have SublimeGit %s" % __version__)
 
 
 class SublimeGitBuyLicenseCommand(WindowCommand):

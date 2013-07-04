@@ -1,5 +1,8 @@
 # coding: utf-8
 
+__version__ = '1.0.8'
+
+
 # Import all the commands
 
 from .util import GitPanelWriteCommand, GitPanelAppendCommand
@@ -47,7 +50,7 @@ from .checkout import (GitCheckoutBranchCommand, GitCheckoutCommitCommand,
 from .merge import GitMergeCommand
 
 from .sublimegit import (SublimeGitInstallLicenseCommand, SublimeGitBuyLicenseCommand,
-                         SublimeGitDocumentationCommand)
+                         SublimeGitDocumentationCommand, SublimeGitVersionCommand)
 
 
 # import plugins
