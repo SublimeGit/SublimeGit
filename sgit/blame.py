@@ -42,7 +42,7 @@ class GitBlameCommand(WindowCommand, GitCmd):
         if repo:
             title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
             if revision:
-                title = '%s @ %s' % (title, revision[:8])
+                title = '%s @ %s' % (title, revision[:7])
             view = find_view_by_settings(self.window, git_view='blame', git_repo=repo,
                                          git_blame_file=filename, git_blame_rev=revision)
 
@@ -169,19 +169,40 @@ class GitBlameEventListener(EventListener):
                     sublime.status_message(commit.get('summary'))
 
 
-class GitBlameShowCommand(TextCommand):
+class GitBlameTextCommand(object):
+
+    def commits_from_selection(self):
+        lines = GitBlameCache.lines.get(self.view.id())
+        commits = GitBlameCache.commits.get(self.view.id())
+
+        if not lines or not commits:
+            return
+
+        linesets = [self.view.lines(s) for s in self.view.sel()]
+        linenums = set()
+        for lineset in linesets:
+            for l in lineset:
+                row, _ = self.view.rowcol(l.begin())
+                linenums.add(row)
+
+        if not linenums:
+            return
+
+        selected_commits = {}
+        for n in linenums:
+            sha, _ = lines[n]
+            if sha not in selected_commits:
+                selected_commits[sha] = commits.get(sha)
+        return selected_commits
+
+
+class GitBlameShowCommand(TextCommand, GitBlameTextCommand):
 
     def is_visible(self):
         return False
 
     def run(self, edit):
-        lines = [self.view.lines(s) for s in self.view.sel()]
-        commits = set()
-        for lineset in lines:
-            for line in lineset:
-                commit, _ = self.view.substr(line).split(' ', 1)
-                if commit != '0' * len(commit):
-                    commits.add(commit)
+        commits = self.commits_from_selection()
 
         if len(commits) == 0:
             sublime.error_message('No commits selected.')
@@ -192,8 +213,8 @@ class GitBlameShowCommand(TextCommand):
                 return
 
         window = self.view.window()
-        for c in commits:
-            window.run_command('git_show', {'obj': c})
+        for sha, _ in commits.items():
+            window.run_command('git_show', {'obj': sha})
 
 
 class GitBlameBlameCommand(TextCommand):
@@ -202,14 +223,9 @@ class GitBlameBlameCommand(TextCommand):
         return False
 
     def run(self, edit):
-        lines = [self.view.lines(s) for s in self.view.sel()]
-        commits = set()
-        for lineset in lines:
-            for line in lineset:
-                l, _ = self.view.substr(line).split('(', 1)
-                commit, filename = l.split(' ', 1)
-                commits.add((commit, filename.strip() if filename.strip() else self.view.settings().get('git_blame_file')))
+        commits = self.commits_from_selection()
 
         window = self.view.window()
-        for c, f in commits:
-            window.run_command('git_blame', {'filename': f, 'revision': c})
+        for sha, c in commits.items():
+            filename = c.get('filename', None)
+            window.run_command('git_blame', {'filename': filename, 'revision': sha})
