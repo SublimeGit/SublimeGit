@@ -18,6 +18,7 @@ from .log import GitLogCommand, GitQuickLogCommand, GitQuickLogCurrentFileComman
 
 from .blame import (GitBlameCommand, GitBlameRefreshCommand, GitBlameShowCommand,
                     GitBlameBlameCommand)
+from .blame import GitBlameEventListener
 
 from .remote import (GitPushCurrentBranchCommand, GitPullCurrentBranchCommand,
                      GitPushPullAllCommand, GitFetchCommand, GitPullCommand, GitPushCommand,

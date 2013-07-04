@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 import sublime
-from sublime_plugin import TextCommand, WindowCommand
+from sublime_plugin import TextCommand, WindowCommand, EventListener
 
 from .util import find_view_by_settings
 from .cmd import GitCmd
@@ -10,6 +10,11 @@ from .cmd import GitCmd
 
 GIT_BLAME_TITLE_PREFIX = '*git-blame*: '
 GIT_BLAME_SYNTAX = 'Packages/SublimeGit/SublimeGit Blame.tmLanguage'
+
+
+class GitBlameCache(object):
+    commits = {}
+    lines = {}
 
 
 class GitBlameCommand(WindowCommand, GitCmd):
@@ -92,6 +97,16 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
                 field, val = self.parse_commit_line(item)
                 commits.setdefault(current_commit, {})[field] = val
 
+        abbrev_length = 7
+        while abbrev_length < 40:
+            abbrevs = [c['sha'][:abbrev_length] for c in commits.values()]
+            if len(abbrevs) == len(set(abbrevs)):
+                break
+            abbrev_length += 1
+
+        for k in commits:
+            commits[k]['abbrev'] = commits[k]['sha'][:abbrev_length]
+
         return commits, lines
 
     def get_commit_date(self, commit):
@@ -109,7 +124,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
             commit = commits.get(sha)
             date = self.get_commit_date(commit)
             c = template.format(
-                sha=sha[:8],
+                sha=commit.get('abbrev'),
                 file=commit.get('filename').ljust(max_file + 1) if len(files) > 1 else '',
                 author=commit.get('committer', '').ljust(max_name + 1, ' '),
                 date=date.strftime("%a %b %H:%M:%S %Y"),
@@ -126,6 +141,9 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
         revision = revision or self.view.settings().get('git_blame_rev')
 
         commits, lines = self.get_blame(filename, revision)
+        GitBlameCache.commits[self.view.id()] = commits
+        GitBlameCache.lines[self.view.id()] = lines
+
         blame = self.format_blame(commits, lines)
 
         if blame:
@@ -134,6 +152,21 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
                 self.view.erase(edit, sublime.Region(0, self.view.size()))
             self.view.insert(edit, 0, blame)
             self.view.set_read_only(True)
+
+
+class GitBlameEventListener(EventListener):
+
+    def on_selection_modified(self, view):
+        if view.settings().get('git_view') == 'blame':
+            commits = GitBlameCache.commits.get(view.id())
+            lines = GitBlameCache.lines.get(view.id())
+
+            if lines and commits:
+                row, col = view.rowcol(view.sel()[0].begin())
+                sha, line = lines[row]
+                commit = commits.get(sha)
+                if commit:
+                    sublime.status_message(commit.get('summary'))
 
 
 class GitBlameShowCommand(TextCommand):
@@ -147,7 +180,7 @@ class GitBlameShowCommand(TextCommand):
         for lineset in lines:
             for line in lineset:
                 commit, _ = self.view.substr(line).split(' ', 1)
-                if commit != '00000000':
+                if commit != '0' * len(commit):
                     commits.add(commit)
 
         if len(commits) == 0:
