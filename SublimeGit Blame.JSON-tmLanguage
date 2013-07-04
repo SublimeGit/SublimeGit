@@ -5,9 +5,22 @@
     "patterns": [
         {
             "name": "meta.git-blame.line",
+            "match": "^(0+) (.+)? ?(\\()(Not Committed Yet)  (\\w+ \\w+ \\d\\d:\\d\\d:\\d\\d \\d{4})(\\)) (.*)",
+            "captures": {
+                "1": { "name": "comment.other.git-blame.hex"},
+                "2": { "name": "string.other.git-blame.file"},
+                "3": { "name": "comment.other.git-blame.paren"},
+                "4": { "name": "constant.other.git-blame.author"},
+                "5": { "name": "comment.other.git-blame.date"},
+                "6": { "name": "comment.other.git-blame.paren"},
+                "7": { "name": "text"}
+            }
+        },
+        {
+            "name": "meta.git-blame.line",
             "match": "^([0-9a-f]+) (.+)? ?(\\()(.+)  (\\w+ \\w+ \\d\\d:\\d\\d:\\d\\d \\d{4})(\\)) (.*)",
             "captures": {
-                "1": { "name": "entity.other.git-status.hex"},
+                "1": { "name": "entity.other.git-blame.hex"},
                 "2": { "name": "string.other.git-blame.file"},
                 "3": { "name": "comment.other.git-blame.paren"},
                 "4": { "name": "support.type.git-blame.author"},

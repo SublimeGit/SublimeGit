@@ -16,7 +16,51 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
-					<string>entity.other.git-status.hex</string>
+					<string>comment.other.git-blame.hex</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>string.other.git-blame.file</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>comment.other.git-blame.paren</string>
+				</dict>
+				<key>4</key>
+				<dict>
+					<key>name</key>
+					<string>constant.other.git-blame.author</string>
+				</dict>
+				<key>5</key>
+				<dict>
+					<key>name</key>
+					<string>comment.other.git-blame.date</string>
+				</dict>
+				<key>6</key>
+				<dict>
+					<key>name</key>
+					<string>comment.other.git-blame.paren</string>
+				</dict>
+				<key>7</key>
+				<dict>
+					<key>name</key>
+					<string>text</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(0+) (.+)? ?(\()(Not Committed Yet)  (\w+ \w+ \d\d:\d\d:\d\d \d{4})(\)) (.*)</string>
+			<key>name</key>
+			<string>meta.git-blame.line</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>entity.other.git-blame.hex</string>
 				</dict>
 				<key>2</key>
 				<dict>

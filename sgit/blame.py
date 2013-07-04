@@ -17,6 +17,9 @@ class GitBlameCommand(TextCommand, GitCmd):
     Documentation coming soon.
     """
 
+    def file_in_git(self, filename):
+        return self.git_exit_code(['ls-files', filename, '--error-unmatch']) == 0
+
     def run(self, edit):
         # check if file is saved
         filename = self.view.file_name()
@@ -24,15 +27,17 @@ class GitBlameCommand(TextCommand, GitCmd):
             sublime.error_message('Cannot do git-blame on unsaved files.')
             return
 
-        # get newest revision of file
-        # if revision is missing, show error message
-        rev = None
+        # check if file is known to git
+        in_git = self.file_in_git(filename)
+        if not in_git:
+            sublime.error_message('The file %s is not tracked by git.' % filename)
+            return
 
         repo = self.get_repo(self.view.window())
         if repo:
             title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
             view = find_view_by_settings(self.view.window(), git_view='blame', git_repo=repo,
-                                         git_blame_file=filename, git_blame_rev=rev)
+                                         git_blame_file=filename, git_blame_rev=None)
 
             if not view:
                 view = self.view.window().new_file()
@@ -45,9 +50,9 @@ class GitBlameCommand(TextCommand, GitCmd):
                 view.settings().set('git_view', 'blame')
                 view.settings().set('git_repo', repo)
                 view.settings().set('git_blame_file', filename)
-                view.settings().set('git_blame_rev', rev)
+                view.settings().set('git_blame_rev', None)
 
-            view.run_command('git_blame_refresh', {'filename': filename, 'revision': rev})
+            view.run_command('git_blame_refresh', {'filename': filename})
 
 
 class GitBlameRefreshCommand(TextCommand, GitCmd):
@@ -66,7 +71,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
             value = {'commit': sha, 'file': filename}
         return fieldname, value
 
-    def get_blame(self, filename, revision):
+    def get_blame(self, filename, revision=None):
         data = self.git_lines(['blame', '--porcelain', revision if revision else None, '--', filename])
 
         commits = {}
@@ -88,24 +93,13 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
         return commits, lines
 
     def get_commit_date(self, commit):
-        date = datetime.fromtimestamp(commit.get('committer-time'))
-        return date
-        # tzoffset = commit.get('committer-tz', '')
-        # tzsign = tzoffset[0]
-        # tzhours = int(tzoffset[1:3])
-        # tzminutes = int(tzoffset[3:])
-
-        # offset = timedelta(minutes=tzhours * 60 + tzminutes)
-        # if tzsign == '-':
-        #     return utcdate - offset
-        # else:
-        #     return utcdate + offset
+        return datetime.fromtimestamp(commit.get('committer-time'))
 
     def format_blame(self, commits, lines):
         content = []
         template = "{sha} {file}({author} {date}) {line}"
 
-        files = set(c.get('filename') for _, c in commits.items())
+        files = set(c.get('filename') for _, c in commits.items() if c.get('filename'))
         max_file = max(len(f) for f in files)
         max_name = max(len(c.get('committer', '')) for _, c in commits.items())
 
