@@ -16,7 +16,8 @@ from .help import GitHelpCommand, GitVersionCommand
 
 from .log import GitLogCommand, GitQuickLogCommand, GitQuickLogCurrentFileCommand
 
-from .blame import GitBlameCommand, GitBlameRefreshCommand
+from .blame import (GitBlameCommand, GitBlameRefreshCommand, GitBlameShowCommand,
+                    GitBlameBlameCommand)
 
 from .remote import (GitPushCurrentBranchCommand, GitPullCurrentBranchCommand,
                      GitPushPullAllCommand, GitFetchCommand, GitPullCommand, GitPushCommand,

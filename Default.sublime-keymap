@@ -186,5 +186,20 @@
         "context": [
             { "key": "selector", "operator": "equal", "operand": "text.git-status"}
         ]
+    },
+
+    /*** GIT BLAME ***/
+    // Show command
+    { "keys": ["enter"], "command": "git_blame_show",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-blame.line"}
+        ]
+    },
+
+    // Blame command
+    { "keys": ["b"], "command": "git_blame_blame",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-blame.line"}
+        ]
     }
 ]

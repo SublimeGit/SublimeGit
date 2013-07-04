@@ -2,7 +2,7 @@
 import re
 from datetime import datetime
 import sublime
-from sublime_plugin import TextCommand
+from sublime_plugin import TextCommand, WindowCommand
 
 from .util import find_view_by_settings
 from .cmd import GitCmd
@@ -12,7 +12,7 @@ GIT_BLAME_TITLE_PREFIX = '*git-blame*: '
 GIT_BLAME_SYNTAX = 'Packages/SublimeGit/SublimeGit Blame.tmLanguage'
 
 
-class GitBlameCommand(TextCommand, GitCmd):
+class GitBlameCommand(WindowCommand, GitCmd):
     """
     Documentation coming soon.
     """
@@ -20,9 +20,9 @@ class GitBlameCommand(TextCommand, GitCmd):
     def file_in_git(self, filename):
         return self.git_exit_code(['ls-files', filename, '--error-unmatch']) == 0
 
-    def run(self, edit):
+    def run(self, filename=None, revision=None):
         # check if file is saved
-        filename = self.view.file_name()
+        filename = filename if filename else self.window.active_view().file_name()
         if not filename:
             sublime.error_message('Cannot do git-blame on unsaved files.')
             return
@@ -33,14 +33,16 @@ class GitBlameCommand(TextCommand, GitCmd):
             sublime.error_message('The file %s is not tracked by git.' % filename)
             return
 
-        repo = self.get_repo(self.view.window())
+        repo = self.get_repo(self.window)
         if repo:
             title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
-            view = find_view_by_settings(self.view.window(), git_view='blame', git_repo=repo,
-                                         git_blame_file=filename, git_blame_rev=None)
+            if revision:
+                title = '%s @ %s' % (title, revision[:8])
+            view = find_view_by_settings(self.window, git_view='blame', git_repo=repo,
+                                         git_blame_file=filename, git_blame_rev=revision)
 
             if not view:
-                view = self.view.window().new_file()
+                view = self.window.new_file()
                 view.set_name(title)
                 view.set_scratch(True)
                 view.set_read_only(True)
@@ -50,9 +52,9 @@ class GitBlameCommand(TextCommand, GitCmd):
                 view.settings().set('git_view', 'blame')
                 view.settings().set('git_repo', repo)
                 view.settings().set('git_blame_file', filename)
-                view.settings().set('git_blame_rev', None)
+                view.settings().set('git_blame_rev', revision)
 
-            view.run_command('git_blame_refresh', {'filename': filename})
+            view.run_command('git_blame_refresh', {'filename': filename, 'revision': revision})
 
 
 class GitBlameRefreshCommand(TextCommand, GitCmd):
@@ -97,7 +99,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
 
     def format_blame(self, commits, lines):
         content = []
-        template = "{sha} {file}({author} {date}) {line}"
+        template = u"{sha} {file}({author} {date}) {line}"
 
         files = set(c.get('filename') for _, c in commits.items() if c.get('filename'))
         max_file = max(len(f) for f in files)
@@ -132,3 +134,49 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
                 self.view.erase(edit, sublime.Region(0, self.view.size()))
             self.view.insert(edit, 0, blame)
             self.view.set_read_only(True)
+
+
+class GitBlameShowCommand(TextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit):
+        lines = [self.view.lines(s) for s in self.view.sel()]
+        commits = set()
+        for lineset in lines:
+            for line in lineset:
+                commit, _ = self.view.substr(line).split(' ', 1)
+                if commit != '00000000':
+                    commits.add(commit)
+
+        if len(commits) == 0:
+            sublime.error_message('No commits selected.')
+            return
+
+        if len(commits) > 5:
+            if not sublime.ok_cancel_dialog('This will open %s tabs. Are you sure you want to continue?' % len(commits), 'Open tabs'):
+                return
+
+        window = self.view.window()
+        for c in commits:
+            window.run_command('git_show', {'obj': c})
+
+
+class GitBlameBlameCommand(TextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit):
+        lines = [self.view.lines(s) for s in self.view.sel()]
+        commits = set()
+        for lineset in lines:
+            for line in lineset:
+                l, _ = self.view.substr(line).split('(', 1)
+                commit, filename = l.split(' ', 1)
+                commits.add((commit, filename.strip() if filename.strip() else self.view.settings().get('git_blame_file')))
+
+        window = self.view.window()
+        for c, f in commits:
+            window.run_command('git_blame', {'filename': f, 'revision': c})

@@ -52,7 +52,7 @@
 			<key>match</key>
 			<string>^(0+) (.+)? ?(\()(Not Committed Yet)  (\w+ \w+ \d\d:\d\d:\d\d \d{4})(\)) (.*)</string>
 			<key>name</key>
-			<string>meta.git-blame.line</string>
+			<string>meta.git-blame.notcommitted</string>
 		</dict>
 		<dict>
 			<key>captures</key>

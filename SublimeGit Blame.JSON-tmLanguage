@@ -4,7 +4,7 @@
     "fileTypes": ["git-blame"],
     "patterns": [
         {
-            "name": "meta.git-blame.line",
+            "name": "meta.git-blame.notcommitted",
             "match": "^(0+) (.+)? ?(\\()(Not Committed Yet)  (\\w+ \\w+ \\d\\d:\\d\\d:\\d\\d \\d{4})(\\)) (.*)",
             "captures": {
                 "1": { "name": "comment.other.git-blame.hex"},
