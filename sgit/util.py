@@ -115,7 +115,7 @@ def get_user_dir():
         except:
             pass
 
-    if not isinstance(user_dir, text_type):
+    if PY2 and isinstance(user_dir, str):
         try:
             user_dir = user_dir.decode('utf-8')
         except:
