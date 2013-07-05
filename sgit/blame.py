@@ -65,6 +65,12 @@ class GitBlameCommand(WindowCommand, GitCmd):
             sublime.error_message('The file %s is not tracked by git.' % filename)
             return
 
+        # figure out where we are in the file
+        row = None
+        sel = self.window.active_view().sel()
+        if sel:
+            row, _ = self.window.active_view().rowcol(sel[0].begin())
+
         repo = self.get_repo(self.window)
         if repo:
             title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
@@ -86,7 +92,7 @@ class GitBlameCommand(WindowCommand, GitCmd):
                 view.settings().set('git_blame_file', filename)
                 view.settings().set('git_blame_rev', revision)
 
-            view.run_command('git_blame_refresh', {'filename': filename, 'revision': revision})
+            view.run_command('git_blame_refresh', {'filename': filename, 'revision': revision, 'row': row})
 
 
 class GitBlameRefreshCommand(TextCommand, GitCmd):
@@ -163,7 +169,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
     def is_visible(self):
         return False
 
-    def run(self, edit, filename=None, revision=None, line=None):
+    def run(self, edit, filename=None, revision=None, row=None):
         filename = filename or self.view.settings().get('git_blame_file')
         revision = revision or self.view.settings().get('git_blame_rev')
 
@@ -182,11 +188,12 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
             self.view.set_read_only(True)
 
             # place cursor on same line as in old selection
-            # point = point if point is not None else 0
-            # if not self.view.visible_region().contains(point):
-            #     self.view.show(point, True)
-            # self.view.sel().clear()
-            # self.view.sel().add(sublime.Region(point))
+            row = row or 0
+            point = self.view.text_point(row, 0)
+            self.view.sel().clear()
+            self.view.sel().add(sublime.Region(point))
+            if not self.view.visible_region().contains(point):
+                sublime.set_timeout(lambda: self.view.show_at_center(point), 50)
 
 
 class GitBlameEventListener(EventListener):
