@@ -4,7 +4,7 @@ from datetime import datetime
 import sublime
 from sublime_plugin import TextCommand, WindowCommand, EventListener
 
-from .util import find_view_by_settings
+from .util import find_view_by_settings, get_setting
 from .cmd import GitCmd
 
 
@@ -19,7 +19,34 @@ class GitBlameCache(object):
 
 class GitBlameCommand(WindowCommand, GitCmd):
     """
-    Documentation coming soon.
+    Run git blame on the current file.
+
+    This will bring up a new window with the blame information to
+    the left of the file contents, on a per-line basis. When placing
+    the cursor on a line, the summary of the commit will be shown in
+    the status bar.
+
+    If the file has not been saved to the filesystem, or the file is
+    not tracked by git, it's not possible to blame, and an error
+    will be shown.
+
+    To navigate further into the blame information, a couple of keyboard
+    shortcuts are available:
+
+    * ``enter``: Show the commit in a new window (like Git: Show).
+    * ``b``: Open a new blame starting at the given commit.
+
+    .. note::
+        These keyboard shortcuts support multiple selection, so you
+        can potentially open **a lot** of tabs. If your action will
+        open more than 5 tabs, you will get a warning asking if you
+        want to continue. You can turn this warning off with the
+        **git_blame_warn_multiple_tabs** setting.
+
+    :setting git_blame_warn_multiple_tabs: If set to ``true``, SublimeGit
+        will give you a warning when your action from a blame view will
+        open more than 5 tabs. Set to ``false`` to turn this warning off.
+
     """
 
     def file_in_git(self, filename):
@@ -136,7 +163,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
     def is_visible(self):
         return False
 
-    def run(self, edit, filename=None, revision=None):
+    def run(self, edit, filename=None, revision=None, line=None):
         filename = filename or self.view.settings().get('git_blame_file')
         revision = revision or self.view.settings().get('git_blame_rev')
 
@@ -147,11 +174,19 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
         blame = self.format_blame(commits, lines)
 
         if blame:
+            # write blame to file
             self.view.set_read_only(False)
             if self.view.size() > 0:
                 self.view.erase(edit, sublime.Region(0, self.view.size()))
             self.view.insert(edit, 0, blame)
             self.view.set_read_only(True)
+
+            # place cursor on same line as in old selection
+            # point = point if point is not None else 0
+            # if not self.view.visible_region().contains(point):
+            #     self.view.show(point, True)
+            # self.view.sel().clear()
+            # self.view.sel().add(sublime.Region(point))
 
 
 class GitBlameEventListener(EventListener):
@@ -195,6 +230,17 @@ class GitBlameTextCommand(object):
                 selected_commits[sha] = commits.get(sha)
         return selected_commits
 
+    def validate_num_commits(self, commits):
+        if len(commits) == 0:
+            sublime.error_message('No commits selected.')
+            return False
+
+        if len(commits) > 5 and get_setting('git_blame_warn_multiple_tabs', True):
+            if not sublime.ok_cancel_dialog('This will open %s tabs. Are you sure you want to continue?' % len(commits), 'Open tabs'):
+                return False
+
+        return True
+
 
 class GitBlameShowCommand(TextCommand, GitBlameTextCommand):
 
@@ -203,14 +249,10 @@ class GitBlameShowCommand(TextCommand, GitBlameTextCommand):
 
     def run(self, edit):
         commits = self.commits_from_selection()
+        valid = self.validate_num_commits(commits)
 
-        if len(commits) == 0:
-            sublime.error_message('No commits selected.')
+        if not valid:
             return
-
-        if len(commits) > 5:
-            if not sublime.ok_cancel_dialog('This will open %s tabs. Are you sure you want to continue?' % len(commits), 'Open tabs'):
-                return
 
         window = self.view.window()
         for sha, _ in commits.items():
@@ -224,6 +266,10 @@ class GitBlameBlameCommand(TextCommand, GitBlameTextCommand):
 
     def run(self, edit):
         commits = self.commits_from_selection()
+        valid = self.validate_num_commits(commits)
+
+        if not valid:
+            return
 
         window = self.view.window()
         for sha, c in commits.items():

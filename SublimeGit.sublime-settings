@@ -41,6 +41,15 @@
     "git_set_upstream_on_push": true,
 
     /*
+     * Warning when opening multiple tabs from a blame view.
+     *
+     * If set to true, you will receive a warning when your
+     * action will open more than 5 tabs. To completely
+     * disable this, set it to false.
+     */
+    "git_blame_warn_multiple_tabs": true,
+
+    /*
      * Persistent status bar message
      *
      * Any messages put on the status bar will automatically

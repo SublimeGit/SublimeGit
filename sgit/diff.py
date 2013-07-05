@@ -23,7 +23,7 @@ class GitDiffCommand(WindowCommand, GitCmd):
     changes that you could ask git to add to the next commit.
 
     For diff on a single file, either use the **Git: Quick Status** command,
-    or press **d** when the cursor is on a file in the status view.
+    or press ``d`` when the cursor is on a file in the status view.
     """
 
     def run(self, path=None, cached=False):
