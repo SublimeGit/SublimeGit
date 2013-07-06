@@ -5,28 +5,30 @@
     "patterns": [
         {
             "name": "meta.git-blame.notcommitted",
-            "match": "^(0+) (.+)? ?(\\()(Not Committed Yet)  (\\w+ \\w+ \\d\\d:\\d\\d:\\d\\d \\d{4})(\\)) (.*)",
+            "match": "^(\\^)? ?(0+) (.+)? ?(\\()(Not Committed Yet)  (\\w+ \\w+ \\d\\d:\\d\\d:\\d\\d \\d{4})(\\)) (.*)",
             "captures": {
-                "1": { "name": "comment.other.git-blame.hex"},
-                "2": { "name": "string.other.git-blame.file"},
-                "3": { "name": "comment.other.git-blame.paren"},
-                "4": { "name": "constant.other.git-blame.author"},
-                "5": { "name": "comment.other.git-blame.date"},
-                "6": { "name": "comment.other.git-blame.paren"},
-                "7": { "name": "text"}
+                "1": { "name": "variable.parameter.git-blame.boundary"},
+                "2": { "name": "comment.other.git-blame.hex"},
+                "3": { "name": "string.other.git-blame.file"},
+                "4": { "name": "comment.other.git-blame.paren"},
+                "5": { "name": "constant.other.git-blame.author"},
+                "6": { "name": "comment.other.git-blame.date"},
+                "7": { "name": "comment.other.git-blame.paren"},
+                "8": { "name": "text"}
             }
         },
         {
             "name": "meta.git-blame.line",
-            "match": "^([0-9a-f]+) (.+)? ?(\\()(.+)  (\\w+ \\w+ \\d\\d:\\d\\d:\\d\\d \\d{4})(\\)) (.*)",
+            "match": "^(\\^)? ?([0-9a-f]+) (.+)? ?(\\()(.+)  (\\w+ \\w+ \\d\\d:\\d\\d:\\d\\d \\d{4})(\\)) (.*)",
             "captures": {
-                "1": { "name": "entity.other.git-blame.hex"},
-                "2": { "name": "string.other.git-blame.file"},
-                "3": { "name": "comment.other.git-blame.paren"},
-                "4": { "name": "support.type.git-blame.author"},
-                "5": { "name": "comment.other.git-blame.date"},
-                "6": { "name": "comment.other.git-blame.paren"},
-                "7": { "name": "text"}
+                "1": { "name": "variable.parameter.git-blame.boundary"},
+                "2": { "name": "entity.other.git-blame.hex"},
+                "3": { "name": "string.other.git-blame.file"},
+                "4": { "name": "comment.other.git-blame.paren"},
+                "5": { "name": "support.type.git-blame.author"},
+                "6": { "name": "comment.other.git-blame.date"},
+                "7": { "name": "comment.other.git-blame.paren"},
+                "8": { "name": "text"}
             }
         }
     ],

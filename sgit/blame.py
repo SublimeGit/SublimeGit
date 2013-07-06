@@ -100,15 +100,21 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
     HEADER_RE = re.compile(r'^(?P<sha>[0-9a-f]{40}) (\d+) (\d+) ?(\d+)?$')
 
     def parse_commit_line(self, commitline):
-        fieldname, value = commitline.split(' ', 1)
+        parts = commitline.split(' ', 1)
+        if len(parts) == 2:
+            fieldname, value = parts
+        else:
+            fieldname, value = parts[0], ''
         value = value.strip()
         if fieldname in ('committer-time', 'author-time'):
             value = int(value)
         elif fieldname in ('committer-mail', 'author-mail'):
             value = value.strip('<>')
-        elif fieldname in ('previous'):
+        elif fieldname in ('previous',):
             sha, filename = value.split(' ', 1)
             value = {'commit': sha, 'file': filename}
+        elif fieldname in ('boundary',):
+            value = True
         return fieldname, value
 
     def get_blame(self, filename, revision=None):
@@ -118,17 +124,21 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
         lines = []
 
         current_commit = None
-        for item in data:
-            headermatch = self.HEADER_RE.match(item)
-            if headermatch:
-                sha = headermatch.group('sha')
-                commits.setdefault(sha, {})['sha'] = sha
-                current_commit = sha
-            elif item[0] == '\t':
-                lines.append((current_commit, item[1:]))
-            else:
-                field, val = self.parse_commit_line(item)
-                commits.setdefault(current_commit, {})[field] = val
+        for l, item in enumerate(data, start=1):
+            try:
+                headermatch = self.HEADER_RE.match(item)
+                if headermatch:
+                    sha = headermatch.group('sha')
+                    commits.setdefault(sha, {})['sha'] = sha
+                    current_commit = sha
+                elif item[0] == '\t':
+                    lines.append((current_commit, item[1:]))
+                else:
+                    field, val = self.parse_commit_line(item)
+                    commits.setdefault(current_commit, {})[field] = val
+            except Exception as e:
+                sublime.error_message('Error parsing git blame output: %s', e)
+                return {}, []
 
         abbrev_length = 7
         while abbrev_length < 40:
@@ -147,16 +157,18 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
 
     def format_blame(self, commits, lines):
         content = []
-        template = u"{sha} {file}({author} {date}) {line}"
+        template = u"{boundary}{sha} {file}({author} {date}) {line}"
 
         files = set(c.get('filename') for _, c in commits.items() if c.get('filename'))
         max_file = max(len(f) for f in files)
         max_name = max(len(c.get('committer', '')) for _, c in commits.items())
+        boundaries = any('boundary' in c for _, c in commits.items())
 
         for sha, line in lines:
             commit = commits.get(sha)
             date = self.get_commit_date(commit)
             c = template.format(
+                boundary='^' if 'boundary' in commit else (' ' if boundaries else ''),
                 sha=commit.get('abbrev'),
                 file=commit.get('filename').ljust(max_file + 1) if len(files) > 1 else '',
                 author=commit.get('committer', '').ljust(max_name + 1, ' '),
@@ -174,6 +186,8 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
         revision = revision or self.view.settings().get('git_blame_rev')
 
         commits, lines = self.get_blame(filename, revision)
+        if not commits or not lines:
+            return
         GitBlameCache.commits[self.view.id()] = commits
         GitBlameCache.lines[self.view.id()] = lines
 
