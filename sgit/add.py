@@ -58,14 +58,18 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
                 return
             elif line == GIT_ADD_ALL_UNSTAGED:
                 self.git(['add', '--update', '.'])
+                sublime.status_message('Added all unstaged changes')
             elif line == GIT_ADD_ALL:
                 self.git(['add', '--all'])
+                sublime.status_message('Add all changes')
             else:
                 worktree, filename = status[idx][0], status[idx][2:]
                 if worktree == '?':
                     self.git(['add', '--', filename])
+                    sublime.status_message('Added %s' % filename)
                 else:
                     self.git(['add', '--update', '--', filename])
+                    sublime.status_message('Added %s' % filename)
 
             def rerun():
                 self.window.run_command('git_quick_add')
@@ -106,5 +110,7 @@ class GitAddCurrentFileCommand(TextCommand, GitCmd):
             return
 
         exit, stdout = self.git(['add', '--force', '--', filename])
-        if exit != 0:
+        if exit == 0:
+            sublime.status_message('Added %s' % filename)
+        else:
             sublime.error_message('git error: %s' % stdout)

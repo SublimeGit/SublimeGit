@@ -227,12 +227,6 @@ class GitStatusEventListener(EventListener):
 
 class GitStatusBarEventListener(EventListener, GitCmd):
 
-    INTERVAL = 4000
-
-    def __init__(self):
-        self.running = False
-        self.persistent = get_setting('git_persistent_status_bar_message', False)
-
     def on_activated(self, view):
         sublime.set_timeout(partial(self.set_status, view), 100)
 
@@ -242,19 +236,12 @@ class GitStatusBarEventListener(EventListener, GitCmd):
     def set_status(self, view):
         repo = self.get_repo(view.window())
         if repo:
-            branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo)
-            branch = branch[11:] if branch.startswith('refs/heads/') else None
-            self.msg = 'On branch %s' % branch if branch else 'Detached HEAD'
+            branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo, ignore_errors=True)
+            if branch:
+                branch = branch[11:] if branch.startswith('refs/heads/') else None
+                msg = 'On branch %s' % branch if branch else 'Detached HEAD'
 
-            if not self.persistent or not self.running:
-                sublime.set_timeout(self.update_status, 0)
-                self.running = True
-
-    def update_status(self):
-        logger.debug("Updating status line: %s", self.msg)
-        sublime.status_message(self.msg)
-        if self.persistent:
-            sublime.set_timeout(self.update_status, self.INTERVAL)
+                view.set_status('git-status', msg)
 
 
 class GitQuickStatusCommand(WindowCommand, GitCmd):

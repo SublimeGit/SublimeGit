@@ -50,21 +50,6 @@
     "git_blame_warn_multiple_tabs": true,
 
     /*
-     * Persistent status bar message
-     *
-     * Any messages put on the status bar will automatically
-     * be removed after about 4 seconds. By default, SublimeGit
-     * will not try to force a persistent git status message.
-     * This means that the status message will appear for a
-     * short time each time a new buffer comes into focus.
-     *
-     * To always show the git status bar, set this to true.
-     * Even though this is completely async, it might hurt
-     * performance a little bit.
-     */
-    "git_persistent_status_bar_message": false,
-
-    /*
      * Executables
      *
      * The simplest way to make sure that everything works

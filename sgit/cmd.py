@@ -235,7 +235,7 @@ class Cmd(object):
         return startupinfo
 
     # sync commands
-    def cmd(self, cmd, stdin=None, cwd=None):
+    def cmd(self, cmd, stdin=None, cwd=None, ignore_errors=False):
         if not cwd:
             cwd = self.get_repo(self.get_window(), silent=False)
             if not cwd:
@@ -263,6 +263,8 @@ class Cmd(object):
 
             return (proc.returncode, stdout.decode(encoding))
         except OSError as e:
+            if ignore_errors:
+                return (0, '')
             sublime.error_message(self.get_executable_error())
             raise SublimeGitException("Could not execute command: %s" % e)
 
