@@ -1,4 +1,4 @@
-SublimeGit
-==========
+SublimeGit Issues
+=================
 
-Issue-only repository
+This is a public repository for hosting the Issue Tracker.
