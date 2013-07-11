@@ -1,0 +1,4 @@
+SublimeGit
+==========
+
+Issue-only repository
