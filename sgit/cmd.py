@@ -196,9 +196,11 @@ class Cmd(object):
         seconds_since_start = (datetime.today() - Cmd.started_at).seconds
         seconds_since_popup = (datetime.today() - Cmd.last_popup_at).seconds if Cmd.last_popup_at else None
 
-        if seconds_since_start < 15 * 60:
+        if hasattr(self, '_lpop') and self._lpop is False:
             return
-        if seconds_since_popup is not None and seconds_since_popup < 60 * 60:
+        if seconds_since_start < 30 * 60:
+            return
+        if seconds_since_popup is not None and seconds_since_popup < 120 * 60:
             return
 
         license = self.__get_license()

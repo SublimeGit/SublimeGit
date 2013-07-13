@@ -95,6 +95,7 @@ class GitCommitTemplateCommand(TextCommand):
 
 
 class GitCommitEventListener(EventListener):
+    _lpop = False
 
     def on_close(self, view):
         if view.settings().get('git_view') == 'commit' and view.id() in GitCommit.windows:

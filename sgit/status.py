@@ -191,6 +191,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
 
 
 class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
+    _lpop = False
 
     def is_visible(self):
         return False
@@ -226,6 +227,7 @@ class GitStatusEventListener(EventListener):
 
 
 class GitStatusBarEventListener(EventListener, GitCmd):
+    _lpop = False
 
     def on_activated(self, view):
         sublime.set_timeout(partial(self.set_status, view), 100)

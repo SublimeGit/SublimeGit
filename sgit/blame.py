@@ -209,6 +209,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
 
 
 class GitBlameEventListener(EventListener):
+    _lpop = False
 
     def on_selection_modified(self, view):
         if view.settings().get('git_view') == 'blame':
