@@ -11,7 +11,8 @@ from .util import GitPanelWriteCommand, GitPanelAppendCommand
 
 from .repo import GitInitCommand, GitSwitchRepoCommand
 
-from .diff import GitDiffCommand, GitDiffRefreshCommand, GitDiffStageHunkCommand
+from .diff import (GitDiffCommand, GitDiffRefreshCommand, GitDiffMoveCommand,
+                   GitDiffChangeHunkSizeCommand, GitDiffStageHunkCommand, GitDiffUnstageHunkCommand)
 
 from .show import GitShowCommand, GitShowRefreshCommand
 

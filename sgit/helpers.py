@@ -147,8 +147,14 @@ class GitStatusHelper(object):
 
 class GitDiffHelper(object):
 
-    def get_diff(self, path=None, cached=False):
-        args = ['-c', 'color.diff=false', 'diff', '--cached' if cached else None]
+    def get_diff(self, path=None, cached=False, unified=None):
+        try:
+            unified = int(unified)
+        except:
+            unified = None
+        args = ['-c', 'color.diff=false', 'diff',
+                '--cached' if cached else None,
+                '--unified=%s' % unified if unified else None]
         if path:
             args.extend(['--', path])
         return self.git_string(args, strip=False)

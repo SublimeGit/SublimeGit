@@ -862,5 +862,6 @@ class GitStatusDiffCommand(TextCommand, GitStatusTextCmd):
         window = self.view.window()
 
         for s, f in files:
-            cached = (s == STAGED_CHANGES)
-            window.run_command('git_diff', {'path': f, 'cached': cached})
+            if s != UNTRACKED_FILES:
+                cached = (s == STAGED_CHANGES)
+                window.run_command('git_diff', {'path': f, 'cached': cached})

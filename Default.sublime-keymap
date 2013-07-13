@@ -204,8 +204,56 @@
     },
 
     /*** GIT DIFF ***/
+    // Refresh
+    { "keys": ["r"], "command": "git_diff_refresh",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
+    },
+
+    // Increase and decrease hunk size
+    { "keys": ["+"], "command": "git_diff_change_hunk_size", "args": {"action": "increase"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
+    },
+    { "keys": ["-"], "command": "git_diff_change_hunk_size", "args": {"action": "decrease"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
+    },
+
+    // Move commands
+    { "keys": ["n"], "command": "git_diff_move", "args": {"goto": "hunk:next"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
+    },
+    { "keys": ["N"], "command": "git_diff_move", "args": {"goto": "file:next"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
+    },
+    { "keys": ["p"], "command": "git_diff_move", "args": {"goto": "hunk:prev"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
+    },
+    { "keys": ["P"], "command": "git_diff_move", "args": {"goto": "file:prev"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
+    },
+
     // Stage command
     { "keys": ["s"], "command": "git_diff_stage_hunk",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
+    },
+
+    // Unstage command
+    { "keys": ["u"], "command": "git_diff_unstage_hunk",
         "context": [
             { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
         ]
