@@ -794,7 +794,7 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
             staged = s == STAGED_CHANGES
 
             if staged and not self.is_up_to_date(f):
-                sublime.error_message("Can't discard staged changes to this file. Please unstage it first")
+                sublime.error_message("Can't discard staged changes to this file. Please unstage it first.")
                 continue
 
             if s == UNTRACKED_FILES:

@@ -12,13 +12,14 @@ class GitBranchHelper(object):
         branch = self.git_string(['symbolic-ref', '-q', 'HEAD'])
         return branch[11:] if branch.startswith('refs/heads/') else branch
 
-    def get_branches(self):
-        lines = self.git_lines(['branch', '--no-color', '--no-column'])
+    def get_branches(self, remotes=False):
+        lines = self.git_lines(['show-branch', '--list', '--no-color', '--remotes' if remotes else None])
 
         branches = []
         for line in lines:
             current = line.startswith('*')
-            name = line[2:].strip()
+            parts = re.split(r'[\[\]]', line, 3)
+            name = parts[1].strip()
             branches.append((current, name))
 
         return branches
@@ -72,7 +73,7 @@ class GitRemoteHelper(GitBranchHelper):
         return None
 
     def get_remote_branches(self, remote):
-        branches = [b.strip() for b in self.git_lines(['branch', '-r'])]
+        branches = [b for _, b in self.get_branches(remotes=True)]
         return [b for b in branches if b.startswith(remote + '/')]
 
     def format_quick_branches(self, branches):
