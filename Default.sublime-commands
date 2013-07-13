@@ -39,8 +39,8 @@
     { "caption": "Git: Pull", "command": "git_pull"},
     { "caption": "Git: Pull Current Branch", "command": "git_pull_current_branch"},
 
-    { "caption": "Git: Log", "command": "git_log", "args": {}},
-    { "caption": "Git: Quick Log", "command": "git_quick_log" },
+    { "caption": "Git: Log", "command": "git_quick_log"},
+    { "caption": "Git: Quick Log", "command": "git_quick_log"},
     { "caption": "Git: Quick Log Current File", "command": "git_quick_log_current_file"},
 
     { "caption": "Git: Show", "command": "git_show"},
