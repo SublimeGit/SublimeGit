@@ -18,6 +18,7 @@
 
     { "caption": "Git: Commit", "command": "git_commit"},
     { "caption": "Git: Quick Commit", "command": "git_quick_commit"},
+    { "caption": "Git: Quick Commit Current File", "command": "git_quick_commit_current_file"},
 
     { "caption": "Git: Stash", "command": "git_stash"},
     { "caption": "Git: Snapshot", "command": "git_snapshot"},

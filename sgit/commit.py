@@ -1,4 +1,5 @@
 # coding: utf-8
+from functools import partial
 import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 
@@ -136,12 +137,51 @@ class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
             sublime.error_message(GIT_WORKING_DIR_CLEAN.capitalize())
             return
 
-        def on_done(msg=None):
-            if not msg:
-                msg = ''
-            cmd = ['commit', '-F', '-'] if staged else ['commit', '-a', '-F', '-']
-            stdout = self.git_string(cmd, stdin=msg)
-            self.show_commit_panel(stdout)
-            self.window.run_command('git_status', {'refresh_only': True})
+        self.window.show_input_panel("Commit message:", '', self.on_commit_message, noop, noop)
 
-        self.window.show_input_panel("Commit message:", '', on_done, noop, noop)
+    def on_commit_message(self, msg=None):
+        if not msg:
+            msg = ''
+        cmd = ['commit', '-F', '-'] if self.has_staged_changes() else ['commit', '-a', '-F', '-']
+        stdout = self.git_string(cmd, stdin=msg)
+        self.show_commit_panel(stdout)
+        self.window.run_command('git_status', {'refresh_only': True})
+
+
+class GitQuickCommitCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
+    """
+    Documentation coming soon
+    """
+
+    def run(self, edit):
+        filename = self.view.file_name()
+        if not filename:
+            sublime.error_message("Cannot commit a file which has not been saved.")
+
+        if not self.file_in_git(filename):
+            if sublime.ok_cancel_dialog("The file %s is not tracked by git. Do you want to add it?" % filename, "Add file"):
+                exit, stdout = self.git(['add', '--force', '--', filename])
+                if exit == 0:
+                    sublime.status_message('Added %s' % filename)
+                else:
+                    sublime.error_message('git error: %s' % stdout)
+            else:
+                return
+
+        self.view.window().show_input_panel("Commit message:", '', partial(self.on_commit_message, filename), noop, noop)
+
+    def on_commit_message(self, filename, msg=None):
+        if not msg:
+            msg = ''
+
+        # run command
+        cmd = ['commit', '-F', '-', '--only', '--', filename]
+        stdout = self.git_string(cmd, stdin=msg)
+
+        # show output panel
+        panel = self.view.window().get_output_panel('git-commit')
+        panel.run_command('git_panel_write', {'content': stdout})
+        self.view.window().run_command('show_panel', {'panel': 'output.git-commit'})
+
+        # update status if necessary
+        self.view.window().run_command('git_status', {'refresh_only': True})

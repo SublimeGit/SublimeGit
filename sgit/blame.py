@@ -6,6 +6,7 @@ from sublime_plugin import TextCommand, WindowCommand, EventListener
 
 from .util import find_view_by_settings, get_setting
 from .cmd import GitCmd
+from .helpers import GitStatusHelper
 
 
 GIT_BLAME_TITLE_PREFIX = '*git-blame*: '
@@ -17,7 +18,7 @@ class GitBlameCache(object):
     lines = {}
 
 
-class GitBlameCommand(WindowCommand, GitCmd):
+class GitBlameCommand(WindowCommand, GitCmd, GitStatusHelper):
     """
     Run git blame on the current file.
 
@@ -48,9 +49,6 @@ class GitBlameCommand(WindowCommand, GitCmd):
         open more than 5 tabs. Set to ``false`` to turn this warning off.
 
     """
-
-    def file_in_git(self, filename):
-        return self.git_exit_code(['ls-files', filename, '--error-unmatch']) == 0
 
     def run(self, filename=None, revision=None):
         # check if file is saved

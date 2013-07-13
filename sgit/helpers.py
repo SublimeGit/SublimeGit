@@ -111,6 +111,9 @@ class GitErrorHelper(object):
 
 class GitStatusHelper(object):
 
+    def file_in_git(self, filename):
+        return self.git_exit_code(['ls-files', filename, '--error-unmatch']) == 0
+
     def has_changes(self):
         return self.has_staged_changes() or self.has_unstaged_changes()
 

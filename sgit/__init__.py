@@ -38,7 +38,7 @@ from .status import GitStatusBarEventListener, GitStatusEventListener
 from .add import GitQuickAddCommand, GitAddCurrentFileCommand
 
 from .commit import (GitCommitCommand, GitCommitTemplateCommand,
-                     GitCommitPerformCommand, GitQuickCommitCommand)
+                     GitCommitPerformCommand, GitQuickCommitCommand, GitQuickCommitCurrentFileCommand)
 from .commit import GitCommitEventListener
 
 from .stash import (GitStashCommand, GitSnapshotCommand,
