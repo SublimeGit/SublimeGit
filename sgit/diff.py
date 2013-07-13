@@ -1,10 +1,15 @@
 # coding: utf-8
+import re
+
 import sublime
 from sublime_plugin import WindowCommand, TextCommand
 
 from .util import find_view_by_settings
 from .cmd import GitCmd
 from .helpers import GitDiffHelper
+
+
+RE_DIFF_HEAD = re.compile(r'(---|\+\+\+){3} (a|b)/(dev/null)?')
 
 
 GIT_DIFF_TITLE = '*git-diff*'
@@ -84,9 +89,99 @@ class GitDiffRefreshCommand(TextCommand, GitCmd, GitDiffHelper):
             return
 
         diff = self.get_diff(path, cached)
-        if diff:
-            self.view.set_read_only(False)
-            if self.view.size() > 0:
-                self.view.erase(edit, sublime.Region(0, self.view.size()))
-            self.view.insert(edit, 0, diff)
-            self.view.set_read_only(True)
+        self.view.set_read_only(False)
+        if self.view.size() > 0:
+            self.view.erase(edit, sublime.Region(0, self.view.size()))
+        self.view.insert(edit, 0, diff)
+        self.view.set_read_only(True)
+
+
+class GitDiffStageHunkCommand(TextCommand, GitCmd):
+
+    def parse_diff(self):
+        sections = []
+        state = None
+
+        prev_file = None
+        current_file = {}
+        current_hunks = []
+
+        prev_hunk = None
+        current_hunk = None
+
+        for line in self.view.lines(sublime.Region(0, self.view.size())):
+            linetext = self.view.substr(line)
+
+            if linetext.startswith('diff --git'):
+                state = 'header'
+                # new file starts
+                if prev_file != line:
+                    if prev_file is not None:
+                        if current_hunk:
+                            current_hunks.append(current_hunk)
+                        sections.append((current_file, current_hunks))
+                    prev_file = line
+                    prev_hunk = None
+
+                current_file = line
+                current_hunks = []
+            elif state == 'header' and RE_DIFF_HEAD.match(linetext):
+                current_file = current_file.cover(line)
+            elif linetext.startswith('@@'):
+                state = 'hunk'
+                # new hunk starts
+                if prev_hunk != line:
+                    if prev_hunk is not None:
+                        current_hunks.append(current_hunk)
+                    prev_hunk = line
+
+                current_hunk = line
+            elif state == 'hunk' and linetext[0] in (' ', '-', '+'):
+                current_hunk = current_hunk.cover(line)
+            elif state == 'header':
+                current_file = current_file.cover(line)
+
+        current_hunks.append(current_hunk)
+        sections.append((current_file, current_hunks))
+        return sections
+
+    def build_lookup(self, parsed_diff):
+        lookup = []
+        for header, hunks in parsed_diff:
+            for h in hunks:
+                lookup.append((h, header))
+        return lookup
+
+    def create_patch(self, selected_hunks):
+        patch = []
+        for header, hunks in selected_hunks.items():
+            patch.append(self.view.substr(header))
+            for h in hunks:
+                patch.append(self.view.substr(h))
+        return "%s\n" % "\n".join(patch)
+
+    def run(self, edit):
+        # we can't stage stuff that's already staged
+        if self.view.settings().get('git_diff_cached') is True:
+            return
+
+        # parse the diff view
+        diffspec = self.parse_diff()
+        lookup = self.build_lookup(diffspec)
+
+        # find the applicable hunks
+        hunks = {}
+        for s in self.view.sel():
+            for hunk, header in lookup:
+                if s.intersects(hunk):
+                    hunks.setdefault(header, []).append(hunk)
+
+        if not hunks:
+            return
+
+        # create the patch to apply
+        patch = self.create_patch(hunks)
+        print [patch]
+        exit, stdout = self.git(['apply', '--cached', '--index', '-'], stdin=patch)
+        print exit, stdout
+        self.view.run_command('git_diff_refresh')

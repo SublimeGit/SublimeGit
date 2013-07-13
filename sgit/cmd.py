@@ -209,19 +209,19 @@ class Cmd(object):
             Cmd.last_popup_at = datetime.today()
 
     # cmd helpers
-    def _string(self, result):
-        exit, stdout = result
-        return stdout.strip()
+    def _string(self, cmd, strip=True, *args, **kwargs):
+        exit, stdout = self.cmd(cmd, *args, **kwargs)
+        return stdout.strip() if strip else stdout
 
-    def _lines(self, result):
-        exit, stdout = result
+    def _lines(self, cmd, *args, **kwargs):
+        exit, stdout = self.cmd(cmd, *args, **kwargs)
         stdout = stdout.rstrip()
         if not stdout:
             return []
         return stdout.split('\n')
 
-    def _exit_code(self, result):
-        exit, stdout = result
+    def _exit_code(self, cmd, *args, **kwargs):
+        exit, stdout = self.cmd(cmd, *args, **kwargs)
         return exit
 
     def build_command(self, cmd):
@@ -269,15 +269,6 @@ class Cmd(object):
                 return (0, '')
             sublime.error_message(self.get_executable_error())
             raise SublimeGitException("Could not execute command: %s" % e)
-
-    def cmd_string(self, *args, **kwargs):
-        return self._string(self.cmd(*args, **kwargs))
-
-    def cmd_lines(self, *args, **kwargs):
-        return self._lines(self.cmd(*args, **kwargs))
-
-    def cmd_exit_code(self, *args, **kwargs):
-        return self._exit_code(self.cmd(*args, **kwargs))
 
     # async commands
     def cmd_async(self, cmd, cwd=None, **callbacks):
@@ -343,13 +334,13 @@ class GitCmd(Cmd):
         return self.cmd(cmd, *args, **kwargs)
 
     def git_string(self, cmd, *args, **kwargs):
-        return self._string(self.cmd(cmd, *args, **kwargs))
+        return self._string(cmd, *args, **kwargs)
 
     def git_lines(self, cmd, *args, **kwargs):
-        return self._lines(self.cmd(cmd, *args, **kwargs))
+        return self._lines(cmd, *args, **kwargs)
 
     def git_exit_code(self, cmd, *args, **kwargs):
-        return self._exit_code(self.cmd(cmd, *args, **kwargs))
+        return self._exit_code(cmd, *args, **kwargs)
 
     def git_async(self, cmd, *args, **kwargs):
         return self.cmd_async(cmd, *args, **kwargs)
@@ -363,13 +354,13 @@ class GitFlowCmd(Cmd):
         return self.cmd(cmd, *args, **kwargs)
 
     def git_flow_string(self, cmd, *args, **kwargs):
-        return self._string(self.cmd(cmd, *args, **kwargs))
+        return self._string(cmd, *args, **kwargs)
 
     def git_flow_lines(self, cmd, *args, **kwargs):
-        return self._lines(self.cmd(cmd, *args, **kwargs))
+        return self._lines(cmd, *args, **kwargs)
 
     def git_flow_exit_code(self, cmd, *args, **kwargs):
-        return self._exit_code(self.cmd(cmd, *args, **kwargs))
+        return self._exit_code(cmd, *args, **kwargs)
 
     def git_flow_async(self, cmd, *args, **kwargs):
         return self.cmd_async(cmd, *args, **kwargs)
@@ -383,13 +374,13 @@ class LegitCmd(Cmd):
         return self.cmd(cmd, *args, **kwargs)
 
     def legit_string(self, cmd, *args, **kwargs):
-        return self._string(self.cmd(cmd, *args, **kwargs))
+        return self._string(cmd, *args, **kwargs)
 
     def legit_lines(self, cmd, *args, **kwargs):
-        return self._lines(self.cmd(cmd, *args, **kwargs))
+        return self._lines(cmd, *args, **kwargs)
 
     def legit_exit_code(self, cmd, *args, **kwargs):
-        return self._exit_code(self.cmd(cmd, *args, **kwargs))
+        return self._exit_code(cmd, *args, **kwargs)
 
     def legit_async(self, cmd, *args, **kwargs):
         return self.cmd_async(cmd, *args, **kwargs)

@@ -151,7 +151,7 @@ class GitDiffHelper(object):
         args = ['-c', 'color.diff=false', 'diff', '--cached' if cached else None]
         if path:
             args.extend(['--', path])
-        return self.git_string(args)
+        return self.git_string(args, strip=False)
 
 
 class GitShowHelper(object):

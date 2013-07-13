@@ -201,5 +201,13 @@
         "context": [
             { "key": "selector", "operator": "equal", "operand": "meta.git-blame.line"}
         ]
+    },
+
+    /*** GIT DIFF ***/
+    // Stage command
+    { "keys": ["s"], "command": "git_diff_stage_hunk",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff.command"}
+        ]
     }
 ]
