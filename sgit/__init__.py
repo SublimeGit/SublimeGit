@@ -45,7 +45,7 @@ from .stash import (GitStashCommand, GitSnapshotCommand,
                     GitStashApplyCommand, GitStashPopCommand)
 
 from .checkout import (GitCheckoutBranchCommand, GitCheckoutCommitCommand,
-                       GitCheckoutNewBranchCommand)
+                       GitCheckoutNewBranchCommand, GitCheckoutCurrentFileCommand)
 
 from .merge import GitMergeCommand
 

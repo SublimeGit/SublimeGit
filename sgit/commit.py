@@ -150,13 +150,14 @@ class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
 
 class GitQuickCommitCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
     """
-    Documentation coming soon
+    Documentation coming soon.
     """
 
     def run(self, edit):
         filename = self.view.file_name()
         if not filename:
             sublime.error_message("Cannot commit a file which has not been saved.")
+            return
 
         if not self.file_in_git(filename):
             if sublime.ok_cancel_dialog("The file %s is not tracked by git. Do you want to add it?" % filename, "Add file"):

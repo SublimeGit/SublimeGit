@@ -2,11 +2,11 @@
 from functools import partial
 
 import sublime
-from sublime_plugin import WindowCommand
+from sublime_plugin import WindowCommand, TextCommand
 
 from .util import noop
 from .cmd import GitCmd
-from .helpers import GitBranchHelper, GitErrorHelper, GitLogHelper
+from .helpers import GitStatusHelper, GitBranchHelper, GitErrorHelper, GitLogHelper
 
 
 GIT_BRANCH_EXISTS_MSG = "The branch %s already exists. Do you want to overwrite it?"
@@ -111,3 +111,27 @@ class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
 
         self.git(['checkout', b, branch])
         self.window.run_command('git_status', {'refresh_only': True})
+
+
+class GitCheckoutCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
+    """
+    Documentation coming soon.
+    """
+
+    def run(self, edit):
+        filename = self.view.file_name()
+        if not filename:
+            sublime.error_message("Cannot checkout an unsaved file.")
+            return
+
+        if not self.file_in_git(filename):
+            sublime.error_message("The file %s is not tracked by git.")
+            return
+
+        exit, stdout = self.git(['checkout', '--quiet', '--', filename])
+        if exit == 0:
+            sublime.status_message('Checked out %s' % filename)
+            view = self.view
+            sublime.set_timeout(partial(view.run_command, 'revert'), 50)
+        else:
+            sublime.error_message('git error: %s' % stdout)
