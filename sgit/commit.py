@@ -162,11 +162,11 @@ class GitQuickCommitCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
 
         if not self.file_in_git(filename):
             if sublime.ok_cancel_dialog("The file %s is not tracked by git. Do you want to add it?" % filename, "Add file"):
-                exit, stdout = self.git(['add', '--force', '--', filename])
+                exit, stdout, stderr = self.git(['add', '--force', '--', filename])
                 if exit == 0:
                     sublime.status_message('Added %s' % filename)
                 else:
-                    sublime.error_message('git error: %s' % stdout)
+                    sublime.error_message('git error: %s' % stderr)
             else:
                 return
 

@@ -109,8 +109,8 @@ class GitAddCurrentFileCommand(TextCommand, GitCmd):
             sublime.error_message('Cannot add a file which has not been saved.')
             return
 
-        exit, stdout = self.git(['add', '--force', '--', filename])
+        exit, stdout, stderr = self.git(['add', '--force', '--', filename])
         if exit == 0:
             sublime.status_message('Added %s' % filename)
         else:
-            sublime.error_message('git error: %s' % stdout)
+            sublime.error_message('git error: %s' % stderr)

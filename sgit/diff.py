@@ -295,7 +295,7 @@ class GitDiffUnstageHunkCommand(TextCommand, GitDiffTextCmd):
         hunks = self.get_hunks_from_selection(self.view.sel())
         if hunks:
             patch = self.create_patch(hunks)
-            exit, stdout = self.git(['apply', '--ignore-whitespace', '--cached', '--reverse', '-'], stdin=patch)
+            exit, stdout, stderr = self.git(['apply', '--ignore-whitespace', '--cached', '--reverse', '-'], stdin=patch)
             self.view.run_command('git_diff_refresh', {'goto': 'hunk:next'})
 
 
@@ -312,5 +312,5 @@ class GitDiffStageHunkCommand(TextCommand, GitDiffTextCmd):
         hunks = self.get_hunks_from_selection(self.view.sel())
         if hunks:
             patch = self.create_patch(hunks)
-            exit, stdout = self.git(['apply', '--ignore-whitespace', '--cached', '-'], stdin=patch)
+            exit, stdout, stderr = self.git(['apply', '--ignore-whitespace', '--cached', '-'], stdin=patch)
             self.view.run_command('git_diff_refresh', {'goto': 'hunk:next'})

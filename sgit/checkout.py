@@ -41,13 +41,13 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
         if current:
             return
 
-        exit_code, stdout = self.git(['checkout', branch])
+        exit_code, stdout, stderr = self.git(['checkout', branch])
         if exit_code == 0:
             panel = self.window.get_output_panel('git-checkout')
             panel.run_command('git_panel_write', {'content': stdout})
             self.window.run_command('show_panel', {'panel': 'output.git-checkout'})
         else:
-            sublime.error_message(self.format_error_message(stdout))
+            sublime.error_message(self.format_error_message(stderr))
         self.window.run_command('git_status', {'refresh_only': True})
 
 
@@ -72,11 +72,11 @@ class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
             return
 
         commit = hashes[idx]
-        exit_code, stdout = self.git(['checkout', commit])
+        exit_code, stdout, stderr = self.git(['checkout', commit])
         if exit_code == 0:
             sublime.message_dialog(stdout)
         else:
-            sublime.error_message(self.format_error_message(stdout))
+            sublime.error_message(self.format_error_message(stderr))
 
 
 class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
@@ -128,10 +128,10 @@ class GitCheckoutCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
             sublime.error_message("The file %s is not tracked by git.")
             return
 
-        exit, stdout = self.git(['checkout', '--quiet', '--', filename])
+        exit, stdout, stderr = self.git(['checkout', '--quiet', '--', filename])
         if exit == 0:
             sublime.status_message('Checked out %s' % filename)
             view = self.view
             sublime.set_timeout(partial(view.run_command, 'revert'), 50)
         else:
-            sublime.error_message('git error: %s' % stdout)
+            sublime.error_message('git error: %s' % stderr)

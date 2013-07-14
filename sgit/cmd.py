@@ -210,18 +210,18 @@ class Cmd(object):
 
     # cmd helpers
     def _string(self, cmd, strip=True, *args, **kwargs):
-        exit, stdout = self.cmd(cmd, *args, **kwargs)
+        _, stdout, _ = self.cmd(cmd, *args, **kwargs)
         return stdout.strip() if strip else stdout
 
     def _lines(self, cmd, *args, **kwargs):
-        exit, stdout = self.cmd(cmd, *args, **kwargs)
+        _, stdout, _ = self.cmd(cmd, *args, **kwargs)
         stdout = stdout.rstrip()
         if not stdout:
             return []
         return stdout.split('\n')
 
     def _exit_code(self, cmd, *args, **kwargs):
-        exit, stdout = self.cmd(cmd, *args, **kwargs)
+        exit, _, _ = self.cmd(cmd, *args, **kwargs)
         return exit
 
     def build_command(self, cmd):
@@ -255,7 +255,7 @@ class Cmd(object):
             proc = subprocess.Popen(command,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
+                                    stderr=subprocess.PIPE,
                                     startupinfo=self.startupinfo())
             stdout, stderr = proc.communicate(stdin)
 
@@ -263,7 +263,7 @@ class Cmd(object):
 
             self.__check_license()
 
-            return (proc.returncode, stdout.decode(encoding))
+            return (proc.returncode, stdout.decode(encoding), stderr.decode(encoding))
         except OSError as e:
             if ignore_errors:
                 return (0, '')
