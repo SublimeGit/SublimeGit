@@ -1,5 +1,6 @@
 # coding: utf-8
 from functools import partial
+
 import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 
@@ -89,7 +90,7 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
 class GitCommitTemplateCommand(TextCommand):
 
     def is_visible(self):
-        return True
+        return False
 
     def run(self, edit, template=''):
         if self.view.size() > 0:
@@ -119,6 +120,17 @@ class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
 
     def is_visible(self):
         return False
+
+
+class GitCommitSaveCommand(TextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit):
+        if self.view.settings().get('git_view') == 'commit' and self.view.id() in GitCommit.windows:
+            return
+        self.view.run_command('save')
 
 
 class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):

@@ -49,8 +49,12 @@
 
     /** GIT COMMIT **/
 
-    // overwrite some stuff
-    { "keys": ["super+s"], "command": "noop", "context": [{ "key": "selector", "operator": "equal", "operand": "text.git-commit"}]}
+    // Intercept save
+    { "keys": ["super+s"], "command": "git_commit_save",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-commit"}
+        ]
+    }
 
     /** END GIT COMMIT **/
 ]
