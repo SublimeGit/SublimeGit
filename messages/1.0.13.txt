@@ -33,5 +33,6 @@ Bug Fixes:
 
  - Git: Commit now correctly handles warnings about line ending changes.
 
+ - Included Git: Diff Cached command, which was excluded by mistake.
 
 
