@@ -10,7 +10,7 @@ from .util import abbreviate_dir
 from .util import find_view_by_settings
 from .util import noop, get_setting
 from .cmd import GitCmd
-from .helpers import GitStatusHelper, GitRemoteHelper, GitStashHelper
+from .helpers import GitStatusHelper, GitRemoteHelper, GitStashHelper, GitErrorHelper
 
 
 logger = logging.getLogger(__name__)
@@ -824,16 +824,16 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
                 self.git(['reset', '--hard'])
 
 
-class GitStatusStashCmd(GitStatusTextCmd, GitStashHelper):
+class GitStatusStashCmd(GitStatusTextCmd, GitStashHelper, GitErrorHelper):
 
     def pop_or_apply_selected_stashes(self, cmd):
         goto = None
         stashes = self.get_selected_stashes()
         if stashes:
             for name, title in stashes:
-                exit_code, stdout = self.git(['stash', cmd, '-q', 'stash@{%s}' % name])
+                exit_code, stdout, stderr = self.git(['stash', cmd, '-q', 'stash@{%s}' % name])
                 if exit_code != 0:
-                    sublime.error_message(self.format_error_message(stdout))
+                    sublime.error_message(self.format_error_message(stderr))
             if cmd == "apply":
                 region = self.view.line(self.get_first_point())
                 goto = "point:%s" % region.begin()
