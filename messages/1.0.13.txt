@@ -6,12 +6,32 @@ Enhancements:
  - Added Git: Quick Commit Current File command. This command will commit ONLY
    the current file, regardless of what else has been staged.
 
- -
+ - Added Git: Checkout Current File command. This command will discard the
+   changes to the current file and reset it to the stage it was in the last
+   time it was committed.
+
+ - Made the license popup a little less annoying. It will now only run when
+   you actually perform git commands (i.e. not just updating the status bar
+   with the branch). Also, there is a 30 minute grace period at the beginning
+   of each editor session, and the popup will be shown about every 2 hours.
+
+ - Very rough support for staging individual hunks. With the diff view open,
+   press "s" to stage a hunk, or "u" to unstage it (if in the cached view).
+   It's also possible to navigate hunks/files with n/N for next hunk/file
+   or p/P for previous hunk/file respectively.
 
 
 Bug Fixes:
 ----------
+ - Git: Log now behaves exactly like Git: Quick Log. This is a temporary fix
+   until the full Git: Log command is implemented properly.
 
+ - Git branch listing now uses plumbing commands to fix issue with git versions
+   below 1.7.10.
+
+ - Git: Blame now actually shows a date, instead of just day, month and timestamp.
+
+ - Git: Commit now correctly handles warnings about line ending changes.
 
 
 
