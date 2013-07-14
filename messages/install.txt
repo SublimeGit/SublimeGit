@@ -1,0 +1,44 @@
+Welcome to SublimeGit
+=====================
+
+SublimeGit is a full-featured, commercial plugin for integrating
+git into Sublime Text 2 and 3. To read more about it, or purchase
+a license, go to https://sublimegit.net.
+
+
+Quickstart
+----------
+Make sure to restart Sublime Text after installing SublimeGit.
+
+Run the command "Git: Status" to open the status view. This
+is where you'll spend most of the time when interacting with
+git through SublimeGit. From here you can stage/unstage files,
+manage stashes, view diffs, and initiate a commit.
+
+Other commands are available in the command palette (cmd+shift+p
+on OS X, ctrl+shift+p on Windows/Linux). They are all prefixed
+with "Git:" and most of them do exactly what it says on the label.
+
+
+Tutorial
+--------
+For the full tutorial, go to:
+
+    https://docs.sublimegit.net/tutorial.html
+
+
+Trouble Getting Started?
+------------------------
+If you are on windows, or don't usually use git from the command
+line, there might be some things you'll need to set up. Go here
+for instructions on how to get set up:
+
+    https://docs.sublimegit.net/quickstart.html
+
+
+Issues, Questions or Bugs?
+--------------------------
+Send a mail to support@sublimegit.net, or report it in the issue
+tracker:
+
+    https://github.com/SublimeGit/SublimeGit/issues

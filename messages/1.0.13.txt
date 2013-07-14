@@ -1,5 +1,5 @@
-
 SublimeGit 1.0.13
+=================
 
 Enhancements:
 -------------
@@ -35,4 +35,4 @@ Bug Fixes:
 
  - Included Git: Diff Cached command, which was excluded by mistake.
 
-
+ - Git: Quick Log should now be more robust.
