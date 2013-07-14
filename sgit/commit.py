@@ -16,7 +16,7 @@ GIT_NOTHING_STAGED = u'No changes added to commit. Use s on files/sections in th
 GIT_COMMIT_TEMPLATE = u"""
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
-{status}"""
+{status}{errors}"""
 
 
 class GitCommit(object):
@@ -34,8 +34,13 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
         cmd = ['-c', 'color.diff=false', '-c', 'color.status=false', 'commit', '--dry-run', '--status',
                '--all' if add else None,
                '--verbose' if self.is_verbose else None]
-        exit, stdout, _ = self.git(cmd)
-        msg = GIT_COMMIT_TEMPLATE.format(status=stdout)
+        exit, stdout, stderr = self.git(cmd)
+        stderr = stderr.strip()
+        errors = []
+        if stderr:
+            for line in stderr.splitlines():
+                errors.append("# %s" % line)
+        msg = GIT_COMMIT_TEMPLATE.format(status=stdout, errors="\n".join(errors))
         return msg
 
     def show_commit_panel(self, content):

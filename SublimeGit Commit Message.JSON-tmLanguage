@@ -43,6 +43,13 @@
             }
         },
         {
+            "name": "comment.line.number-sign.git-commit",
+            "match": "^\\s*# (warning:.+)",
+            "captures": {
+                "1": { "name": "markup.deleted.warning.git-commit" }
+            }
+        },
+        {
             "name": "meta.git-commit.line",
             "match": "^\\s*((?:#   )|(?:#\t))(.+:)(\\s+)(.+)",
             "captures": {
