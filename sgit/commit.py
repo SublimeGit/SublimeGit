@@ -108,8 +108,8 @@ class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
 
     def run(self, message, add=False):
         cmd = ['commit', '--cleanup=strip', '-a' if add else None, '--verbose' if self.is_verbose else None, '-F', '-']
-        stdout = self.git_string(cmd, stdin=message)
-        self.show_commit_panel(stdout)
+        exit, stdout, stderr = self.git(cmd, stdin=message)
+        self.show_commit_panel(stdout if exit == 0 else stderr)
         self.window.run_command('git_status', {'refresh_only': True})
 
     def is_visible(self):
