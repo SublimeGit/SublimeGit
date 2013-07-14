@@ -168,22 +168,31 @@ class GitShowHelper(object):
 
 class GitLogHelper(object):
 
-    NULL = u'\u0000'
-    GIT_QUICK_LOG_FORMAT = ('%s%n'   # subject\n
-                            '%H%n'   # sha1\n
-                            '%an%n'  # author name\n
-                            '%aE%n'  # author email\n
-                            '%ad%n'  # auth date\n
-                            '%ar')   # auth date relative
+    GIT_QUICK_LOG_FORMAT = ('%s%x03'   # subject
+                            '%H%x03'   # sha1
+                            '%an%x03'  # author name
+                            '%aE%x03'  # author email
+                            '%ad%x03'  # auth date
+                            '%ar'    # auth date relative
+                            '%x04')
 
     def get_quick_log(self, path=None, follow=False):
-        cmd = ['log', '--no-color', '-z', '--date=local', '--format=%s' % self.GIT_QUICK_LOG_FORMAT]
+        cmd = ['log', '--no-color', '--date=local', '--format=%s' % self.GIT_QUICK_LOG_FORMAT]
         if follow:
             cmd.append('--follow')
         if path:
             cmd.extend(['--', path])
-        out = self.git_string(cmd)
-        return [s.split('\n') for s in out.split(self.NULL) if s]
+        out = self.git_string(cmd, strip=False)
+
+        lines = []
+        for line in out.split(u'\u0004'):
+            line = line.strip()
+            if line:
+                parts = line.split(u'\u0003')
+                if len(parts) != 6:
+                    raise Exception("The line %s splits to %s", line, parts)
+                lines.append(parts)
+        return lines
 
     def format_quick_log(self, path=None, follow=False):
         log = self.get_quick_log(path, follow)
