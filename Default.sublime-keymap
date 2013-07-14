@@ -224,36 +224,36 @@
     },
 
     // Move commands
-    { "keys": ["n"], "command": "git_diff_move", "args": {"goto": "hunk:next"},
+    { "keys": ["n"], "command": "git_diff_move", "args": {"item": "hunk", "which": "next"},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
         ]
     },
-    { "keys": ["N"], "command": "git_diff_move", "args": {"goto": "file:next"},
+    { "keys": ["N"], "command": "git_diff_move", "args": {"item": "file", "which": "next"},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
         ]
     },
-    { "keys": ["p"], "command": "git_diff_move", "args": {"goto": "hunk:prev"},
+    { "keys": ["p"], "command": "git_diff_move", "args": {"item": "hunk", "which": "prev"},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
         ]
     },
-    { "keys": ["P"], "command": "git_diff_move", "args": {"goto": "file:prev"},
+    { "keys": ["P"], "command": "git_diff_move", "args": {"item": "file", "which": "prev"},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
         ]
     },
 
     // Stage command
-    { "keys": ["s"], "command": "git_diff_stage_hunk",
+    { "keys": ["s"], "command": "git_diff_stage_unstage_hunk", "args": {"reverse": false},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
         ]
     },
 
     // Unstage command
-    { "keys": ["u"], "command": "git_diff_unstage_hunk",
+    { "keys": ["u"], "command": "git_diff_stage_unstage_hunk", "args": {"reverse": true},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
         ]
