@@ -34,8 +34,8 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
         cmd = ['-c', 'color.diff=false', '-c', 'color.status=false', 'commit', '--dry-run', '--status',
                '--all' if add else None,
                '--verbose' if self.is_verbose else None]
-        status = self.git_string(cmd)
-        msg = GIT_COMMIT_TEMPLATE.format(status=status)
+        exit, stdout, _ = self.git(cmd)
+        msg = GIT_COMMIT_TEMPLATE.format(status=stdout)
         return msg
 
     def show_commit_panel(self, content):
