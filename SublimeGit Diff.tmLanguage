@@ -11,9 +11,7 @@
 	<key>patterns</key>
 	<array>
 		<dict>
-			<key>begin</key>
-			<string>^(diff --git )(\w+/.+) (\w+/.+)\n</string>
-			<key>beginCaptures</key>
+			<key>captures</key>
 			<dict>
 				<key>1</key>
 				<dict>
@@ -31,69 +29,80 @@
 					<string>meta.diff.git-diff.header.to-file</string>
 				</dict>
 			</dict>
-			<key>end</key>
-			<string>^757c4c04-cf6c-4f8f-b704-4873aee4066d$</string>
+			<key>match</key>
+			<string>^(diff --git )(\w+/.+) (\w+/.+)\n</string>
 			<key>name</key>
 			<string>source.git-diff.command</string>
-			<key>patterns</key>
-			<array>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
 				<dict>
-					<key>captures</key>
-					<dict>
-						<key>1</key>
-						<dict>
-							<key>name</key>
-							<string>meta.diff.git-diff.header.extended.index.from-sha</string>
-						</dict>
-						<key>2</key>
-						<dict>
-							<key>name</key>
-							<string>meta.diff.git-diff.header.extended.index.to-sha</string>
-						</dict>
-						<key>3</key>
-						<dict>
-							<key>name</key>
-							<string>meta.diff.git-diff.header.extended.index.mode</string>
-						</dict>
-					</dict>
-					<key>match</key>
-					<string>^index (\w+)..(\w+) ?(\d+)?\n</string>
 					<key>name</key>
-					<string>meta.diff.git-diff.header.extended.index</string>
+					<string>meta.diff.git-diff.header.extended.index.from-sha</string>
 				</dict>
+				<key>2</key>
 				<dict>
-					<key>captures</key>
-					<dict>
-						<key>1</key>
-						<dict>
-							<key>name</key>
-							<string>meta.diff.git-diff.header.extended.modechange.mode</string>
-						</dict>
-					</dict>
-					<key>match</key>
-					<string>^(:?old mode|new mode|deleted file mode|new file mode) (\d+)\n</string>
 					<key>name</key>
-					<string>meta.diff.git-diff.header.extended.modechange</string>
+					<string>meta.diff.git-diff.header.extended.index.to-sha</string>
 				</dict>
+				<key>3</key>
 				<dict>
-					<key>captures</key>
-					<dict>
-						<key>1</key>
-						<dict>
-							<key>name</key>
-							<string>meta.diff.git-diff.header.extended.pathchange.path</string>
-						</dict>
-					</dict>
-					<key>match</key>
-					<string>^(:?copy from|copy to|rename from|rename to) (.+)\n</string>
 					<key>name</key>
-					<string>meta.diff.git-diff.header.extended.pathchange</string>
+					<string>meta.diff.git-diff.header.extended.index.mode</string>
 				</dict>
+			</dict>
+			<key>match</key>
+			<string>^index (\w+)..(\w+) ?(\d+)?\n</string>
+			<key>name</key>
+			<string>meta.diff.git-diff.header.extended.index</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
 				<dict>
-					<key>include</key>
-					<string>source.diff</string>
+					<key>name</key>
+					<string>meta.diff.git-diff.header.extended.modechange.mode</string>
 				</dict>
-			</array>
+			</dict>
+			<key>match</key>
+			<string>^(:?old mode|new mode|deleted file mode|new file mode) (\d+)\n</string>
+			<key>name</key>
+			<string>meta.diff.git-diff.header.extended.modechange</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>markup.inserted.git-diff.clean</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(There are no (staged|unstaged) changes to this file)\n</string>
+			<key>name</key>
+			<string>meta.git-diff.clean</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>meta.diff.git-diff.header.extended.pathchange.path</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(:?copy from|copy to|rename from|rename to) (.+)\n</string>
+			<key>name</key>
+			<string>meta.diff.git-diff.header.extended.pathchange</string>
+		</dict>
+		<dict>
+			<key>include</key>
+			<string>source.diff</string>
 		</dict>
 	</array>
 	<key>scopeName</key>

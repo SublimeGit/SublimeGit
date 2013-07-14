@@ -5,39 +5,45 @@
     "patterns": [
         {
             "name": "source.git-diff.command",
-            "begin": "^(diff --git )(\\w+/.+) (\\w+/.+)\\n",
-            "beginCaptures": {
+            "match": "^(diff --git )(\\w+/.+) (\\w+/.+)\\n",
+            "captures": {
                 "1": { "name": "meta.diff" },
                 "2": { "name": "meta.diff.git-diff.header.from-file" },
                 "3": { "name": "meta.diff.git-diff.header.to-file" }
-            },
-            "patterns": [
-                {
-                    "name": "meta.diff.git-diff.header.extended.index",
-                    "match": "^index (\\w+)..(\\w+) ?(\\d+)?\\n",
-                    "captures": {
-                        "1": { "name": "meta.diff.git-diff.header.extended.index.from-sha" },
-                        "2": { "name": "meta.diff.git-diff.header.extended.index.to-sha" },
-                        "3": { "name": "meta.diff.git-diff.header.extended.index.mode" }
-                    }
-                },
-                {
-                    "name": "meta.diff.git-diff.header.extended.modechange",
-                    "match": "^(:?old mode|new mode|deleted file mode|new file mode) (\\d+)\\n",
-                    "captures": {
-                        "1": { "name": "meta.diff.git-diff.header.extended.modechange.mode" }
-                    }
-                },
-                {
-                    "name": "meta.diff.git-diff.header.extended.pathchange",
-                    "match": "^(:?copy from|copy to|rename from|rename to) (.+)\\n",
-                    "captures": {
-                        "1": { "name": "meta.diff.git-diff.header.extended.pathchange.path" }
-                    }
-                },
-                { "include": "source.diff" }
-            ],
-            "end": "^757c4c04-cf6c-4f8f-b704-4873aee4066d$"
+            }
+        },
+        {
+            "name": "meta.diff.git-diff.header.extended.index",
+            "match": "^index (\\w+)..(\\w+) ?(\\d+)?\\n",
+            "captures": {
+                "1": { "name": "meta.diff.git-diff.header.extended.index.from-sha" },
+                "2": { "name": "meta.diff.git-diff.header.extended.index.to-sha" },
+                "3": { "name": "meta.diff.git-diff.header.extended.index.mode" }
+            }
+        },
+        {
+            "name": "meta.diff.git-diff.header.extended.modechange",
+            "match": "^(:?old mode|new mode|deleted file mode|new file mode) (\\d+)\\n",
+            "captures": {
+                "1": { "name": "meta.diff.git-diff.header.extended.modechange.mode" }
+            }
+        },
+        {
+            "name": "meta.git-diff.clean",
+            "match": "^(There are no (staged|unstaged) changes to this file)\\n",
+            "captures": {
+                "1": { "name": "markup.inserted.git-diff.clean" }
+            }
+        },
+        {
+            "name": "meta.diff.git-diff.header.extended.pathchange",
+            "match": "^(:?copy from|copy to|rename from|rename to) (.+)\\n",
+            "captures": {
+                "1": { "name": "meta.diff.git-diff.header.extended.pathchange.path" }
+            }
+        },
+        {
+            "include": "source.diff"
         }
     ],
     "uuid": "757c4c04-cf6c-4f8f-b704-4873aee4066d"

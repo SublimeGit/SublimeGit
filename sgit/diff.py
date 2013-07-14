@@ -1,5 +1,6 @@
 # coding: utf-8
 import re
+from functools import partial
 
 import sublime
 from sublime_plugin import WindowCommand, TextCommand
@@ -54,7 +55,7 @@ class GitDiffCommand(WindowCommand, GitCmd):
                 view.settings().set('git_diff_cached', cached)
                 view.settings().set('git_diff_unified', 3)
 
-            view.run_command('git_diff_refresh', {'path': path, 'cached': cached})
+            view.run_command('git_diff_refresh', {'path': path, 'cached': cached, 'goto': 'hunk:first'})
 
     def get_view_title(self, path=None, cached=False):
         if cached:
@@ -80,55 +81,7 @@ class GitDiffCachedCommand(GitDiffCommand):
         super(GitDiffCachedCommand, self).run(path=path, cached=True)
 
 
-class GitDiffRefreshCommand(TextCommand, GitCmd, GitDiffHelper):
-
-    def is_visible(self):
-        return False
-
-    def run(self, edit, path=None, cached=False, row=None):
-        path = path if path else self.view.settings().get('git_diff_path')
-        cached = cached if cached else self.view.settings().get('git_diff_cached')
-        unified = self.view.settings().get('git_diff_unified', 3)
-
-        if path is None or cached is None:
-            return
-
-        if self.view.sel():
-            pre_point = self.view.sel()[0].begin()
-        else:
-            pre_point = 0
-
-        diff = self.get_diff(path, cached, unified=unified)
-        self.view.set_read_only(False)
-        if self.view.size() > 0:
-            self.view.erase(edit, sublime.Region(0, self.view.size()))
-        self.view.insert(edit, 0, diff)
-        self.view.set_read_only(True)
-
-        self.view.sel().clear()
-        if row:
-            point = min(self.view.size(), self.view.text_point(row, 0))
-        else:
-            point = pre_point
-        self.view.sel().add(sublime.Region(point))
-
-
-class GitDiffChangeHunkSizeCommand(TextCommand):
-    """
-    Documentation coming soon.
-    """
-
-    def run(self, edit, action='increase'):
-        unified = self.view.settings().get('git_diff_unified', 3)
-        if action == 'increase':
-            self.view.settings().set('git_diff_unified', unified + 1)
-        else:
-            self.view.settings().set('git_diff_unified', max(1, unified - 1))
-        row, _ = self.view.rowcol(self.view.sel()[0].begin())
-        self.view.run_command('git_diff_refresh', {'row': row})
-
-
-class GitDiffTextCmd(GitCmd):
+class GitDiffTextCmd(GitCmd, GitDiffHelper):
 
     def parse_diff(self):
         sections = []
@@ -195,7 +148,7 @@ class GitDiffTextCmd(GitCmd):
         hunks = {}
         for s in self.view.sel():
             for hunk, header in lookup:
-                print s, hunk, s.intersects(hunk)
+                print s, hunk, s.intersects(hunk), hunk.contains(s)
                 if s.intersects(hunk) or hunk.contains(s):
                     hunks.setdefault(header, []).append(hunk)
 
@@ -204,10 +157,57 @@ class GitDiffTextCmd(GitCmd):
     def create_patch(self, selected_hunks):
         patch = []
         for header, hunks in selected_hunks.items():
-            patch.append(self.view.substr(self.view.full_line(header)))
+            for head in self.view.lines(header):
+                headline = self.view.substr(head)
+                if headline.startswith('---') or headline.startswith('+++'):
+                    patch.append("%s\n" % headline.strip())
+                else:
+                    patch.append("%s\n" % headline)
             for h in hunks:
                 patch.append(self.view.substr(self.view.full_line(h)))
         return "".join(patch)
+
+
+class GitDiffRefreshCommand(TextCommand, GitDiffTextCmd):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit, path=None, cached=False, goto=None, start=None):
+        path = path if path else self.view.settings().get('git_diff_path')
+        cached = cached if cached else self.view.settings().get('git_diff_cached')
+        unified = self.view.settings().get('git_diff_unified', 3)
+
+        if path is None or cached is None:
+            return
+
+        if start is None:
+            start = self.view.sel()[0].begin() if self.view.sel() else None
+
+        diff = self.get_diff(path, cached, unified=unified)
+        self.view.set_read_only(False)
+        if self.view.size() > 0:
+            self.view.erase(edit, sublime.Region(0, self.view.size()))
+        self.view.insert(edit, 0, diff)
+        self.view.set_read_only(True)
+
+        if goto:
+            self.view.run_command('git_diff_move', {'start': start, 'goto': goto})
+
+
+class GitDiffChangeHunkSizeCommand(TextCommand):
+    """
+    Documentation coming soon.
+    """
+
+    def run(self, edit, action='increase'):
+        unified = self.view.settings().get('git_diff_unified', 3)
+        if action == 'increase':
+            self.view.settings().set('git_diff_unified', unified + 1)
+        else:
+            self.view.settings().set('git_diff_unified', max(1, unified - 1))
+        point = self.view.sel()[0].begin()
+        self.view.run_command('git_diff_refresh', {'start': point, 'goto': 'hunk:first'})
 
 
 class GitDiffMoveCommand(TextCommand, GitDiffTextCmd):
@@ -222,39 +222,57 @@ class GitDiffMoveCommand(TextCommand, GitDiffTextCmd):
         item, direction = parts
         if item not in ('hunk', 'file'):
             return None
-        if direction not in ('next', 'prev'):
+        if direction not in ('next', 'prev', 'first'):
             return None
         return (item, direction)
 
     def move_to_point(self, point):
-        if not self.view.visible_region().contains(point):
-            self.view.show(point, True)
         self.view.sel().clear()
         self.view.sel().add(sublime.Region(point))
+        if not self.view.visible_region().contains(point):
+            view = self.view
+            sublime.set_timeout(partial(view.show, point, True), 50)
 
-    def run(self, edit, goto='hunk:next'):
+    def run(self, edit, goto='hunk:next', start=None):
         goto = self.parse_goto(goto)
         if not goto:
             return
         item, direction = goto
 
-        sel = self.view.sel()
-        if sel:
-            point = sel[0].begin()
+        print "preif start", type(start)
+
+        if start is not None:
+            point = int(start)
+        elif self.view.sel():
+            point = self.view.sel()[0].begin()
+        else:
+            point = 0
+
+        print "postif", type(point)
+
+        if point is not None:
             lookup = self.build_lookup(self.parse_diff())
 
             goto_lookup = None
-            for i in range(len(lookup)):
-                hunk, header = lookup[i]
-                if hunk.contains(point) or header.contains(point):
-                    if direction == 'prev':
-                        goto_lookup = lookup[i-1] if i > 0 else lookup[0]
-                    else:
-                        if item == 'hunk' and header.contains(point):
-                            goto_lookup = lookup[i]
+            if direction == 'first':
+                goto_lookup = lookup[0]
+            else:
+                for i in range(len(lookup)):
+                    hunk, header = lookup[i]
+                    if hunk.contains(point) or header.contains(point):
+                        if direction == 'prev':
+                            goto_lookup = lookup[i-1] if i > 0 else lookup[0]
                         else:
-                            goto_lookup = lookup[i+1] if i+1 < len(lookup) else lookup[-1]
-                    break
+                            if item == 'hunk' and header.contains(point):
+                                goto_lookup = lookup[i]
+                            else:
+                                goto_lookup = lookup[i+1] if i+1 < len(lookup) else lookup[-1]
+                        break
+
+                if not goto_lookup:
+                    goto_lookup = lookup[-1]
+
+            print goto_lookup
 
             if goto_lookup:
                 goto_hunk, goto_header = goto_lookup
@@ -277,8 +295,8 @@ class GitDiffUnstageHunkCommand(TextCommand, GitDiffTextCmd):
         hunks = self.get_hunks_from_selection(self.view.sel())
         if hunks:
             patch = self.create_patch(hunks)
-            exit, stdout = self.git(['apply', '--cached', '--reverse', '-'], stdin=patch)
-            self.view.run_command('git_diff_refresh')
+            exit, stdout = self.git(['apply', '--ignore-whitespace', '--cached', '--reverse', '-'], stdin=patch)
+            self.view.run_command('git_diff_refresh', {'goto': 'hunk:next'})
 
 
 class GitDiffStageHunkCommand(TextCommand, GitDiffTextCmd):
@@ -294,5 +312,5 @@ class GitDiffStageHunkCommand(TextCommand, GitDiffTextCmd):
         hunks = self.get_hunks_from_selection(self.view.sel())
         if hunks:
             patch = self.create_patch(hunks)
-            exit, stdout = self.git(['apply', '--cached', '-'], stdin=patch)
-            self.view.run_command('git_diff_refresh')
+            exit, stdout = self.git(['apply', '--ignore-whitespace', '--cached', '-'], stdin=patch)
+            self.view.run_command('git_diff_refresh', {'goto': 'hunk:next'})
