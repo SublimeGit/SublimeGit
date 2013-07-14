@@ -4,6 +4,13 @@
     "fileTypes": ["git-diff"],
     "patterns": [
         {
+            "name": "meta.git-diff.clean",
+            "match": "^(Nothing to stage \\(no difference between working tree and index\\)|Nothing to unstage \\(no changes in index\\))",
+            "captures": {
+                "1": { "name": "markup.inserted.git-diff.clean" }
+            }
+        },
+        {
             "name": "source.git-diff.command",
             "match": "^(diff --git )(\\w+/.+) (\\w+/.+)\\n",
             "captures": {

@@ -18,6 +18,9 @@ GIT_DIFF_TITLE_PREFIX = GIT_DIFF_TITLE + ': '
 GIT_DIFF_CACHED_TITLE = '*git-diff-cached*'
 GIT_DIFF_CACHED_TITLE_PREFIX = GIT_DIFF_CACHED_TITLE + ': '
 
+GIT_DIFF_CLEAN = "Nothing to stage (no difference between working tree and index)"
+GIT_DIFF_CLEAN_CACHED = "Nothing to unstage (no changes in index)"
+
 GIT_DIFF_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Diff.tmLanguage'
 
 
@@ -186,6 +189,12 @@ class GitDiffRefreshCommand(TextCommand, GitDiffTextCmd):
             start = self.view.sel()[0].begin() if self.view.sel() else None
 
         diff = self.get_diff(path, cached, unified=unified)
+        clean = False
+        if not diff:
+            diff = GIT_DIFF_CLEAN_CACHED if cached else GIT_DIFF_CLEAN
+            clean = True
+
+        self.view.settings().set('git_diff_clean', clean)
         self.view.set_read_only(False)
         if self.view.size() > 0:
             self.view.erase(edit, sublime.Region(0, self.view.size()))
@@ -235,6 +244,10 @@ class GitDiffMoveCommand(TextCommand, GitDiffTextCmd):
             sublime.set_timeout(partial(view.show, point, True), 50)
 
     def run(self, edit, goto='hunk:next', start=None):
+        # There is nothing to do here
+        if self.view.settings().get('git_diff_clean') is True:
+            return
+
         goto = self.parse_goto(goto)
         if not goto:
             return
@@ -287,6 +300,10 @@ class GitDiffUnstageHunkCommand(TextCommand, GitDiffTextCmd):
         if self.view.settings().get('git_diff_cached') is False:
             return
 
+        # There is nothing to do here
+        if self.view.settings().get('git_diff_clean') is True:
+            return
+
         hunks = self.get_hunks_from_selection(self.view.sel())
         if hunks:
             patch = self.create_patch(hunks)
@@ -302,6 +319,10 @@ class GitDiffStageHunkCommand(TextCommand, GitDiffTextCmd):
     def run(self, edit):
         # we can't stage stuff that's already staged
         if self.view.settings().get('git_diff_cached') is True:
+            return
+
+        # There is nothing to do here
+        if self.view.settings().get('git_diff_clean') is True:
             return
 
         hunks = self.get_hunks_from_selection(self.view.sel())

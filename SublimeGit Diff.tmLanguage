@@ -16,6 +16,20 @@
 				<key>1</key>
 				<dict>
 					<key>name</key>
+					<string>markup.inserted.git-diff.clean</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(Nothing to stage \(no difference between working tree and index\)|Nothing to unstage \(no changes in index\))</string>
+			<key>name</key>
+			<string>meta.git-diff.clean</string>
+		</dict>
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
 					<string>meta.diff</string>
 				</dict>
 				<key>2</key>
