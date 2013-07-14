@@ -170,7 +170,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
                 sha=commit.get('abbrev'),
                 file=commit.get('filename').ljust(max_file + 1) if len(files) > 1 else '',
                 author=commit.get('committer', '').ljust(max_name + 1, ' '),
-                date=date.strftime("%a %b %H:%M:%S %Y"),
+                date=date.strftime("%a %b %d %H:%M:%S %Y"),
                 line=line
             )
             content.append(c)

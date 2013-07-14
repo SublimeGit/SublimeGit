@@ -55,7 +55,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>^(\^)? ?(0+) (.+)? ?(\()(Not Committed Yet)  (\w+ \w+ \d\d:\d\d:\d\d \d{4})(\)) (.*)</string>
+			<string>^(\^)? ?(0+) (.+)? ?(\()(Not Committed Yet)  (\w+ \w+ \d+ \d\d:\d\d:\d\d \d{4})(\)) (.*)</string>
 			<key>name</key>
 			<string>meta.git-blame.notcommitted</string>
 		</dict>
@@ -104,7 +104,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>^(\^)? ?([0-9a-f]+) (.+)? ?(\()(.+)  (\w+ \w+ \d\d:\d\d:\d\d \d{4})(\)) (.*)</string>
+			<string>^(\^)? ?([0-9a-f]+) (.+)? ?(\()(.+)  (\w+ \w+ \d+ \d\d:\d\d:\d\d \d{4})(\)) (.*)</string>
 			<key>name</key>
 			<string>meta.git-blame.line</string>
 		</dict>
