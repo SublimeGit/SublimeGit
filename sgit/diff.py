@@ -150,13 +150,14 @@ class GitDiffTextCmd(GitCmd, GitDiffHelper):
         for s in self.view.sel():
             for hunk, header in lookup:
                 if s.intersects(hunk) or hunk.contains(s):
-                    hunks.setdefault(header, []).append(hunk)
+                    hunks.setdefault((header.begin(), header.end()), []).append(hunk)
 
         return hunks
 
     def create_patch(self, selected_hunks):
         patch = []
-        for header, hunks in selected_hunks.items():
+        for (hstart, hend), hunks in selected_hunks.items():
+            header = sublime.Region(hstart, hend)
             for head in self.view.lines(header):
                 headline = self.view.substr(head)
                 if headline.startswith('---') or headline.startswith('+++'):
