@@ -126,8 +126,9 @@ class GitDiffTextCmd(GitCmd, GitDiffHelper):
             elif state == 'header':
                 current_file = current_file.cover(line)
 
-        current_hunks.append(current_hunk)
-        sections.append((current_file, current_hunks))
+        if current_file and current_hunk:
+            current_hunks.append(current_hunk)
+            sections.append((current_file, current_hunks))
         return sections
 
     def build_lookup(self, parsed_diff):
@@ -148,7 +149,6 @@ class GitDiffTextCmd(GitCmd, GitDiffHelper):
         hunks = {}
         for s in self.view.sel():
             for hunk, header in lookup:
-                print s, hunk, s.intersects(hunk), hunk.contains(s)
                 if s.intersects(hunk) or hunk.contains(s):
                     hunks.setdefault(header, []).append(hunk)
 
@@ -239,8 +239,6 @@ class GitDiffMoveCommand(TextCommand, GitDiffTextCmd):
             return
         item, direction = goto
 
-        print "preif start", type(start)
-
         if start is not None:
             point = int(start)
         elif self.view.sel():
@@ -248,11 +246,9 @@ class GitDiffMoveCommand(TextCommand, GitDiffTextCmd):
         else:
             point = 0
 
-        print "postif", type(point)
+        lookup = self.build_lookup(self.parse_diff())
 
-        if point is not None:
-            lookup = self.build_lookup(self.parse_diff())
-
+        if lookup and point is not None:
             goto_lookup = None
             if direction == 'first':
                 goto_lookup = lookup[0]
@@ -271,8 +267,6 @@ class GitDiffMoveCommand(TextCommand, GitDiffTextCmd):
 
                 if not goto_lookup:
                     goto_lookup = lookup[-1]
-
-            print goto_lookup
 
             if goto_lookup:
                 goto_hunk, goto_header = goto_lookup
