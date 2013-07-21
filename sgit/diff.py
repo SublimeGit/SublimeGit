@@ -7,7 +7,7 @@ from sublime_plugin import WindowCommand, TextCommand
 
 from .util import find_view_by_settings
 from .cmd import GitCmd
-from .helpers import GitDiffHelper
+from .helpers import GitDiffHelper, GitErrorHelper
 
 
 RE_DIFF_HEAD = re.compile(r'(---|\+\+\+){3} (a|b)/(dev/null)?')
@@ -22,6 +22,9 @@ GIT_DIFF_CLEAN = "Nothing to stage (no difference between working tree and index
 GIT_DIFF_CLEAN_CACHED = "Nothing to unstage (no changes in index)"
 
 GIT_DIFF_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Diff.tmLanguage'
+
+GIT_DIFF_UNSTAGE_ERROR = "Cannot unstage hunks which have not been staged."
+GIT_DIFF_STAGE_ERROR = "Cannot stage hunks which are already staged."
 
 
 class GitDiffCommand(WindowCommand, GitCmd):
@@ -290,7 +293,7 @@ class GitDiffMoveCommand(TextCommand, GitDiffTextCmd):
             self.move_to_point(goto.begin())
 
 
-class GitDiffStageUnstageHunkCommand(TextCommand, GitDiffTextCmd):
+class GitDiffStageUnstageHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand):
 
     def is_visible(self):
         return False
@@ -298,6 +301,10 @@ class GitDiffStageUnstageHunkCommand(TextCommand, GitDiffTextCmd):
     def run(self, edit, reverse=False):
         # we can't unstage stuff hasn't been staged
         if self.view.settings().get('git_diff_cached') is not reverse:
+            if reverse:
+                sublime.error_message(GIT_DIFF_UNSTAGE_ERROR)
+            else:
+                sublime.error_message(GIT_DIFF_STAGE_ERROR)
             return
 
         # There is nothing to do here
@@ -309,4 +316,6 @@ class GitDiffStageUnstageHunkCommand(TextCommand, GitDiffTextCmd):
             patch = self.create_patch(hunks)
             cmd = ['apply', '--ignore-whitespace', '--cached', '--reverse' if reverse else None, '-']
             exit, stdout, stderr = self.git(cmd, stdin=patch)
+            if exit != 0:
+                sublime.error_message(self.format_error_message(stderr))
             self.view.run_command('git_diff_refresh')
