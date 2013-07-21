@@ -41,10 +41,10 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
         if current:
             return
 
-        exit_code, stdout, stderr = self.git(['checkout', branch])
-        if exit_code == 0:
+        exit, stdout, stderr = self.git(['checkout', branch])
+        if exit == 0:
             panel = self.window.get_output_panel('git-checkout')
-            panel.run_command('git_panel_write', {'content': stdout})
+            panel.run_command('git_panel_write', {'content': stderr})
             self.window.run_command('show_panel', {'panel': 'output.git-checkout'})
         else:
             sublime.error_message(self.format_error_message(stderr))
