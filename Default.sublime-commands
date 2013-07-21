@@ -1,6 +1,7 @@
 [
     { "caption": "Git", "command": "git_cli"},
     { "caption": "Git Async", "command": "git_cli_async"},
+    { "caption": "Gitk", "command": "git_gitk"},
     { "caption": "Git: Version", "command": "git_version"},
     { "caption": "Git: Help", "command": "git_help"},
 

@@ -50,6 +50,8 @@ from .checkout import (GitCheckoutBranchCommand, GitCheckoutCommitCommand,
 
 from .merge import GitMergeCommand
 
+from .gitk import GitGitkCommand
+
 from .sublimegit import (SublimeGitInstallLicenseCommand, SublimeGitBuyLicenseCommand,
                          SublimeGitDocumentationCommand, SublimeGitVersionCommand)
 

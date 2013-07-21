@@ -266,7 +266,7 @@ class Cmd(object):
             return (proc.returncode, stdout.decode(encoding), stderr.decode(encoding))
         except OSError as e:
             if ignore_errors:
-                return (0, '')
+                return (0, '', '')
             sublime.error_message(self.get_executable_error())
             raise SublimeGitException("Could not execute command: %s" % e)
 
