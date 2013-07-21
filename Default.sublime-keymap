@@ -194,6 +194,12 @@
             { "key": "selector", "operator": "equal", "operand": "text.git-status"}
         ]
     },
+    { "keys": ["ctrl+shift+c"], "command": "git_commit_amend",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+
 
     /*** GIT BLAME ***/
     // Show command

@@ -108,7 +108,7 @@ class GitCommitAmendCommand(GitCommitWindowCmd, WindowCommand):
             return
 
         unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=repo)
-        if not unpushed:
+        if unpushed == 0:
             if not sublime.ok_cancel_dialog(GIT_AMEND_PUSHED, 'Amend commit'):
                 return
 
