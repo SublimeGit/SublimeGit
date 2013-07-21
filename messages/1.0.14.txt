@@ -1,0 +1,32 @@
+SublimeGit 1.0.14
+=================
+
+Enhancements:
+-------------
+ - ctrl+shift+s is now used to stage everything in the status view. This
+   was changed because super+k isn't good on Linux and Windows.
+
+ - A couple of OS X-isms have been removed from the docs.
+
+ - Error messages are now presented if staging/unstaging from the diff
+   view fails.
+
+ - Adds a Gitk command to launch gitk in the current repository.
+
+ - Improves display of status messages. They now contain the name of the
+   repository, if it is dirty (marked with an asterisk) and whether there
+   are unpushed commits.
+
+ - Adds support for git commit --amend. Use the Git: Amend Commit command,
+   or ctrl+shift+c from the status view. If you have already pushed your
+   changes, then you will get a prompt asking if you want to continue
+   with the amend (as it's bad form to rewrite code which has already
+   been shared.)
+
+
+Bug Fixes:
+----------
+ - Messages.json should no longer throw an error.
+
+ - Diff view bug regarding the use of python2-only type "long" has been
+   fixed.
