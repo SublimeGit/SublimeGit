@@ -226,7 +226,7 @@ class GitStatusEventListener(EventListener):
             view.run_command('git_status_refresh', {'goto': goto})
 
 
-class GitStatusBarEventListener(EventListener, GitCmd):
+class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
     _lpop = False
 
     def on_activated(self, view):
@@ -240,8 +240,16 @@ class GitStatusBarEventListener(EventListener, GitCmd):
         if repo:
             branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo, ignore_errors=True)
             if branch:
+                unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=repo)
+                staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=repo)
+                unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=repo)
                 branch = branch[11:] if branch.startswith('refs/heads/') else None
-                msg = 'On branch %s' % branch if branch else 'Detached HEAD'
+                msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
+                    branch=branch if branch else 'Detached HEAD',
+                    dirty='*' if (staged or unstaged) else '',
+                    repo=os.path.basename(repo),
+                    unpushed=' with unpushed' if unpushed else ''
+                )
 
                 view.set_status('git-status', msg)
 
