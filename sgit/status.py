@@ -71,8 +71,11 @@ GIT_STATUS_HELP = """
 #    u = unstage file/section, U = unstage all files
 #    k = discard file/section, K = discard everything
 #
-# Other:
+# Commit:
 #    c = commit, C = commit -a (add unstaged)
+#    ctrl+shift+c = commit --amend (amend previous commit)
+#
+# Other:
 #    i = ignore file, I = ignore pattern
 #    enter = open file
 #    d = view diff

@@ -14,10 +14,13 @@ GIT_COMMIT_VIEW_TITLE = "COMMIT_EDITMSG"
 GIT_COMMIT_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Commit Message.tmLanguage'
 
 GIT_NOTHING_STAGED = u'No changes added to commit. Use s on files/sections in the status view to stage changes.'
-GIT_COMMIT_TEMPLATE = u"""
+GIT_COMMIT_TEMPLATE = u"""{old_msg}
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
 {status}{errors}"""
+
+GIT_AMEND_PUSHED = (u"It is discouraged to rewrite history which has already been pushed. "
+                    u"Are you sure you want to amend the commit?")
 
 
 class GitCommit(object):
@@ -31,9 +34,10 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
     def is_verbose(self):
         return get_setting('git_commit_verbose', True)
 
-    def get_commit_template(self, add=False):
+    def get_commit_template(self, add=False, amend=False):
         cmd = ['-c', 'color.diff=false', '-c', 'color.status=false', 'commit', '--dry-run', '--status',
                '--all' if add else None,
+               '--amend' if amend else None,
                '--verbose' if self.is_verbose else None]
         exit, stdout, stderr = self.git(cmd)
         stderr = stderr.strip()
@@ -41,7 +45,13 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
         if stderr:
             for line in stderr.splitlines():
                 errors.append("# %s" % line)
-        msg = GIT_COMMIT_TEMPLATE.format(status=stdout, errors="\n".join(errors))
+
+        old_msg = ''
+        if amend:
+            old_msg = self.git_lines(['rev-list', '--format=%B', '--max-count=1', 'HEAD'])
+            old_msg = "%s\n" % "\n".join(old_msg[1:])
+
+        msg = GIT_COMMIT_TEMPLATE.format(status=stdout, errors="\n".join(errors), old_msg=old_msg)
         return msg
 
     def show_commit_panel(self, content):
@@ -70,7 +80,7 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
             sublime.error_message(GIT_WORKING_DIR_CLEAN)
             return
 
-        view = find_view_by_settings(self.window, git_view='commit', git_repo='repo')
+        view = find_view_by_settings(self.window, git_view='commit', git_repo=repo)
         if not view:
             view = self.window.new_file()
             view.set_name(GIT_COMMIT_VIEW_TITLE)
@@ -80,10 +90,42 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
             view.settings().set('git_view', 'commit')
             view.settings().set('git_repo', repo)
 
-        GitCommit.windows[view.id()] = (self.window, add)
+        GitCommit.windows[view.id()] = (self.window, add, False)
         self.window.focus_view(view)
 
-        template = self.get_commit_template(add)
+        template = self.get_commit_template(add=add)
+        view.run_command('git_commit_template', {'template': template})
+
+
+class GitCommitAmendCommand(GitCommitWindowCmd, WindowCommand):
+    """
+    Documentation coming soon.
+    """
+
+    def run(self):
+        repo = self.get_repo(self.window)
+        if not repo:
+            return
+
+        unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=repo)
+        if not unpushed:
+            if not sublime.ok_cancel_dialog(GIT_AMEND_PUSHED, 'Amend commit'):
+                return
+
+        view = find_view_by_settings(self.window, git_view='commit', git_repo=repo)
+        if not view:
+            view = self.window.new_file()
+            view.set_name(GIT_COMMIT_VIEW_TITLE)
+            view.set_syntax_file(GIT_COMMIT_VIEW_SYNTAX)
+            view.set_scratch(True)
+
+            view.settings().set('git_view', 'commit')
+            view.settings().set('git_repo', repo)
+
+        GitCommit.windows[view.id()] = (self.window, False, True)
+        self.window.focus_view(view)
+
+        template = self.get_commit_template(amend=True)
         view.run_command('git_commit_template', {'template': template})
 
 
@@ -106,14 +148,17 @@ class GitCommitEventListener(EventListener):
     def on_close(self, view):
         if view.settings().get('git_view') == 'commit' and view.id() in GitCommit.windows:
             message = view.substr(sublime.Region(0, view.size()))
-            window, add = GitCommit.windows[view.id()]
-            window.run_command('git_commit_perform', {'message': message, 'add': add})
+            window, add, amend = GitCommit.windows[view.id()]
+            window.run_command('git_commit_perform', {'message': message, 'add': add, 'amend': amend})
 
 
 class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
 
-    def run(self, message, add=False):
-        cmd = ['commit', '--cleanup=strip', '-a' if add else None, '--verbose' if self.is_verbose else None, '-F', '-']
+    def run(self, message, add=False, amend=False):
+        cmd = ['commit', '--cleanup=strip',
+               '-a' if add else None,
+               '--amend' if amend else None,
+               '--verbose' if self.is_verbose else None, '-F', '-']
         exit, stdout, stderr = self.git(cmd, stdin=message)
         self.show_commit_panel(stdout if exit == 0 else stderr)
         self.window.run_command('git_status', {'refresh_only': True})
