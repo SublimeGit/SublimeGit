@@ -56,7 +56,7 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
     """
 
     def run(self, add=False):
-        repo = self.get_repo(self.window)
+        repo = self.get_repo()
         if not repo:
             return
 

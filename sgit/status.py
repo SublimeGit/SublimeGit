@@ -85,7 +85,7 @@ GIT_STATUS_HELP = """
 class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper):
 
     def build_status(self, silent=False):
-        repo_dir = self.get_repo(self.get_window(), silent=silent)
+        repo_dir = self.get_repo(silent=silent)
         if not repo_dir:
             return
 
@@ -164,7 +164,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
     """
 
     def run(self, refresh_only=False):
-        repo = self.get_repo(self.window, silent=True if refresh_only else False)
+        repo = self.get_repo(silent=True if refresh_only else False)
         if not repo:
             return
 
@@ -236,7 +236,7 @@ class GitStatusBarEventListener(EventListener, GitCmd):
         sublime.set_timeout(partial(self.set_status, view), 100)
 
     def set_status(self, view):
-        repo = self.get_repo(view.window())
+        repo = self.get_repo_from_view(view)
         if repo:
             branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo, ignore_errors=True)
             if branch:

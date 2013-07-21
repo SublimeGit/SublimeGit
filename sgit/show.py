@@ -26,7 +26,7 @@ class GitShowCommand(WindowCommand, GitCmd):
         if not obj:
             return
 
-        repo = self.get_repo(self.window)
+        repo = self.get_repo()
 
         if repo:
             title = GIT_SHOW_TITLE_PREFIX + obj[:7] if len(obj) == 40 else obj

@@ -4,7 +4,7 @@ import os
 import sublime
 from sublime_plugin import WindowCommand
 
-from .util import noop, abbreviate_dir, get_user_dir
+from .util import noop, abbreviate_dir
 from .cmd import GitCmd
 
 

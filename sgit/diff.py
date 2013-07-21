@@ -39,7 +39,7 @@ class GitDiffCommand(WindowCommand, GitCmd):
     """
 
     def run(self, path=None, cached=False):
-        repo = self.get_repo(self.window)
+        repo = self.get_repo()
 
         if repo:
             if path is None:
