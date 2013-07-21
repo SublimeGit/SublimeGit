@@ -243,8 +243,11 @@ class GitDiffMoveCommand(TextCommand, GitDiffTextCmd):
 
         if item not in ('hunk', 'file'):
             return
-        if not isinstance(which, (int, long)) and which not in ('first', 'last', 'next', 'prev'):
-            return
+        try:
+            which = int(which)
+        except ValueError:
+            if which not in ('first', 'last', 'next', 'prev'):
+                return
 
         if start is not None:
             start = int(start)
