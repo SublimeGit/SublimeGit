@@ -91,6 +91,13 @@
         ]
     },
 
+    // Stage command (global)
+    { "keys": ["ctrl+shift+s"], "command": "git_status_stage", "args": {"stage": "all"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+
     // Unstage command
     { "keys": ["U"], "command": "git_status_unstage", "args": {"unstage": "all"},
         "context": [

@@ -33,13 +33,6 @@
         ]
     },
 
-    // Stage command (global)
-    { "keys": ["super+k", "s"], "command": "git_status_stage", "args": {"stage": "all"},
-        "context": [
-            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
-        ]
-    },
-
     // overwrite some stuff
     { "keys": ["super+s"], "command": "noop", "context": [{ "key": "selector", "operator": "equal", "operand": "text.git-status"}]},
     { "keys": ["super+z"], "command": "noop", "context": [{ "key": "selector", "operator": "equal", "operand": "text.git-status"}]},

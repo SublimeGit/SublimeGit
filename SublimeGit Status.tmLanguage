@@ -29,7 +29,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>((?:(?:ctrl|super|alt|shift)\+\w )?(?:\w-)?\w+) =</string>
+					<string>((?:(?:ctrl\+|super\+|alt\+|shift\+)*\w)?(?:\w-)?\w*) =</string>
 					<key>name</key>
 					<string>comment.git-status.help</string>
 				</dict>

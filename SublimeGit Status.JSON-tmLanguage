@@ -9,7 +9,7 @@
             "patterns": [
                 {
                     "name": "comment.git-status.help",
-                    "match": "((?:(?:ctrl|super|alt|shift)\\+\\w )?(?:\\w-)?\\w+) =",
+                    "match": "((?:(?:ctrl\\+|super\\+|alt\\+|shift\\+)*\\w)?(?:\\w-)?\\w*) =",
                     "captures": {
                         "1": { "name": "string.other.git-status.help.key" }
                     }

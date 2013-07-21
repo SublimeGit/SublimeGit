@@ -67,7 +67,7 @@ GIT_STATUS_HELP = """
 #
 # Staging:
 #    s = stage file/section, S = stage all unstaged files
-#    super+k s = stage all unstaged and untracked files
+#    ctrl+shift+s = stage all unstaged and untracked files
 #    u = unstage file/section, U = unstage all files
 #    k = discard file/section, K = discard everything
 #
