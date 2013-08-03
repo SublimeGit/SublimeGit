@@ -7,7 +7,7 @@ from sublime_plugin import WindowCommand, TextCommand
 
 from .util import find_view_by_settings
 from .cmd import GitCmd
-from .helpers import GitDiffHelper, GitErrorHelper
+from .helpers import GitDiffHelper, GitErrorHelper, GitStatusHelper
 
 
 RE_DIFF_HEAD = re.compile(r'(---|\+\+\+){3} (a|b)/(dev/null)?')
@@ -48,7 +48,7 @@ class GitDiffCommand(WindowCommand, GitCmd):
         title = self.get_view_title(path, cached)
         git_view = 'diff%s' % ('-cached' if cached else '')
 
-        view = find_view_by_settings(self.window, git_view=git_view, git_repo=repo, git_diff=path)
+        view = find_view_by_settings(self.window, git_view=git_view, git_repo=repo, git_diff_path=path)
         if not view:
             view = self.window.new_file()
             view.set_name(title)
@@ -86,6 +86,40 @@ class GitDiffCachedCommand(GitDiffCommand):
 
     def run(self, path=None):
         super(GitDiffCachedCommand, self).run(path=path, cached=True)
+
+
+class GitDiffCurrentFileCommand(GitCmd, GitStatusHelper, TextCommand):
+    """
+    Shows a diff for the current file, if possible.
+    """
+
+    def run(self, edit, cached=False):
+        # check if file is saved
+        filename = self.view.file_name()
+        if not filename:
+            sublime.error_message('Cannot do git-diff on unsaved files.')
+            return
+
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        # check if file is known to git
+        in_git = self.file_in_git(repo, filename)
+        if not in_git:
+            sublime.error_message('The file %s is not tracked by git.' % filename.replace(repo, '').lstrip('/'))
+            return
+
+        self.view.window().run_command('git_diff', {'repo': repo, 'path': filename, 'cached': cached})
+
+
+class GitDiffCachedCurrentFileCommand(GitDiffCurrentFileCommand):
+    """
+    Shows a cached diff for the current file, if possible.
+    """
+
+    def run(self, edit):
+        super(GitDiffCachedCurrentFileCommand, self).run(cached=True)
 
 
 class GitDiffTextCmd(GitCmd, GitDiffHelper):
