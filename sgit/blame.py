@@ -69,7 +69,7 @@ class GitBlameCommand(WindowCommand, GitCmd, GitStatusHelper):
         if sel:
             row, _ = self.window.active_view().rowcol(sel[0].begin())
 
-        repo = self.get_repo(self.window)
+        repo = self.get_repo()
         if repo:
             title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
             if revision:
