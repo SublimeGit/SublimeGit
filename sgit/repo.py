@@ -144,10 +144,6 @@ class GitSwitchRepoCommand(WindowCommand, GitCmd):
           * If there is only one repository then use that.
           * If there are more than one repository, present a list to
             choose from.
-
-        While it would be nice to be able to use the project path of
-        the current project to decide which repository to use, this
-        is not straightforward in Sublime Text 2.
     """
 
     def run(self):
