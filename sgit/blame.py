@@ -6,7 +6,7 @@ from sublime_plugin import TextCommand, WindowCommand, EventListener
 
 from .util import find_view_by_settings, get_setting
 from .cmd import GitCmd
-from .helpers import GitStatusHelper
+from .helpers import GitStatusHelper, GitRepoHelper
 
 
 GIT_BLAME_TITLE_PREFIX = '*git-blame*: '
@@ -50,14 +50,14 @@ class GitBlameCommand(WindowCommand, GitCmd, GitStatusHelper):
 
     """
 
-    def run(self, filename=None, revision=None):
+    def run(self, repo=None, filename=None, revision=None):
         # check if file is saved
         filename = filename if filename else self.window.active_view().file_name()
         if not filename:
             sublime.error_message('Cannot do git-blame on unsaved files.')
             return
 
-        repo = self.get_repo()
+        repo = repo or self.get_repo()
         if not repo:
             return
 
@@ -227,7 +227,7 @@ class GitBlameEventListener(EventListener):
                     sublime.status_message(commit.get('summary'))
 
 
-class GitBlameTextCommand(object):
+class GitBlameTextCommand(GitRepoHelper):
 
     def commits_from_selection(self):
         lines = GitBlameCache.lines.get(self.view.id())
@@ -254,6 +254,9 @@ class GitBlameTextCommand(object):
         return selected_commits
 
     def validate_num_commits(self, commits):
+        if commits is None:
+            return False
+
         if len(commits) == 0:
             sublime.error_message('No commits selected.')
             return False
@@ -277,9 +280,13 @@ class GitBlameShowCommand(TextCommand, GitBlameTextCommand):
         if not valid:
             return
 
+        repo = self.get_repo()
+        if not repo:
+            return
+
         window = self.view.window()
         for sha, _ in commits.items():
-            window.run_command('git_show', {'obj': sha})
+            window.run_command('git_show', {'repo': repo, 'obj': sha})
 
 
 class GitBlameBlameCommand(TextCommand, GitBlameTextCommand):
@@ -294,7 +301,11 @@ class GitBlameBlameCommand(TextCommand, GitBlameTextCommand):
         if not valid:
             return
 
+        repo = self.get_repo()
+        if not repo:
+            return
+
         window = self.view.window()
         for sha, c in commits.items():
             filename = c.get('filename', None)
-            window.run_command('git_blame', {'filename': filename, 'revision': sha})
+            window.run_command('git_blame', {'repo': repo, 'filename': filename, 'revision': sha})

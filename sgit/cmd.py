@@ -147,11 +147,6 @@ class Cmd(object):
 
     # async commands
     def cmd_async(self, cmd, cwd=None, **callbacks):
-        if not cwd:
-            cwd = self.get_repo(silent=False)
-            if not cwd:
-                return
-
         command = self.build_command(cmd)
         encoding = get_setting('encoding', 'utf-8')
 
@@ -159,7 +154,9 @@ class Cmd(object):
             try:
                 logger.debug('async-cmd: %s', cmd)
 
-                os.chdir(cwd)
+                if cwd:
+                    os.chdir(cwd)
+
                 proc = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT,

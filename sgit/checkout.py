@@ -80,11 +80,14 @@ class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
             return
 
         commit = hashes[idx]
-        exit_code, stdout, stderr = self.git(['checkout', commit], cwd=repo)
-        if exit_code == 0:
-            sublime.message_dialog(stdout)
+        exit, stdout, stderr = self.git(['checkout', commit], cwd=repo)
+        if exit == 0:
+            panel = self.window.get_output_panel('git-checkout')
+            panel.run_command('git_panel_write', {'content': stderr})
+            self.window.run_command('show_panel', {'panel': 'output.git-checkout'})
         else:
             sublime.error_message(self.format_error_message(stderr))
+        self.window.run_command('git_status', {'refresh_only': True})
 
 
 class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
@@ -114,14 +117,20 @@ class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
 
         b = '-b'
 
-        branches = [n for c, n in self.get_branches()]
+        branches = [n for c, n in self.get_branches(repo)]
         if branch in branches:
             if sublime.ok_cancel_dialog(GIT_BRANCH_EXISTS_MSG % branch, 'Overwrite'):
                 b = '-B'
             else:
                 return
 
-        self.git(['checkout', b, branch], cwd=repo)
+        exit, stdout, stderr = self.git(['checkout', b, branch], cwd=repo)
+        if exit == 0:
+            panel = self.window.get_output_panel('git-checkout')
+            panel.run_command('git_panel_write', {'content': stderr})
+            self.window.run_command('show_panel', {'panel': 'output.git-checkout'})
+        else:
+            sublime.error_message(self.format_error_message(stderr))
         self.window.run_command('git_status', {'refresh_only': True})
 
 

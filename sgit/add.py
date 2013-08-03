@@ -3,8 +3,8 @@ import sublime
 from sublime_plugin import WindowCommand, TextCommand
 
 from .cmd import GitCmd
-from .status import GIT_WORKING_DIR_CLEAN
 
+GIT_ADD_CLEAN = "No unstaged changes"
 GIT_ADD_ALL = "+ All files"
 GIT_ADD_ALL_UNSTAGED = "+ All unstaged files"
 
@@ -47,8 +47,8 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
         about, as well as all new files (files marked with **?**).
     """
 
-    def run(self):
-        repo = self.get_repo()
+    def run(self, repo=None):
+        repo = repo or self.get_repo()
         if not repo:
             return
 
@@ -58,7 +58,7 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
             if idx == -1:
                 return
             line = status[idx]
-            if line == GIT_WORKING_DIR_CLEAN:
+            if line == GIT_ADD_CLEAN:
                 return
             elif line == GIT_ADD_ALL_UNSTAGED:
                 self.git(['add', '--update', '.'], cwd=repo)
@@ -76,7 +76,7 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
                     sublime.status_message('Added %s' % filename)
 
             def rerun():
-                self.window.run_command('git_quick_add')
+                self.window.run_command('git_quick_add', {'repo': repo})
             sublime.set_timeout(rerun, 50)
 
         self.window.show_quick_panel(status, on_done, sublime.MONOSPACE_FONT)
@@ -84,7 +84,7 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
     def get_status_list(self, repo):
         status = [l[1:] for l in self.git_lines(['status', '--porcelain', '-u'], cwd=repo) if l[1] != ' ']
         if not status:
-            return [GIT_WORKING_DIR_CLEAN]
+            return [GIT_ADD_CLEAN]
         if len(status) > 1:
             if any([l[0] == '?' for l in status]):
                 status.append(GIT_ADD_ALL)
@@ -110,8 +110,7 @@ class GitAddCurrentFileCommand(TextCommand, GitCmd):
     def run(self, edit):
         filename = self.view.file_name()
         if not filename:
-            sublime.error_message('Cannot add a file which has not been saved.')
-            return
+            return sublime.error_message('Cannot add a file which has not been saved.')
 
         repo = self.get_repo()
         if not repo:

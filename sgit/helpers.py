@@ -66,13 +66,28 @@ class GitRepoHelper(object):
         while directory and directory != os.path.dirname(directory):
             directory = os.path.dirname(directory)
             dirnames.append(directory)
-            logger.info('all_dirs(directory=%s): %s', directory, dirnames)
+
+        logger.info('all_dirs(directory=%s): %s', directory, dirnames)
         return dirnames
 
     # git repos
     def is_git_repo(self, directory):
         git_dir = os.path.join(directory, '.git')
         return os.path.exists(git_dir)
+
+    def first_git_repo(self, directory):
+        # check the first directory and exit fast
+        if self.is_git_repo(directory):
+            return directory
+
+        # check up the tree
+        while directory and directory != os.path.dirname(directory):
+            directory = os.path.dirname(directory)
+            if self.is_git_repo(directory):
+                return directory
+
+        # No repos
+        return None
 
     def find_git_repos(self, directories):
         repos = set()
@@ -91,18 +106,16 @@ class GitRepoHelper(object):
         return repos
 
     def git_repo_from_view(self, view=None):
+        repo = None
         if view is not None:
             view_dir = self.get_dir_from_view(view)
-            print view_dir
             if view_dir:
-                repos = list(self.find_git_repos([view_dir]))
-                print repos
-                for repo in sorted(list(repos), key=lambda x: len(x), reverse=True):
-                    return repo
-        return None
+                repo = self.first_git_repo(view_dir)
+        return repo
 
     def get_repo(self, silent=False):
         repo = None
+        print "*" * 100
 
         if hasattr(self, 'view'):
             repo = self.get_repo_from_view(self.view, silent=silent)
@@ -114,7 +127,7 @@ class GitRepoHelper(object):
         return repo
 
     def get_repo_from_view(self, view=None, silent=True):
-        if not view:
+        if view is None:
             return
 
         # first try the view settings (for things like status, diff, etc)

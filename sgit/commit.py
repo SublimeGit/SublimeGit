@@ -101,7 +101,7 @@ class GitCommitAmendCommand(GitCommitWindowCmd, WindowCommand):
     """
 
     def run(self):
-        repo = self.get_repo(self.window)
+        repo = self.get_repo()
         if not repo:
             return
 
@@ -123,7 +123,7 @@ class GitCommitAmendCommand(GitCommitWindowCmd, WindowCommand):
         GitCommit.windows[view.id()] = (self.window, False, True)
         self.window.focus_view(view)
 
-        template = self.get_commit_template(amend=True)
+        template = self.get_commit_template(repo, amend=True)
         view.run_command('git_commit_template', {'template': template})
 
 
@@ -208,7 +208,7 @@ class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
     def on_commit_message(self, repo, msg=None):
         if not msg:
             msg = ''
-        cmd = ['commit', '-F', '-'] if self.has_staged_changes() else ['commit', '-a', '-F', '-']
+        cmd = ['commit', '-F', '-'] if self.has_staged_changes(repo) else ['commit', '-a', '-F', '-']
         stdout = self.git_string(cmd, stdin=msg, cwd=repo)
         self.show_commit_panel(stdout)
         self.window.run_command('git_status', {'refresh_only': True})
