@@ -18,19 +18,21 @@ class GitGitkCommand(WindowCommand, GitCmd):
     """
 
     def run(self):
-        cwd = self.get_repo(self.window, silent=False)
-        if cwd:
-            cmd = ['gitk']
+        cwd = self.get_repo(silent=False)
+        if not cwd:
+            return
 
-            def async_inner():
-                try:
-                    os.chdir(cwd)
-                    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=self.startupinfo())
-                    proc.wait()
-                except OSError:
-                    path = "\n".join(os.environ.get('PATH', '').split(':'))
-                    msg = EXECUTABLE_ERROR.format(bin='gitk', path=path)
-                    sublime.error_message(msg)
+        cmd = ['gitk']
 
-            thread = threading.Thread(target=async_inner)
-            thread.start()
+        def async_inner():
+            try:
+                os.chdir(cwd)
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=self.startupinfo())
+                proc.wait()
+            except OSError:
+                path = "\n".join(os.environ.get('PATH', '').split(':'))
+                msg = EXECUTABLE_ERROR.format(bin='gitk', path=path)
+                sublime.error_message(msg)
+
+        thread = threading.Thread(target=async_inner)
+        thread.start()

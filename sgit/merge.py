@@ -14,18 +14,22 @@ class GitMergeCommand(WindowCommand, GitCmd, GitBranchHelper, GitErrorHelper):
     """
 
     def run(self):
-        branches = self.get_branches()
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        branches = self.get_branches(repo)
         choices = [name for current, name in branches if not current]
 
-        self.window.show_quick_panel(choices, partial(self.on_done, choices), sublime.MONOSPACE_FONT)
+        self.window.show_quick_panel(choices, partial(self.on_done, repo, choices), sublime.MONOSPACE_FONT)
 
-    def on_done(self, choices, idx):
+    def on_done(self, repo, choices, idx):
         if idx == -1:
             return
 
         branch = choices[idx]
 
-        exit_code, stdout, stderr = self.git(['-c', 'color.diff=false', 'merge', '--no-progress', branch])
+        exit_code, stdout, stderr = self.git(['-c', 'color.diff=false', 'merge', '--no-progress', branch], cwd=repo)
         if exit_code == 0:
             panel = self.window.get_output_panel('git-merge')
             panel.run_command('git_panel_write', {'content': stdout})

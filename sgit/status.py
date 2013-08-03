@@ -87,18 +87,14 @@ GIT_STATUS_HELP = """
 
 class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper):
 
-    def build_status(self, silent=True):
-        repo_dir = self.get_repo(silent=silent)
-        if not repo_dir:
-            return
+    def build_status(self, repo):
+        branch = self.get_current_branch(repo)
+        remote = self.get_remote(repo, branch)
+        remote_url = self.get_remote_url(repo, remote)
 
-        branch = self.get_current_branch()
-        remote = self.get_remote(branch)
-        remote_url = self.get_remote_url(remote)
+        abbrev_dir = abbreviate_dir(repo)
 
-        abbrev_dir = abbreviate_dir(repo_dir)
-
-        head_rc, head, _ = self.git(['-c',  'color.diff=false', 'log', '--max-count=1', '--abbrev-commit', '--pretty=oneline'])
+        head_rc, head, _ = self.git(['-c',  'color.diff=false', 'log', '--max-count=1', '--abbrev-commit', '--pretty=oneline'], cwd=repo)
 
         status = ""
         if remote:
@@ -108,20 +104,20 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
         status += "\n"
 
         # update index
-        self.git_exit_code(['update-index', '--refresh'])
+        self.git_exit_code(['update-index', '--refresh'], cwd=repo)
 
-        status += self.build_stashes()
-        status += self.build_files_status()
+        status += self.build_stashes(repo)
+        status += self.build_files_status(repo)
 
         if get_setting('git_show_status_help', True):
             status += GIT_STATUS_HELP
 
         return status
 
-    def build_stashes(self):
+    def build_stashes(self, repo):
         status = ""
 
-        stashes = self.get_stashes()
+        stashes = self.get_stashes(repo)
         if stashes:
             status += SECTIONS[STASHES]
             for name, title in stashes:
@@ -130,9 +126,9 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
 
         return status
 
-    def build_files_status(self):
+    def build_files_status(self, repo):
         status = ""
-        untracked, unstaged, staged = self.get_files_status()
+        untracked, unstaged, staged = self.get_files_status(repo)
 
         if not untracked and not unstaged and not staged:
             status += GIT_WORKING_DIR_CLEAN + "\n"
@@ -203,7 +199,11 @@ class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
         if not self.view.settings().get('git_view') == 'status':
             return
 
-        status = self.build_status(silent=True)
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        status = self.build_status(repo)
         if not status:
             return
 
@@ -243,21 +243,25 @@ class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
 
     def set_status(self, view):
         repo = self.get_repo_from_view(view)
-        if repo:
-            branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo, ignore_errors=True)
-            if branch:
-                unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=repo)
-                staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=repo)
-                unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=repo)
-                branch = branch[11:] if branch.startswith('refs/heads/') else None
-                msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
-                    branch=branch if branch else 'Detached HEAD',
-                    dirty='*' if (staged or unstaged) else '',
-                    repo=os.path.basename(repo),
-                    unpushed=' with unpushed' if unpushed else ''
-                )
+        if not repo:
+            return
 
-                view.set_status('git-status', msg)
+        branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo, ignore_errors=True)
+        if not branch:
+            return
+
+        unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=repo)
+        staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=repo)
+        unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=repo)
+        branch = branch[11:] if branch.startswith('refs/heads/') else None
+        msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
+            branch=branch if branch else 'Detached HEAD',
+            dirty='*' if (staged or unstaged) else '',
+            repo=os.path.basename(repo),
+            unpushed=' with unpushed' if unpushed else ''
+        )
+
+        view.set_status('git-status', msg)
 
 
 class GitQuickStatusCommand(WindowCommand, GitCmd):
@@ -287,7 +291,11 @@ class GitQuickStatusCommand(WindowCommand, GitCmd):
     """
 
     def run(self):
-        status = self.git_lines(['status', '--porcelain', '--untracked-files=all'])
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        status = self.git_lines(['status', '--porcelain', '--untracked-files=all'], cwd=repo)
         if not status:
             status = [GIT_WORKING_DIR_CLEAN]
 
@@ -297,14 +305,13 @@ class GitQuickStatusCommand(WindowCommand, GitCmd):
             state, filename = status[idx][0:2], status[idx][3:]
             index, worktree = state
             if state == '??':
-                sublime.error_message("Cannot show diff for untracked files.")
-                return
+                return sublime.error_message("Cannot show diff for untracked files.")
 
             window = self.window
             if worktree != ' ':
-                window.run_command('git_diff', {'path': filename})
+                window.run_command('git_diff', {'repo': repo, 'path': filename})
             if index != ' ':
-                window.run_command('git_diff', {'path': filename, 'cached': True})
+                window.run_command('git_diff', {'repo': repo, 'path': filename, 'cached': True})
 
         self.window.show_quick_panel(status, on_done, sublime.MONOSPACE_FONT)
 
@@ -316,7 +323,7 @@ class GitStatusTextCmd(GitCmd):
 
     # status update
     def update_status(self, goto=None):
-        self.view.window().run_command('git_status_refresh', {'goto': goto})
+        self.view.run_command('git_status_refresh', {'goto': goto})
 
     # selection commands
     def get_first_point(self):
@@ -582,89 +589,99 @@ class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
 class GitStatusStageCommand(TextCommand, GitStatusTextCmd):
 
     def run(self, edit, stage="file"):
+        repo = self.get_repo()
+        if not repo:
+            return
+
         goto = None
         if stage == "all":
-            self.add_all()
+            self.add_all(repo)
         elif stage == "unstaged":
-            self.add_all_unstaged()
+            self.add_all_unstaged(repo)
         elif stage == "section":
             points = self.get_all_points()
             sections = set([self.section_at_point(p) for p in points])
             if UNTRACKED_FILES in sections and UNSTAGED_CHANGES in sections:
-                self.add_all()
+                self.add_all(repo)
             elif UNSTAGED_CHANGES in sections:
-                self.add_all_unstaged()
+                self.add_all_unstaged(repo)
             elif UNTRACKED_FILES in sections:
-                self.add_all_untracked()
+                self.add_all_untracked(repo)
         elif stage == "file":
             files = self.get_selected_files()
             untracked = [f for s, f in files if s in (UNTRACKED_FILES,)]
             unstaged = [f for s, f in files if s in (UNSTAGED_CHANGES,)]
             if untracked:
-                self.add(untracked)
+                self.add(repo, untracked)
             if unstaged:
-                self.add_update(unstaged)
+                self.add_update(repo, unstaged)
             goto = self.logical_goto_next_file()
 
         self.update_status(goto)
 
-    def add(self, files):
-        return self.git(['add', '--'] + files)
+    def add(self, repo, files):
+        return self.git(['add', '--'] + files, cwd=repo)
 
-    def add_update(self, files):
-        return self.git(['add', '--update', '--'] + files)
+    def add_update(self, repo, files):
+        return self.git(['add', '--update', '--'] + files, cwd=repo)
 
-    def add_all(self):
-        return self.git(['add', '--all'])
+    def add_all(self, repo):
+        return self.git(['add', '--all'], cwd=repo)
 
-    def add_all_unstaged(self):
-        return self.git(['add', '--update', '.'])
+    def add_all_unstaged(self, repo):
+        return self.git(['add', '--update', '.'], cwd=repo)
 
-    def add_all_untracked(self):
-        untracked = self.git_lines(['ls-files', '--other', '--exclude-standard'])
-        return self.git(['add', '--'] + untracked)
+    def add_all_untracked(self, repo):
+        untracked = self.git_lines(['ls-files', '--other', '--exclude-standard'], cwd=repo)
+        return self.git(['add', '--'] + untracked, cwd=repo)
 
 
 class GitStatusUnstageCommand(TextCommand, GitStatusTextCmd):
 
     def run(self, edit, unstage="file"):
+        repo = self.get_repo()
+        if not repo:
+            return
+
         goto = None
         if unstage == "all":
-            self.unstage_all()
+            self.unstage_all(repo)
         elif unstage == "file":
             files = self.get_selected_files()
             staged = [f for s, f in files if s == STAGED_CHANGES]
             if staged:
-                self.unstage(staged)
+                self.unstage(repo, staged)
                 goto = self.logical_goto_next_file()
 
         self.update_status(goto)
 
-    def no_commits(self):
+    def no_commits(self, repo):
         return 0 != self.git_exit_code(['rev-list', 'HEAD', '--max-count=1'])
 
-    def unstage(self, files):
-        if self.no_commits():
-            return self.git(['rm', '--cached', '--'] + files)
-        return self.git(['reset', '-q', 'HEAD', '--'] + files)
+    def unstage(self, repo, files):
+        if self.no_commits(repo):
+            return self.git(['rm', '--cached', '--'] + files, cwd=repo)
+        return self.git(['reset', '-q', 'HEAD', '--'] + files, cwd=repo)
 
-    def unstage_all(self):
-        if self.no_commits():
-            return self.git(['rm', '-r', '--cached', '.'])
-        return self.git(['reset', '-q', 'HEAD'])
+    def unstage_all(self, repo):
+        if self.no_commits(repo):
+            return self.git(['rm', '-r', '--cached', '.'], cwd=repo)
+        return self.git(['reset', '-q', 'HEAD'], cwd=repo)
 
 
 class GitStatusOpenFileCommand(TextCommand, GitStatusTextCmd):
 
     def run(self, edit):
         repo = self.view.settings().get('git_repo')
-        if repo:
-            files = self.get_selected_files()
-            window = self.view.window()
+        if not repo:
+            return
 
-            for s, f in files:
-                filename = os.path.join(repo, f)
-                window.open_file(filename, sublime.TRANSIENT)
+        files = self.get_selected_files()
+        window = self.view.window()
+
+        for s, f in files:
+            filename = os.path.join(repo, f)
+            window.open_file(filename, sublime.TRANSIENT)
 
 
 class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
@@ -674,6 +691,9 @@ class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
 
     def run(self, edit, ask=True, edit_pattern=False):
         window = self.view.window()
+        repo = self.get_repo()
+        if not repo:
+            return
 
         files = self.get_selected_files()
         to_ignore = [f for s, f in files if s == UNTRACKED_FILES]
@@ -696,7 +716,7 @@ class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
                         if not self.confirm_ignore(patterns):
                             return
 
-                    self.add_to_gitignore(patterns)
+                    self.add_to_gitignore(repo, patterns)
                     goto = self.logical_goto_next_file()
                     self.update_status(goto)
 
@@ -706,7 +726,7 @@ class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
             if ask:
                 if not self.confirm_ignore(to_ignore):
                     return
-            self.add_to_gitignore(to_ignore)
+            self.add_to_gitignore(repo, to_ignore)
             goto = self.logical_goto_next_file()
             self.update_status(goto)
 
@@ -719,23 +739,21 @@ class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
             msg += "(%s more...)" % len(patterns) - 10
         return sublime.ok_cancel_dialog(msg, 'Add to .gitignore')
 
-    def add_to_gitignore(self, patterns):
-        repo_dir = self.view.settings().get('git_repo')
-        if repo_dir:
-            gitignore = os.path.join(repo_dir, '.gitignore')
-            contents = []
-            if os.path.exists(gitignore):
-                with open(gitignore, 'r+') as f:
-                    contents = [l.strip() for l in f]
-            logger.debug('Initial .gitignore: %s', contents)
-            for p in patterns:
-                if p not in contents:
-                    logger.debug('Adding to .gitignore: %s', p)
-                    contents.append(p)
-            with open(gitignore, 'w+') as f:
-                f.write("\n".join(contents))
-            logger.debug('Final .gitignore: %s', contents)
-            return contents
+    def add_to_gitignore(self, repo, patterns):
+        gitignore = os.path.join(repo, '.gitignore')
+        contents = []
+        if os.path.exists(gitignore):
+            with open(gitignore, 'r+') as f:
+                contents = [l.strip() for l in f]
+        logger.debug('Initial .gitignore: %s', contents)
+        for p in patterns:
+            if p not in contents:
+                logger.debug('Adding to .gitignore: %s', p)
+                contents.append(p)
+        with open(gitignore, 'w+') as f:
+            f.write("\n".join(contents))
+        logger.debug('Final .gitignore: %s', contents)
+        return contents
 
 
 class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
@@ -743,6 +761,10 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
     DELETE_UNTRACKED_CONFIRMATION = "Delete all untracked files and directories?"
 
     def run(self, edit, discard="item"):
+        repo = self.get_repo()
+        if not repo:
+            return
+
         goto = None
         if discard == "section":
             points = self.get_all_points()
@@ -751,101 +773,105 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
 
             if STASHES in sections:
                 if sublime.ok_cancel_dialog('Discard all stashes?', 'Discard'):
-                    self.discard_all_stashes()
+                    self.discard_all_stashes(repo)
 
             if UNTRACKED_FILES in sections:
                 if sublime.ok_cancel_dialog(self.DELETE_UNTRACKED_CONFIRMATION, 'Delete'):
-                    self.discard_all_untracked()
+                    self.discard_all_untracked(repo)
 
             if UNSTAGED_CHANGES in sections:
                 files = [i for i in all_files if i[0] == UNSTAGED_CHANGES]
-                self.discard_files(files)
+                self.discard_files(repo, files)
 
             if STAGED_CHANGES in sections:
                 files = [i for i in all_files if i[0] == STAGED_CHANGES]
-                self.discard_files(files)
+                self.discard_files(repo, files)
 
         elif discard == "item":
             files = self.get_selected_files()
             stashes = self.get_selected_stashes()
             if files:
-                self.discard_files(files)
+                self.discard_files(repo, files)
             if stashes:
-                self.discard_stashes(stashes)
+                self.discard_stashes(repo, stashes)
             goto = self.logical_goto_next_file()
 
         elif discard == "all":
-            self.discard_all()
+            self.discard_all(repo)
 
         self.update_status(goto)
 
-    def discard_all_stashes(self):
-        return self.git(['stash', 'clear'])
+    def discard_all_stashes(self, repo):
+        return self.git(['stash', 'clear'], cwd=repo)
 
-    def discard_stashes(self, stashes):
+    def discard_stashes(self, repo, stashes):
         for n, t in stashes:
             if sublime.ok_cancel_dialog('Discard stash %s?' % t):
-                self.git(['stash', 'drop', '--quiet', 'stash@{%s}' % n])
+                self.git(['stash', 'drop', '--quiet', 'stash@{%s}' % n], cwd=repo)
 
-    def discard_all_untracked(self):
-        return self.git(['clean', '-d', '--force'])
+    def discard_all_untracked(self, repo):
+        return self.git(['clean', '-d', '--force'], cwd=repo)
 
-    def is_up_to_date(self, filename):
-        return self.git_exit_code(['diff', '--quiet', '--', filename]) == 0
+    def is_up_to_date(self, repo, filename):
+        return self.git_exit_code(['diff', '--quiet', '--', filename], cwd=repo) == 0
 
-    def get_worktree_status(self, filename):
-        output = self.git_string(['diff', '--name-status', '--', filename])
+    def get_worktree_status(self, repo, filename):
+        output = self.git_string(['diff', '--name-status', '--', filename], cwd=repo)
         if output:
             status, _ = output.split('\t')
             return status
 
-    def get_staging_status(self, filename):
-        output = self.git_string(['diff', '--name-status', '--cached', '--', filename])
+    def get_staging_status(self, repo, filename):
+        output = self.git_string(['diff', '--name-status', '--cached', '--', filename], cwd=repo)
         if output:
             status, _ = output.split('\t')
             return status
 
-    def discard_files(self, files):
+    def discard_files(self, repo, files):
         for s, f in files:
             staged = s == STAGED_CHANGES
 
-            if staged and not self.is_up_to_date(f):
+            if staged and not self.is_up_to_date(repo, f):
                 sublime.error_message("Can't discard staged changes to this file. Please unstage it first.")
                 continue
 
             if s == UNTRACKED_FILES:
                 if sublime.ok_cancel_dialog("Delete %s?" % f, 'Delete'):
-                    self.git(['clean', '-d', '--force', '--', f])
+                    self.git(['clean', '-d', '--force', '--', f], cwd=repo)
             else:
-                status = self.get_staging_status(f) if staged else self.get_worktree_status(f)
+                status = self.get_staging_status(repo, f) if staged else self.get_worktree_status(repo, f)
                 if status == 'D':
                     if sublime.ok_cancel_dialog("Resurrect %s?" % f, 'Resurrect'):
-                        self.git(['reset', '-q', '--', f])
-                        self.git(['checkout', '--', f])
+                        self.git(['reset', '-q', '--', f], cwd=repo)
+                        self.git(['checkout', '--', f], cwd=repo)
                 elif status == 'N':
                     if sublime.ok_cancel_dialog("Delete %s?" % f, 'Delete'):
-                        self.git(['rm', '-f', '--', f])
+                        self.git(['rm', '-f', '--', f], cwd=repo)
                 else:
                     if sublime.ok_cancel_dialog("Discard changes to %s?" % f, 'Discard'):
                         if staged:
-                            self.git(['checkout', 'HEAD', '--', f])
+                            self.git(['checkout', 'HEAD', '--', f], cwd=repo)
                         else:
-                            self.git(['checkout', '--', f])
+                            self.git(['checkout', '--', f], cwd=repo)
 
-    def discard_all(self):
+    def discard_all(self, repo):
         if sublime.ok_cancel_dialog("Discard all staged and unstaged changes?", "Discard"):
             if sublime.ok_cancel_dialog("Are you absolutely sure?", "Discard"):
-                self.git(['reset', '--hard'])
+                self.git(['reset', '--hard'], cwd=repo)
 
 
 class GitStatusStashCmd(GitStatusTextCmd, GitStashHelper, GitErrorHelper):
 
     def pop_or_apply_selected_stashes(self, cmd):
+        repo = self.get_repo()
+        if not repo:
+            return
+
         goto = None
         stashes = self.get_selected_stashes()
         if stashes:
             for name, title in stashes:
-                exit_code, stdout, stderr = self.git(['stash', cmd, '-q', 'stash@{%s}' % name])
+                exit_code, stdout, stderr = self.git(['stash', cmd, '-q', 'stash@{%s}' % name], cwd=repo)
                 if exit_code != 0:
                     sublime.error_message(self.format_error_message(stderr))
             if cmd == "apply":
@@ -872,10 +898,14 @@ class GitStatusStashPopCommand(TextCommand, GitStatusStashCmd):
 class GitStatusDiffCommand(TextCommand, GitStatusTextCmd):
 
     def run(self, edit):
+        repo = self.get_repo()
+        if not repo:
+            return
+
         files = self.get_selected_files()
         window = self.view.window()
 
         for s, f in files:
             if s != UNTRACKED_FILES:
                 cached = (s == STAGED_CHANGES)
-                window.run_command('git_diff', {'path': f, 'cached': cached})
+                window.run_command('git_diff', {'repo': repo, 'path': f, 'cached': cached})

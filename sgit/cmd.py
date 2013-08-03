@@ -111,10 +111,10 @@ class Cmd(object):
 
     # sync commands
     def cmd(self, cmd, stdin=None, cwd=None, ignore_errors=False):
-        if not cwd:
-            cwd = self.get_repo(silent=False)
-            if not cwd:
-                raise SublimeGitException("Could not find repo.")
+        # if not cwd:
+        #     cwd = self.get_repo(silent=False)
+        #     if not cwd:
+        #         raise SublimeGitException("Could not find repo.")
 
         command = self.build_command(cmd)
         try:
@@ -124,7 +124,9 @@ class Cmd(object):
             if stdin:
                 stdin = stdin.encode(encoding)
 
-            os.chdir(cwd)
+            if cwd:
+                os.chdir(cwd)
+
             proc = subprocess.Popen(command,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,

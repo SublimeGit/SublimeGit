@@ -48,7 +48,11 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
     """
 
     def run(self):
-        status = self.get_status_list()
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        status = self.get_status_list(repo)
 
         def on_done(idx):
             if idx == -1:
@@ -57,18 +61,18 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
             if line == GIT_WORKING_DIR_CLEAN:
                 return
             elif line == GIT_ADD_ALL_UNSTAGED:
-                self.git(['add', '--update', '.'])
+                self.git(['add', '--update', '.'], cwd=repo)
                 sublime.status_message('Added all unstaged changes')
             elif line == GIT_ADD_ALL:
-                self.git(['add', '--all'])
+                self.git(['add', '--all'], cwd=repo)
                 sublime.status_message('Add all changes')
             else:
                 worktree, filename = status[idx][0], status[idx][2:]
                 if worktree == '?':
-                    self.git(['add', '--', filename])
+                    self.git(['add', '--', filename], cwd=repo)
                     sublime.status_message('Added %s' % filename)
                 else:
-                    self.git(['add', '--update', '--', filename])
+                    self.git(['add', '--update', '--', filename], cwd=repo)
                     sublime.status_message('Added %s' % filename)
 
             def rerun():
@@ -77,8 +81,8 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
 
         self.window.show_quick_panel(status, on_done, sublime.MONOSPACE_FONT)
 
-    def get_status_list(self):
-        status = [l[1:] for l in self.git_lines(['status', '--porcelain', '-u']) if l[1] != ' ']
+    def get_status_list(self, repo):
+        status = [l[1:] for l in self.git_lines(['status', '--porcelain', '-u'], cwd=repo) if l[1] != ' ']
         if not status:
             return [GIT_WORKING_DIR_CLEAN]
         if len(status) > 1:
@@ -109,7 +113,11 @@ class GitAddCurrentFileCommand(TextCommand, GitCmd):
             sublime.error_message('Cannot add a file which has not been saved.')
             return
 
-        exit, stdout, stderr = self.git(['add', '--force', '--', filename])
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        exit, stdout, stderr = self.git(['add', '--force', '--', filename], cwd=repo)
         if exit == 0:
             sublime.status_message('Added %s' % filename)
         else:

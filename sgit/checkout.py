@@ -26,14 +26,18 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
     """
 
     def run(self):
-        branches = self.get_branches()
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        branches = self.get_branches(repo)
         choices = []
         for current, name in branches:
             choices.append('%s %s' % ('*' if current else ' ', name))
 
-        self.window.show_quick_panel(choices, partial(self.on_done, branches), sublime.MONOSPACE_FONT)
+        self.window.show_quick_panel(choices, partial(self.on_done, repo, branches), sublime.MONOSPACE_FONT)
 
-    def on_done(self, branches, idx):
+    def on_done(self, repo, branches, idx):
         if idx == -1:
             return
 
@@ -41,7 +45,7 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
         if current:
             return
 
-        exit, stdout, stderr = self.git(['checkout', branch])
+        exit, stdout, stderr = self.git(['checkout', branch], cwd=repo)
         if exit == 0:
             panel = self.window.get_output_panel('git-checkout')
             panel.run_command('git_panel_write', {'content': stderr})
@@ -64,15 +68,19 @@ class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
     """
 
     def run(self):
-        hashes, choices = self.format_quick_log()
-        self.window.show_quick_panel(choices, partial(self.on_done, hashes))
+        repo = self.get_repo()
+        if not repo:
+            return
 
-    def on_done(self, hashes, idx):
+        hashes, choices = self.format_quick_log(repo)
+        self.window.show_quick_panel(choices, partial(self.on_done, repo, hashes))
+
+    def on_done(self, repo, hashes, idx):
         if idx == -1:
             return
 
         commit = hashes[idx]
-        exit_code, stdout, stderr = self.git(['checkout', commit])
+        exit_code, stdout, stderr = self.git(['checkout', commit], cwd=repo)
         if exit_code == 0:
             sublime.message_dialog(stdout)
         else:
@@ -93,9 +101,13 @@ class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
     """
 
     def run(self):
-        self.window.show_input_panel("Branch:", "", self.on_done, noop, noop)
+        repo = self.get_repo()
+        if not repo:
+            return
 
-    def on_done(self, branch):
+        self.window.show_input_panel("Branch:", "", partial(self.on_done, repo), noop, noop)
+
+    def on_done(self, repo, branch):
         branch = branch.strip()
         if not branch:
             return
@@ -109,7 +121,7 @@ class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
             else:
                 return
 
-        self.git(['checkout', b, branch])
+        self.git(['checkout', b, branch], cwd=repo)
         self.window.run_command('git_status', {'refresh_only': True})
 
 
@@ -124,11 +136,15 @@ class GitCheckoutCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
             sublime.error_message("Cannot checkout an unsaved file.")
             return
 
-        if not self.file_in_git(filename):
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        if not self.file_in_git(repo, filename):
             sublime.error_message("The file %s is not tracked by git.")
             return
 
-        exit, stdout, stderr = self.git(['checkout', '--quiet', '--', filename])
+        exit, stdout, stderr = self.git(['checkout', '--quiet', '--', filename], cwd=repo)
         if exit == 0:
             sublime.status_message('Checked out %s' % filename)
             view = self.view

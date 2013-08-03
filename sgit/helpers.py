@@ -101,7 +101,7 @@ class GitRepoHelper(object):
                     return repo
         return None
 
-    def get_repo(self, silent=True):
+    def get_repo(self, silent=False):
         repo = None
 
         if hasattr(self, 'view'):
@@ -180,12 +180,12 @@ class GitRepoHelper(object):
 
 class GitBranchHelper(object):
 
-    def get_current_branch(self):
-        branch = self.git_string(['symbolic-ref', '-q', 'HEAD'])
+    def get_current_branch(self, repo):
+        branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo)
         return branch[11:] if branch.startswith('refs/heads/') else branch
 
-    def get_branches(self, remotes=False):
-        lines = self.git_lines(['show-branch', '--list', '--no-color', '--remotes' if remotes else None])
+    def get_branches(self, repo, remotes=False):
+        lines = self.git_lines(['show-branch', '--list', '--no-color', '--remotes' if remotes else None], cwd=repo)
 
         branches = []
         for line in lines:
@@ -199,8 +199,8 @@ class GitBranchHelper(object):
 
 class GitRemoteHelper(GitBranchHelper):
 
-    def get_remotes(self):
-        return self.git_lines(['remote', '-v'])
+    def get_remotes(self, repo):
+        return self.git_lines(['remote', '-v'], cwd=repo)
 
     def get_remote_names(self, remotes):
         names = set()
@@ -219,33 +219,33 @@ class GitRemoteHelper(GitBranchHelper):
             choices.append([remote, urls.get('(fetch)', None), urls.get('(push)', None)])
         return choices
 
-    def get_remote(self, branch):
-        return self.git_string(['config', 'branch.%s.remote' % branch])
+    def get_remote(self, repo, branch):
+        return self.git_string(['config', 'branch.%s.remote' % branch], cwd=repo)
 
-    def get_current_remote(self):
-        return self.get_remote(self.get_current_branch())
+    def get_current_remote(self, repo):
+        return self.get_remote(repo, self.get_current_branch())
 
-    def get_current_remote_or_origin(self):
-        return self.get_remote_or_origin(self.get_current_branch())
+    def get_current_remote_or_origin(self, repo):
+        return self.get_remote_or_origin(repo, self.get_current_branch())
 
-    def get_remote_url(self, remote):
-        return self.git_string(['config', 'remote.%s.url' % remote])
+    def get_remote_url(self, repo, remote):
+        return self.git_string(['config', 'remote.%s.url' % remote], cwd=repo)
 
-    def get_merge_branch(self, branch):
-        return self.git_string(['config', 'branch.%s.merge' % branch])
+    def get_merge_branch(self, repo, branch):
+        return self.git_string(['config', 'branch.%s.merge' % branch], cwd=repo)
 
-    def get_remote_or_origin(self, branch=None):
+    def get_remote_or_origin(self, repo, branch=None):
         if branch:
-            remote = self.git_string(['config', 'branch.%s.remote' % branch])
+            remote = self.git_string(['config', 'branch.%s.remote' % branch], cwd=repo)
             if remote:
                 return remote
-        origin = self.git_string(['config', 'remote.origin.url'])
+        origin = self.git_string(['config', 'remote.origin.url'], cwd=repo)
         if origin:
             return 'origin'
         return None
 
-    def get_remote_branches(self, remote):
-        branches = [b for _, b in self.get_branches(remotes=True)]
+    def get_remote_branches(self, repo, remote):
+        branches = [b for _, b in self.get_branches(repo, remotes=True)]
         return [b for b in branches if b.startswith(remote + '/')]
 
     def format_quick_branches(self, branches):
@@ -260,9 +260,9 @@ class GitStashHelper(object):
 
     STASH_RE = re.compile(r'^stash@\{(.*)\}:\s*(.*)')
 
-    def get_stashes(self):
+    def get_stashes(self, repo):
         stashes = []
-        output = self.git_lines(['stash', 'list'])
+        output = self.git_lines(['stash', 'list'], cwd=repo)
         for line in output:
             match = self.STASH_RE.match(line)
             if match:
@@ -284,21 +284,21 @@ class GitErrorHelper(object):
 
 class GitStatusHelper(object):
 
-    def file_in_git(self, filename):
-        return self.git_exit_code(['ls-files', filename, '--error-unmatch']) == 0
+    def file_in_git(self, repo, filename):
+        return self.git_exit_code(['ls-files', filename, '--error-unmatch'], cwd=repo) == 0
 
-    def has_changes(self):
-        return self.has_staged_changes() or self.has_unstaged_changes()
+    def has_changes(self, repo):
+        return self.has_staged_changes(repo) or self.has_unstaged_changes(repo)
 
-    def has_staged_changes(self):
-        return self.git_exit_code(['diff', '--exit-code', '--quiet', '--cached']) != 0
+    def has_staged_changes(self, repo):
+        return self.git_exit_code(['diff', '--exit-code', '--quiet', '--cached'], cwd=repo) != 0
 
-    def has_unstaged_changes(self):
-        return self.git_exit_code(['diff', '--exit-code', '--quiet']) != 0
+    def has_unstaged_changes(self, repo):
+        return self.git_exit_code(['diff', '--exit-code', '--quiet'], cwd=repo) != 0
 
-    def get_files_status(self):
+    def get_files_status(self, repo):
         untracked, unstaged, staged = [], [], []
-        status = self.git_lines(['status', '--porcelain', '--untracked-files=all'])
+        status = self.git_lines(['status', '--porcelain', '--untracked-files=all'], cwd=repo)
         for l in status:
             state, filename = l[0:2], l[3:]
             index, worktree = state
@@ -319,7 +319,7 @@ class GitStatusHelper(object):
 
 class GitDiffHelper(object):
 
-    def get_diff(self, path=None, cached=False, unified=None):
+    def get_diff(self, repo, path=None, cached=False, unified=None):
         try:
             unified = int(unified)
         except:
@@ -329,13 +329,13 @@ class GitDiffHelper(object):
                 '--unified=%s' % unified if unified else None]
         if path:
             args.extend(['--', path])
-        return self.git_string(args, strip=False)
+        return self.git_string(args, cwd=repo, strip=False)
 
 
 class GitShowHelper(object):
 
-    def get_show(self, obj):
-        return self.git_string(['show', '--format=medium', '--no-color', obj])
+    def get_show(self, repo, obj):
+        return self.git_string(['show', '--format=medium', '--no-color', obj], cwd=repo)
 
 
 class GitLogHelper(object):
@@ -348,13 +348,13 @@ class GitLogHelper(object):
                             '%ar'    # auth date relative
                             '%x04')
 
-    def get_quick_log(self, path=None, follow=False):
+    def get_quick_log(self, repo, path=None, follow=False):
         cmd = ['log', '--no-color', '--date=local', '--format=%s' % self.GIT_QUICK_LOG_FORMAT]
         if follow:
             cmd.append('--follow')
         if path:
             cmd.extend(['--', path])
-        out = self.git_string(cmd, strip=False)
+        out = self.git_string(cmd, cwd=repo, strip=False)
 
         lines = []
         for line in out.split(u'\u0004'):
@@ -366,8 +366,8 @@ class GitLogHelper(object):
                 lines.append(parts)
         return lines
 
-    def format_quick_log(self, path=None, follow=False):
-        log = self.get_quick_log(path, follow)
+    def format_quick_log(self, repo, path=None, follow=False):
+        log = self.get_quick_log(repo, path, follow)
         hashes = [l[1] for l in log]
         choices = []
         for subject, sha, name, email, dt, reldt in log:

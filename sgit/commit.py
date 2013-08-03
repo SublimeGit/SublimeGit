@@ -34,12 +34,12 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
     def is_verbose(self):
         return get_setting('git_commit_verbose', True)
 
-    def get_commit_template(self, add=False, amend=False):
+    def get_commit_template(self, repo, add=False, amend=False):
         cmd = ['-c', 'color.diff=false', '-c', 'color.status=false', 'commit', '--dry-run', '--status',
                '--all' if add else None,
                '--amend' if amend else None,
                '--verbose' if self.is_verbose else None]
-        exit, stdout, stderr = self.git(cmd)
+        exit, stdout, stderr = self.git(cmd, cwd=repo)
         stderr = stderr.strip()
         errors = []
         if stderr:
@@ -48,7 +48,7 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
 
         old_msg = ''
         if amend:
-            old_msg = self.git_lines(['rev-list', '--format=%B', '--max-count=1', 'HEAD'])
+            old_msg = self.git_lines(['rev-list', '--format=%B', '--max-count=1', 'HEAD'], cwd=repo)
             old_msg = "%s\n" % "\n".join(old_msg[1:])
 
         msg = GIT_COMMIT_TEMPLATE.format(status=stdout, errors="\n".join(errors), old_msg=old_msg)
@@ -70,15 +70,13 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
         if not repo:
             return
 
-        staged = self.has_staged_changes()
-        dirty = self.has_unstaged_changes()
+        staged = self.has_staged_changes(repo)
+        dirty = self.has_unstaged_changes(repo)
 
         if not add and not staged:
-            sublime.error_message(GIT_NOTHING_STAGED)
-            return
+            return sublime.error_message(GIT_NOTHING_STAGED)
         elif add and (not staged and not dirty):
-            sublime.error_message(GIT_WORKING_DIR_CLEAN)
-            return
+            return sublime.error_message(GIT_WORKING_DIR_CLEAN)
 
         view = find_view_by_settings(self.window, git_view='commit', git_repo=repo)
         if not view:
@@ -93,7 +91,7 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
         GitCommit.windows[view.id()] = (self.window, add, False)
         self.window.focus_view(view)
 
-        template = self.get_commit_template(add=add)
+        template = self.get_commit_template(repo, add=add)
         view.run_command('git_commit_template', {'template': template})
 
 
@@ -149,17 +147,18 @@ class GitCommitEventListener(EventListener):
         if view.settings().get('git_view') == 'commit' and view.id() in GitCommit.windows:
             message = view.substr(sublime.Region(0, view.size()))
             window, add, amend = GitCommit.windows[view.id()]
-            window.run_command('git_commit_perform', {'message': message, 'add': add, 'amend': amend})
+            repo = view.settings().get('git_repo')
+            window.run_command('git_commit_perform', {'message': message, 'add': add, 'amend': amend, 'repo': repo})
 
 
 class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
 
-    def run(self, message, add=False, amend=False):
+    def run(self, repo, message, add=False, amend=False):
         cmd = ['commit', '--cleanup=strip',
                '-a' if add else None,
                '--amend' if amend else None,
                '--verbose' if self.is_verbose else None, '-F', '-']
-        exit, stdout, stderr = self.git(cmd, stdin=message)
+        exit, stdout, stderr = self.git(cmd, stdin=message, cwd=repo)
         self.show_commit_panel(stdout if exit == 0 else stderr)
         self.window.run_command('git_status', {'refresh_only': True})
 
@@ -193,20 +192,24 @@ class GitQuickCommitCommand(WindowCommand, GitCommitWindowCmd):
     """
 
     def run(self):
-        staged = self.has_staged_changes()
-        dirty = self.has_unstaged_changes()
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        staged = self.has_staged_changes(repo)
+        dirty = self.has_unstaged_changes(repo)
 
         if not staged and not dirty:
             sublime.error_message(GIT_WORKING_DIR_CLEAN.capitalize())
             return
 
-        self.window.show_input_panel("Commit message:", '', self.on_commit_message, noop, noop)
+        self.window.show_input_panel("Commit message:", '', partial(self.on_commit_message, repo), noop, noop)
 
-    def on_commit_message(self, msg=None):
+    def on_commit_message(self, repo, msg=None):
         if not msg:
             msg = ''
         cmd = ['commit', '-F', '-'] if self.has_staged_changes() else ['commit', '-a', '-F', '-']
-        stdout = self.git_string(cmd, stdin=msg)
+        stdout = self.git_string(cmd, stdin=msg, cwd=repo)
         self.show_commit_panel(stdout)
         self.window.run_command('git_status', {'refresh_only': True})
 
@@ -222,9 +225,13 @@ class GitQuickCommitCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
             sublime.error_message("Cannot commit a file which has not been saved.")
             return
 
-        if not self.file_in_git(filename):
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        if not self.file_in_git(repo, filename):
             if sublime.ok_cancel_dialog("The file %s is not tracked by git. Do you want to add it?" % filename, "Add file"):
-                exit, stdout, stderr = self.git(['add', '--force', '--', filename])
+                exit, stdout, stderr = self.git(['add', '--force', '--', filename], cwd=repo)
                 if exit == 0:
                     sublime.status_message('Added %s' % filename)
                 else:
@@ -232,15 +239,15 @@ class GitQuickCommitCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
             else:
                 return
 
-        self.view.window().show_input_panel("Commit message:", '', partial(self.on_commit_message, filename), noop, noop)
+        self.view.window().show_input_panel("Commit message:", '', partial(self.on_commit_message, repo, filename), noop, noop)
 
-    def on_commit_message(self, filename, msg=None):
+    def on_commit_message(self, repo, filename, msg=None):
         if not msg:
             msg = ''
 
         # run command
         cmd = ['commit', '-F', '-', '--only', '--', filename]
-        stdout = self.git_string(cmd, stdin=msg)
+        stdout = self.git_string(cmd, stdin=msg, cwd=repo)
 
         # show output panel
         panel = self.view.window().get_output_panel('git-commit')

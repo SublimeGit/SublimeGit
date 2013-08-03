@@ -25,13 +25,17 @@ class GitQuickLogCommand(WindowCommand, GitCmd, GitLogHelper):
     """
 
     def run(self):
-        hashes, choices = self.format_quick_log()
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        hashes, choices = self.format_quick_log(repo)
 
         def on_done(idx):
             if idx == -1:
                 return
             commit = hashes[idx]
-            self.window.run_command('git_show', {'obj': commit})
+            self.window.run_command('git_show', {'obj': commit, 'repo': repo})
 
         self.window.show_quick_panel(choices, on_done)
 
@@ -46,12 +50,16 @@ class GitQuickLogCurrentFileCommand(TextCommand, GitCmd, GitLogHelper):
         if not filename:
             self.window.show_quick_panel(['No log for file'], noop)
 
-        hashes, choices = self.format_quick_log(path=filename, follow=True)
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        hashes, choices = self.format_quick_log(repo, path=filename, follow=True)
 
         def on_done(idx):
             if idx == -1:
                 return
             commit = hashes[idx]
-            self.view.window().run_command('git_show', {'obj': commit})
+            self.view.window().run_command('git_show', {'obj': commit, 'repo': repo})
 
         self.view.window().show_quick_panel(choices, on_done)

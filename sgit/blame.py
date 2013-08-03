@@ -57,8 +57,12 @@ class GitBlameCommand(WindowCommand, GitCmd, GitStatusHelper):
             sublime.error_message('Cannot do git-blame on unsaved files.')
             return
 
+        repo = self.get_repo()
+        if not repo:
+            return
+
         # check if file is known to git
-        in_git = self.file_in_git(filename)
+        in_git = self.file_in_git(repo, filename)
         if not in_git:
             sublime.error_message('The file %s is not tracked by git.' % filename)
             return
@@ -69,28 +73,26 @@ class GitBlameCommand(WindowCommand, GitCmd, GitStatusHelper):
         if sel:
             row, _ = self.window.active_view().rowcol(sel[0].begin())
 
-        repo = self.get_repo()
-        if repo:
-            title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
-            if revision:
-                title = '%s @ %s' % (title, revision[:7])
-            view = find_view_by_settings(self.window, git_view='blame', git_repo=repo,
-                                         git_blame_file=filename, git_blame_rev=revision)
+        title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
+        if revision:
+            title = '%s @ %s' % (title, revision[:7])
+        view = find_view_by_settings(self.window, git_view='blame', git_repo=repo,
+                                     git_blame_file=filename, git_blame_rev=revision)
 
-            if not view:
-                view = self.window.new_file()
-                view.set_name(title)
-                view.set_scratch(True)
-                view.set_read_only(True)
-                view.set_syntax_file(GIT_BLAME_SYNTAX)
+        if view is None:
+            view = self.window.new_file()
+            view.set_name(title)
+            view.set_scratch(True)
+            view.set_read_only(True)
+            view.set_syntax_file(GIT_BLAME_SYNTAX)
 
-                view.settings().set('word_wrap', False)
-                view.settings().set('git_view', 'blame')
-                view.settings().set('git_repo', repo)
-                view.settings().set('git_blame_file', filename)
-                view.settings().set('git_blame_rev', revision)
+            view.settings().set('word_wrap', False)
+            view.settings().set('git_view', 'blame')
+            view.settings().set('git_repo', repo)
+            view.settings().set('git_blame_file', filename)
+            view.settings().set('git_blame_rev', revision)
 
-            view.run_command('git_blame_refresh', {'filename': filename, 'revision': revision, 'row': row})
+        view.run_command('git_blame_refresh', {'filename': filename, 'revision': revision, 'row': row})
 
 
 class GitBlameRefreshCommand(TextCommand, GitCmd):
@@ -115,8 +117,8 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
             value = True
         return fieldname, value
 
-    def get_blame(self, filename, revision=None):
-        data = self.git_lines(['blame', '--porcelain', revision if revision else None, '--', filename])
+    def get_blame(self, repo, filename, revision=None):
+        data = self.git_lines(['blame', '--porcelain', revision if revision else None, '--', filename], cwd=repo)
 
         commits = {}
         lines = []
@@ -182,8 +184,9 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
     def run(self, edit, filename=None, revision=None, row=None):
         filename = filename or self.view.settings().get('git_blame_file')
         revision = revision or self.view.settings().get('git_blame_rev')
+        repo = self.view.settings().get('git_repo')
 
-        commits, lines = self.get_blame(filename, revision)
+        commits, lines = self.get_blame(repo, filename, revision)
         if not commits or not lines:
             return
         GitBlameCache.commits[self.view.id()] = commits

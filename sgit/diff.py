@@ -38,30 +38,31 @@ class GitDiffCommand(WindowCommand, GitCmd):
     or press ``d`` when the cursor is on a file in the status view.
     """
 
-    def run(self, path=None, cached=False):
-        repo = self.get_repo()
+    def run(self, repo=None, path=None, cached=False):
+        repo = repo or self.get_repo()
+        if not repo:
+            return
 
-        if repo:
-            if path is None:
-                path = repo
-            title = self.get_view_title(path, cached)
-            git_view = 'diff%s' % ('-cached' if cached else '')
+        path = path or repo
 
-            view = find_view_by_settings(self.window, git_view=git_view, git_repo=repo, git_diff=path)
-            if not view:
-                view = self.window.new_file()
-                view.set_name(title)
-                view.set_syntax_file(GIT_DIFF_VIEW_SYNTAX)
-                view.set_scratch(True)
-                view.set_read_only(True)
+        title = self.get_view_title(path, cached)
+        git_view = 'diff%s' % ('-cached' if cached else '')
 
-                view.settings().set('git_view', git_view)
-                view.settings().set('git_repo', repo)
-                view.settings().set('git_diff_path', path)
-                view.settings().set('git_diff_cached', cached)
-                view.settings().set('git_diff_unified', 3)
+        view = find_view_by_settings(self.window, git_view=git_view, git_repo=repo, git_diff=path)
+        if not view:
+            view = self.window.new_file()
+            view.set_name(title)
+            view.set_syntax_file(GIT_DIFF_VIEW_SYNTAX)
+            view.set_scratch(True)
+            view.set_read_only(True)
 
-            view.run_command('git_diff_refresh', {'path': path, 'cached': cached, 'run_move': True})
+            view.settings().set('git_view', git_view)
+            view.settings().set('git_repo', repo)
+            view.settings().set('git_diff_path', path)
+            view.settings().set('git_diff_cached', cached)
+            view.settings().set('git_diff_unified', 3)
+
+        view.run_command('git_diff_refresh', {'path': path, 'cached': cached, 'run_move': True})
 
     def get_view_title(self, path=None, cached=False):
         if cached:
@@ -191,6 +192,7 @@ class GitDiffRefreshCommand(TextCommand, GitDiffTextCmd):
         path = path if path else self.view.settings().get('git_diff_path')
         cached = cached if cached else self.view.settings().get('git_diff_cached')
         unified = self.view.settings().get('git_diff_unified', 3)
+        repo = self.view.settings().get('git_repo')
 
         if path is None or cached is None:
             return
@@ -198,7 +200,7 @@ class GitDiffRefreshCommand(TextCommand, GitDiffTextCmd):
         point = self.view.sel()[0].begin() if self.view.sel() else 0
         row, col = self.view.rowcol(point)
 
-        diff = self.get_diff(path, cached, unified=unified)
+        diff = self.get_diff(repo, path, cached, unified=unified)
         clean = False
         if not diff:
             diff = GIT_DIFF_CLEAN_CACHED if cached else GIT_DIFF_CLEAN
@@ -299,6 +301,8 @@ class GitDiffStageUnstageHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand
         return False
 
     def run(self, edit, reverse=False):
+        repo = self.view.settings().get('git_repo')
+
         # we can't unstage stuff hasn't been staged
         if self.view.settings().get('git_diff_cached') is not reverse:
             if reverse:
@@ -315,7 +319,7 @@ class GitDiffStageUnstageHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand
         if hunks:
             patch = self.create_patch(hunks)
             cmd = ['apply', '--ignore-whitespace', '--cached', '--reverse' if reverse else None, '-']
-            exit, stdout, stderr = self.git(cmd, stdin=patch)
+            exit, stdout, stderr = self.git(cmd, stdin=patch, cwd=repo)
             if exit != 0:
                 sublime.error_message(self.format_error_message(stderr))
             self.view.run_command('git_diff_refresh')
