@@ -23,8 +23,8 @@ class GitFlowWindowCmd(GitFlowCmd):
     def is_enabled(self):
         return enabled
 
-    def get_branch_choices(self, kind):
-        lines = self.git_flow_lines([kind])
+    def get_branch_choices(self, repo, kind):
+        lines = self.git_flow_lines([kind], cwd=repo)
         branches, choices = [], []
         lines = [l for l in lines if l.strip()]
         for l in sorted(lines, key=lambda x: (0 if x[0] == '*' else 1, x[2:])):
@@ -34,8 +34,8 @@ class GitFlowWindowCmd(GitFlowCmd):
             branches.append(name)
         return branches, choices
 
-    def show_branches_panel(self, on_selection, *args, **kwargs):
-        branches, choices = self.get_branch_choices(*args, **kwargs)
+    def show_branches_panel(self, repo, on_selection, *args, **kwargs):
+        branches, choices = self.get_branch_choices(repo, *args, **kwargs)
 
         def on_done(idx):
             if idx != -1:
@@ -44,12 +44,12 @@ class GitFlowWindowCmd(GitFlowCmd):
 
         self.window.show_quick_panel(choices, on_done, sublime.MONOSPACE_FONT)
 
-    def run_async_gitflow_with_panel(self, cmd, progress, panel_name):
+    def run_async_gitflow_with_panel(self, repo, cmd, progress, panel_name):
         self.panel = self.window.get_output_panel(panel_name)
         self.panel_name = panel_name
         self.panel_shown = False
 
-        thread = self.git_flow_async(cmd, on_data=self.on_data)
+        thread = self.git_flow_async(cmd, cwd=repo, on_data=self.on_data)
         runner = StatusSpinner(thread, progress)
         runner.start()
 
@@ -59,8 +59,8 @@ class GitFlowWindowCmd(GitFlowCmd):
         self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
         self.window.run_command('git_status', {'refresh_only': True})
 
-    def run_sync_gitflow_with_panel(self, cmd, panel_name):
-        out = self.git_flow_string(cmd)
+    def run_sync_gitflow_with_panel(self, repo, cmd, panel_name):
+        out = self.git_flow_string(repo, cmd)
         panel = self.window.get_output_panel(panel_name)
         panel.run_command('git_panel_write', {'content': out})
         self.window.run_command('show_panel', {'panel': 'output.%s' % panel_name})
@@ -70,7 +70,10 @@ class GitFlowWindowCmd(GitFlowCmd):
 class GitFlowInitCommand(GitFlowWindowCmd, WindowCommand):
 
     def run(self, defaults=True):
-        self.run_async_gitflow_with_panel(['init', '-d'], "Initializing git-flow", "git-flow-init")
+        repo = self.get_repo()
+        if not repo:
+            return
+        self.run_async_gitflow_with_panel(repo, ['init', '-d'], "Initializing git-flow", "git-flow-init")
 
 
 # Generic
@@ -78,39 +81,47 @@ class GitFlowInitCommand(GitFlowWindowCmd, WindowCommand):
 class GitFlowStartCommand(GitFlowWindowCmd):
 
     def start(self, kind, base=False):
+        repo = self.get_repo()
+        if not repo:
+            return
+
         self.kind = kind
         self.base = base
-        self.window.show_input_panel('%s:' % self.kind.capitalize(), '', self.on_select, noop, noop)
+        self.window.show_input_panel('%s:' % self.kind.capitalize(), '', partial(self.on_select, repo), noop, noop)
 
-    def on_select(self, selection):
+    def on_select(self, repo, selection):
         selection = selection.strip()
         if not selection:
             return
 
         if self.base:
-            self.window.show_input_panel('Base:', '', partial(self.on_complete, selection), noop, noop)
+            self.window.show_input_panel('Base:', '', partial(self.on_complete, repo, selection), noop, noop)
         else:
-            self.on_complete(selection)
+            self.on_complete(repo, selection)
 
-    def on_complete(self, selection, base=None):
+    def on_complete(self, repo, selection, base=None):
         cmd = [self.kind, 'start', selection]
         if base and base.strip():
             cmd.append(base.strip())
 
-        self.run_sync_gitflow_with_panel(cmd, 'git-flow-%s-start' % self.kind)
+        self.run_sync_gitflow_with_panel(repo, cmd, 'git-flow-%s-start' % self.kind)
         self.window.run_command('git_status', {'refresh_only': True})
 
 
 class GitFlowFinishCommand(GitFlowWindowCmd):
 
     def finish(self, kind):
-        self.kind = kind
-        self.show_branches_panel(self.on_complete, self.kind)
+        repo = self.get_repo()
+        if not repo:
+            return
 
-    def on_complete(self, selection):
+        self.kind = kind
+        self.show_branches_panel(partial(self.on_complete, repo), self.kind)
+
+    def on_complete(self, repo, selection):
         progress = "Finishing %s: %s" % (self.kind, selection)
         panel_name = 'git-flow-%s-finish' % self.kind
-        self.run_async_gitflow_with_panel([self.kind, 'finish', selection], progress, panel_name)
+        self.run_async_gitflow_with_panel(repo, [self.kind, 'finish', selection], progress, panel_name)
 
 
 # Start commands
@@ -179,7 +190,10 @@ class GitFlowFeatureCommand(GitFlowWindowCmd, WindowCommand):
     """
 
     def run(self):
-        self.show_branches_panel(noop, 'feature')
+        repo = self.get_repo()
+        if not repo:
+            return
+        self.show_branches_panel(repo, noop, 'feature')
 
 
 class GitFlowFeaturePublishCommand(GitFlowWindowCmd, WindowCommand):
@@ -208,4 +222,7 @@ class GitFlowReleaseCommand(GitFlowWindowCmd, WindowCommand):
     """
 
     def run(self):
-        self.show_branches_panel(noop, 'release')
+        repo = self.get_repo()
+        if not repo:
+            return
+        self.show_branches_panel(repo, noop, 'release')
