@@ -871,9 +871,10 @@ class GitStatusStashCmd(GitStatusTextCmd, GitStashHelper, GitErrorHelper):
         stashes = self.get_selected_stashes()
         if stashes:
             for name, title in stashes:
-                exit_code, stdout, stderr = self.git(['stash', cmd, '-q', 'stash@{%s}' % name], cwd=repo)
-                if exit_code != 0:
-                    sublime.error_message(self.format_error_message(stderr))
+                if sublime.ok_cancel_dialog('Are you sure you want to %s %s?' % (cmd, title), "%s stash" % cmd.capitalize()):
+                    exit, stdout, stderr = self.git(['stash', cmd, '-q', 'stash@{%s}' % name], cwd=repo)
+                    if exit != 0:
+                        sublime.error_message(self.format_error_message(stderr))
             if cmd == "apply":
                 region = self.view.line(self.get_first_point())
                 goto = "point:%s" % region.begin()
