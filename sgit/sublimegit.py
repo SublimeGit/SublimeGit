@@ -99,7 +99,7 @@ class SublimeGitVersionCommand(WindowCommand):
     """
 
     def run(self):
-        sublime.error_message("You have SublimeGit %s" % __version__)
+        sublime.message_dialog("You have SublimeGit %s" % __version__)
 
 
 class SublimeGitBuyLicenseCommand(WindowCommand):

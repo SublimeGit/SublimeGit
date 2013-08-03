@@ -170,4 +170,4 @@ class GitVersionCommand(WindowCommand, GitCmd):
 
     def run(self):
         version = self.git_string(['--version'], cwd=os.path.realpath(''))
-        sublime.error_message("You have %s" % version)
+        sublime.message_dialog("You have %s" % version)
