@@ -156,9 +156,6 @@ class GitSwitchRepoCommand(WindowCommand, GitCmd):
 
         def on_done(idx):
             if idx != -1:
-                self.on_repo(repos[idx])
+                self.set_window_repository(self.window, repo)
 
         self.window.show_quick_panel(choices, on_done)
-
-    def on_repo(self, repo):
-        self.set_window_repository(self.window, repo)
