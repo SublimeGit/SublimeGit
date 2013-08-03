@@ -228,7 +228,7 @@ class GitPullCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
 
         cmd = ['pull', '-v', branch_remote, '%s:%s' % (branch, merge_branch)]
 
-        thread = self.git_async(cmd, repo=repo, on_data=self.on_data)
+        thread = self.git_async(cmd, cwd=repo, on_data=self.on_data)
         runner = StatusSpinner(thread, "Pulling %s from %s" % (merge_branch, branch_remote))
         runner.start()
 
@@ -243,6 +243,7 @@ class GitPushPullAllCommand(WindowCommand, GitCmd, GitRemoteHelper):
     def run(self, command):
         if command not in ('push', 'pull'):
             return
+
         repo = self.get_repo()
         if not repo:
             return

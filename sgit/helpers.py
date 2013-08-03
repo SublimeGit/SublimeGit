@@ -236,10 +236,10 @@ class GitRemoteHelper(GitBranchHelper):
         return self.git_string(['config', 'branch.%s.remote' % branch], cwd=repo)
 
     def get_current_remote(self, repo):
-        return self.get_remote(repo, self.get_current_branch())
+        return self.get_remote(repo, self.get_current_branch(repo))
 
     def get_current_remote_or_origin(self, repo):
-        return self.get_remote_or_origin(repo, self.get_current_branch())
+        return self.get_remote_or_origin(repo, self.get_current_branch(repo))
 
     def get_remote_url(self, repo, remote):
         return self.git_string(['config', 'remote.%s.url' % remote], cwd=repo)
