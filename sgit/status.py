@@ -87,7 +87,7 @@ GIT_STATUS_HELP = """
 
 class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper):
 
-    def build_status(self, silent=False):
+    def build_status(self, silent=True):
         repo_dir = self.get_repo(silent=silent)
         if not repo_dir:
             return

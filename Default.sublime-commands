@@ -6,6 +6,7 @@
     { "caption": "Git: Help", "command": "git_help"},
 
     { "caption": "Git: Init", "command": "git_init"},
+    { "caption": "Git: Switch Repo", "command": "git_switch_repo"},
 
     { "caption": "Git: Status", "command": "git_status"},
     { "caption": "Git: Quick Status", "command": "git_quick_status"},

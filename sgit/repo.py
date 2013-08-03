@@ -165,4 +165,4 @@ class GitSwitchRepoCommand(WindowCommand, GitCmd):
         self.window.show_quick_panel(choices, on_done)
 
     def on_repo(self, repo):
-        self.set_window_setting(self.window, 'git_repo', repo)
+        self.set_window_repository(self.window, repo)

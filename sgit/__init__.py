@@ -9,7 +9,7 @@ from .util import GitPanelWriteCommand, GitPanelAppendCommand
 
 #from .cli import GitCliCommand, GitCliAsyncCommand
 
-from .repo import GitInitCommand  # , GitSwitchRepoCommand
+from .repo import GitInitCommand, GitSwitchRepoCommand
 
 from .diff import (GitDiffCommand, GitDiffCachedCommand, GitDiffRefreshCommand, GitDiffMoveCommand,
                    GitDiffChangeHunkSizeCommand, GitDiffStageUnstageHunkCommand)
