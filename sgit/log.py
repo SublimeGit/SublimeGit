@@ -29,7 +29,8 @@ class GitQuickLogCommand(WindowCommand, GitCmd, GitLogHelper):
         if not repo:
             return
 
-        hashes, choices = self.format_quick_log(repo)
+        log = self.get_quick_log(repo)
+        hashes, choices = self.format_quick_log(log)
 
         def on_done(idx):
             if idx == -1:
@@ -54,7 +55,8 @@ class GitQuickLogCurrentFileCommand(TextCommand, GitCmd, GitLogHelper):
         if not repo:
             return
 
-        hashes, choices = self.format_quick_log(repo, path=filename, follow=True)
+        log = self.get_quick_log(repo, path=filename, follow=True)
+        hashes, choices = self.format_quick_log(log)
 
         def on_done(idx):
             if idx == -1:

@@ -379,8 +379,7 @@ class GitLogHelper(object):
                 lines.append(parts)
         return lines
 
-    def format_quick_log(self, repo, path=None, follow=False):
-        log = self.get_quick_log(repo, path, follow)
+    def format_quick_log(self, log):
         hashes = [l[1] for l in log]
         choices = []
         for subject, sha, name, email, dt, reldt in log:

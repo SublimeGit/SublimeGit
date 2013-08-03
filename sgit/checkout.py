@@ -72,7 +72,8 @@ class GitCheckoutCommitCommand(WindowCommand, GitCheckoutWindowCmd):
         if not repo:
             return
 
-        hashes, choices = self.format_quick_log(repo)
+        log = self.get_quick_log(repo)
+        hashes, choices = self.format_quick_log(log)
         self.window.show_quick_panel(choices, partial(self.on_done, repo, hashes))
 
     def on_done(self, repo, hashes, idx):
