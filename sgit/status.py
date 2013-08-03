@@ -238,6 +238,9 @@ class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
     def on_load(self, view):
         sublime.set_timeout(partial(self.set_status, view), 100)
 
+    def on_post_save(self, view):
+        sublime.set_timeout(partial(self.set_status, view), 100)
+
     def set_status(self, view):
         repo = self.get_repo_from_view(view)
         if repo:
