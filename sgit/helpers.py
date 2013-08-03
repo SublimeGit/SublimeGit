@@ -115,7 +115,6 @@ class GitRepoHelper(object):
 
     def get_repo(self, silent=False):
         repo = None
-        print "*" * 100
 
         if hasattr(self, 'view'):
             repo = self.get_repo_from_view(self.view, silent=silent)
