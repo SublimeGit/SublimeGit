@@ -1,0 +1,27 @@
+SublimeGit 1.0.15
+=================
+
+Enhancements:
+-------------
+ - Better support for nested and multiple git repos. The git repo will now always
+   be selected from the current file, if one is open. When no files are open, the
+   "old" logic applies.
+
+ - Internal changes to boost performance a little (less mucking about on the
+   filesystem).
+
+ - Pop and Apply stashes (a/A) now requires a confirmation in the status view.
+
+ - It is now possible to press r when in a diff view to refresh it.
+
+ - Adds "Git: Diff Current File" and "Git: Diff Cached Current File" commands.
+
+
+Bug Fixes:
+----------
+ - Version popups are no longer error messages.
+
+ - Status bar will be updated with current branch on post_save.
+
+ - Errors on git merge will now show the actual error message instead of an
+   empty popup.
