@@ -116,6 +116,8 @@ class Cmd(object):
         return None
 
     def get_repo(self, silent=True):
+        repo = None
+
         if hasattr(self, 'view'):
             repo = self.get_repo_from_view(self.view, silent=silent)
             if self.view.window():
