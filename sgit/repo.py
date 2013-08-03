@@ -119,20 +119,26 @@ class GitSwitchRepoCommand(WindowCommand, GitCmd):
 
         **How does SublimeGit find my repositories?**
 
-        Excellent question. If there isn't already an active repository
-        for the window, SublimeGit will try it's best to guess which
+        Excellent question. SublimeGit will try it's best to guess which
         repository you are working on. In general it works something like
         this:
 
-        * Find a list of all possible directories:
+        * Find the currently active file.
 
-          * The directory of the active view, if any.
-          * The directories of any open folders.
-          * The directories of any open files.
+          * Is it a git view? Use that repository.
+          * Is any of the parents a git repository? Use that.
 
-        * Generate a list of all of the parents of these directories.
-        * Check to see if any of the directories or their parents are
-          git repositories.
+        * If that fails, find the currently active window.
+
+          * Find a list of all possible directories:
+
+            * The directories of any open folders.
+            * The directories of any open files.
+
+          * Generate a list of all of the parents of these directories.
+          * Check to see if any of the directories or their parents are
+            git repositories.
+
         * Select a repository:
 
           * If there is only one repository then use that.
