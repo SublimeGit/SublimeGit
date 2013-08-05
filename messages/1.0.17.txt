@@ -1,0 +1,6 @@
+SublimeGit 1.0.17
+=================
+
+Bug Fixes:
+----------
+ - Fixes bug which had crept into the git-flow integration.

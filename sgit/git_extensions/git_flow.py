@@ -60,7 +60,7 @@ class GitFlowWindowCmd(GitFlowCmd):
         self.window.run_command('git_status', {'refresh_only': True})
 
     def run_sync_gitflow_with_panel(self, repo, cmd, panel_name):
-        out = self.git_flow_string(repo, cmd)
+        out = self.git_flow_string(cmd, cwd=repo)
         panel = self.window.get_output_panel(panel_name)
         panel.run_command('git_panel_write', {'content': out})
         self.window.run_command('show_panel', {'panel': 'output.%s' % panel_name})
@@ -116,7 +116,7 @@ class GitFlowFinishCommand(GitFlowWindowCmd):
             return
 
         self.kind = kind
-        self.show_branches_panel(partial(self.on_complete, repo), self.kind)
+        self.show_branches_panel(repo, partial(self.on_complete, repo), self.kind)
 
     def on_complete(self, repo, selection):
         progress = "Finishing %s: %s" % (self.kind, selection)
