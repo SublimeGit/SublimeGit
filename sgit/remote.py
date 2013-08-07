@@ -320,7 +320,7 @@ class GitRemoteAddCommand(WindowCommand, GitCmd, GitRemoteHelper):
         if not repo:
             return
 
-        remotes = self.get_remotes()
+        remotes = self.get_remotes(repo)
         initial = 'origin' if not remotes else ''
 
         self.window.show_input_panel('Name:', initial, partial(self.on_name, repo), noop, noop)
