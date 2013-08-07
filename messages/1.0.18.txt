@@ -1,0 +1,6 @@
+SublimeGit 1.0.18
+=================
+
+Bug Fixes:
+----------
+ - Fixes bug which had crept into the Add Remote command.
