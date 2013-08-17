@@ -56,6 +56,9 @@ class GitStashCommand(WindowCommand, GitStashWindowCmd):
             self.git(['stash', 'save', '--', title], cwd=repo)
             self.window.run_command('git_status', {'refresh_only': True})
 
+        # update the index
+        self.git_exit_code(['update-index', '--refresh'], cwd=repo)
+
         if self.git_exit_code(['diff', '--exit-code', '--quiet'], cwd=repo) != 0:
             self.window.show_input_panel('Stash title:', '', on_done, noop, noop)
         else:
