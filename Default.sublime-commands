@@ -32,6 +32,7 @@
     { "caption": "Git: Checkout", "command": "git_checkout_branch"},
     { "caption": "Git: Checkout New Branch", "command": "git_checkout_new_branch"},
     { "caption": "Git: Checkout Commit", "command": "git_checkout_commit"},
+    { "caption": "Git: Checkout Tag", "command": "git_checkout_tag"},
     { "caption": "Git: Checkout Current File", "command": "git_checkout_current_file"},
     { "caption": "Git: Merge", "command": "git_merge"},
 
@@ -42,6 +43,10 @@
     { "caption": "Git: Push Current Branch", "command": "git_push_current_branch"},
     { "caption": "Git: Pull", "command": "git_pull"},
     { "caption": "Git: Pull Current Branch", "command": "git_pull_current_branch"},
+
+    { "caption": "Git: Add Tag", "command": "git_add_tag"},
+    { "caption": "Git: Add Signed Tag", "command": "git_add_tag", "args": {"sign": true}},
+    { "caption": "Git: Tag", "command": "git_tag"},
 
     { "caption": "Git: Log", "command": "git_log"},
     { "caption": "Git: Quick Log", "command": "git_quick_log"},

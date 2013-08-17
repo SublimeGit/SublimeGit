@@ -1,0 +1,32 @@
+SublimeGit 1.0.19
+=================
+
+Enhancements:
+-------------
+ - Tag management. Use the commands Git: Tag and Git: Add Tag or
+   Git: Add Signed Tag. There is still some work to be done here about pushing
+   and pulling tags.
+
+ - Git status bar event listeners now run async on ST3. This should remove
+   the lag some people are experiencing when switching files. If it doesn't,
+   see below.
+
+ - Ability to decide between fancy or simple format for the git status bar, or
+   turn it off completely. If you are experiencing a lag when switching files
+   you might want to try out the simple format which is faster, or turn it off
+   completely.
+
+ - The discard action in the status view now asks for confirmation as few times
+   as possible. Before, there would be a confirmation for every file/stash,
+   now there is just one confirmation for stashes, and one for files. If you
+   discard entire sections, there is still one confirmation per section.
+
+
+Bug Fixes:
+----------
+ - Update the index before stashing. This should remove the errors some people
+   are seeing about "No local changes to save"
+
+ - Turn off various settings in git commit views, which were interfering with
+   the verbose display (translate_tabs_to_spaces, ensure_newline_on_save,
+   trim_trailing_whitespace)

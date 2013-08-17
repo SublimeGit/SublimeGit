@@ -1,6 +1,6 @@
 # coding: utf-8
 
-__version__ = '1.0.18'
+__version__ = '1.0.19'
 
 
 # Import all the commands
@@ -47,8 +47,11 @@ from .commit import GitCommitEventListener
 from .stash import (GitStashCommand, GitSnapshotCommand,
                     GitStashApplyCommand, GitStashPopCommand)
 
+from .tag import GitTagCommand, GitAddTagCommand
+
 from .checkout import (GitCheckoutBranchCommand, GitCheckoutCommitCommand,
-                       GitCheckoutNewBranchCommand, GitCheckoutCurrentFileCommand)
+                       GitCheckoutNewBranchCommand, GitCheckoutCurrentFileCommand,
+                       GitCheckoutTagCommand)
 
 from .merge import GitMergeCommand
 

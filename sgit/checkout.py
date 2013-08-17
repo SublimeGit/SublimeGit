@@ -7,6 +7,7 @@ from sublime_plugin import WindowCommand, TextCommand
 from .util import noop
 from .cmd import GitCmd
 from .helpers import GitStatusHelper, GitBranchHelper, GitErrorHelper, GitLogHelper
+from .helpers import GitTagHelper
 
 
 GIT_BRANCH_EXISTS_MSG = "The branch %s already exists. Do you want to overwrite it?"
@@ -46,6 +47,49 @@ class GitCheckoutBranchCommand(WindowCommand, GitCheckoutWindowCmd):
             return
 
         exit, stdout, stderr = self.git(['checkout', branch], cwd=repo)
+        if exit == 0:
+            panel = self.window.get_output_panel('git-checkout')
+            panel.run_command('git_panel_write', {'content': stderr})
+            self.window.run_command('show_panel', {'panel': 'output.git-checkout'})
+        else:
+            sublime.error_message(self.format_error_message(stderr))
+        self.window.run_command('git_status', {'refresh_only': True})
+
+
+class GitCheckoutTagCommand(WindowCommand, GitCheckoutWindowCmd, GitTagHelper):
+    """
+    Check out a specific tag.
+
+    This command allows you to check out a specific tag. A list of
+    available tags will be presented in the quick bar.
+
+    After checkout, you will be in a detached head state.
+    """
+
+    def run(self, repo=None, tag=None):
+        repo = repo or self.get_repo()
+        if not repo:
+            return
+
+        if tag:
+            self.on_tag(repo, tag)
+        else:
+            tags = self.get_tags(repo)
+            if not tags:
+                sublime.error_message("This repo does not contain any tags. Run Git: Add Tag to add one.")
+                return
+
+            choices = self.format_quick_tags(tags)
+
+            def on_done(idx):
+                if idx != -1:
+                    tag = choices[idx][0]
+                    self.on_tag(repo, tag)
+
+            self.window.show_quick_panel(choices, on_done)
+
+    def on_tag(self, repo, tag):
+        exit, stdout, stderr = self.git(['checkout', 'tags/%s' % tag], cwd=repo)
         if exit == 0:
             panel = self.window.get_output_panel('git-checkout')
             panel.run_command('git_panel_write', {'content': stderr})

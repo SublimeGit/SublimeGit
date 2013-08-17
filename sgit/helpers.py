@@ -384,3 +384,19 @@ class GitLogHelper(object):
         for subject, sha, name, email, dt, reldt in log:
             choices.append([subject, '%s by %s <%s>' % (sha[0:8], name, email), '%s (%s)' % (reldt, dt)])
         return hashes, choices
+
+
+class GitTagHelper(object):
+
+    def get_tags(self, repo, annotate=True):
+        if annotate:
+            return self.git_lines(['tag', '--list', '-n1'], cwd=repo)
+        else:
+            return self.git_lines(['tag', '--list', '-n0', '--no-column'], cwd=repo)
+
+    def format_quick_tags(self, tags):
+        out = []
+        for t in tags:
+            tag, ann = t.split(' ', 1)
+            out.append([tag, ann.strip()])
+        return out
