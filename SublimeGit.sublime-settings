@@ -22,6 +22,18 @@
     "git_update_status_on_focus": true,
 
     /*
+     * Change behavior of the status bar message
+     *
+     * If set to "fancy", SublimeGit will show a message like
+     * "on <branch><dirty> in <repo>". If set to "simple"
+     * the status message will be "on <branch>".
+     *
+     * Set to false to completely disable the status bar (might
+     * be necessary for performance reasons on huge projects).
+     */
+    "git_status_bar": "fancy",
+
+    /*
      * Verbose commit messages
      *
      * If set to true, the diff output for the current commit

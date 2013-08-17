@@ -1,7 +1,6 @@
 # coding: utf-8
 import os
 import logging
-from functools import partial
 
 import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
@@ -233,15 +232,31 @@ class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
     _lpop = False
 
     def on_activated(self, view):
-        sublime.set_timeout(partial(self.set_status, view), 100)
+        if sublime.version() < '3000':
+            self.set_status(view)
 
     def on_load(self, view):
-        sublime.set_timeout(partial(self.set_status, view), 100)
+        if sublime.version() < '3000':
+            self.set_status(view)
 
     def on_post_save(self, view):
-        sublime.set_timeout(partial(self.set_status, view), 100)
+        if sublime.version() < '3000':
+            self.set_status(view)
+
+    def on_activated_async(self, view):
+        self.set_status(view)
+
+    def on_load_async(self, view):
+        self.set_status(view)
+
+    def on_post_save_async(self, view):
+        self.set_status(view)
 
     def set_status(self, view):
+        kind = get_setting('git_status_bar', 'fancy')
+        if kind not in ('fancy', 'simple'):
+            return
+
         repo = self.get_repo_from_view(view)
         if not repo:
             return
@@ -250,16 +265,20 @@ class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
         if not branch:
             return
 
-        unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=repo)
-        staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=repo)
-        unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=repo)
-        branch = branch[11:] if branch.startswith('refs/heads/') else None
-        msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
-            branch=branch if branch else 'Detached HEAD',
-            dirty='*' if (staged or unstaged) else '',
-            repo=os.path.basename(repo),
-            unpushed=' with unpushed' if unpushed else ''
-        )
+        branch = branch[11:] if branch.startswith('refs/heads/') else 'Detached HEAD'
+
+        if kind == 'simple':
+            msg = "On {branch}".format(branch=branch)
+        else:
+            unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=repo)
+            staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=repo)
+            unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=repo)
+            msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
+                branch=branch,
+                dirty='*' if (staged or unstaged) else '',
+                repo=os.path.basename(repo),
+                unpushed=' with unpushed' if unpushed else ''
+            )
 
         view.set_status('git-status', msg)
 
