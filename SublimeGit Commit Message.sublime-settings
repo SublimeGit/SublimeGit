@@ -1,5 +1,8 @@
 {
     "rulers": [72],
     "wrap_width": 72,
-    "word_wrap": false
+    "word_wrap": false,
+    "trim_trailing_white_space_on_save": false,
+    "translate_tabs_to_spaces": false,
+    "ensure_newline_at_eof_on_save": false
 }
