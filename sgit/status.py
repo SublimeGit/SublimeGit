@@ -791,19 +791,13 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
             all_files = self.get_all_files()
 
             if STASHES in sections:
-                if sublime.ok_cancel_dialog('Discard all stashes?', 'Discard'):
-                    self.discard_all_stashes(repo)
+                self.discard_all_stashes(repo)
 
             if UNTRACKED_FILES in sections:
-                if sublime.ok_cancel_dialog(self.DELETE_UNTRACKED_CONFIRMATION, 'Delete'):
-                    self.discard_all_untracked(repo)
+                self.discard_all_untracked(repo)
 
-            if UNSTAGED_CHANGES in sections:
-                files = [i for i in all_files if i[0] == UNSTAGED_CHANGES]
-                self.discard_files(repo, files)
-
-            if STAGED_CHANGES in sections:
-                files = [i for i in all_files if i[0] == STAGED_CHANGES]
+            files = [i for i in all_files if i[0] in (UNSTAGED_CHANGES, STAGED_CHANGES)]
+            if files:
                 self.discard_files(repo, files)
 
         elif discard == "item":
@@ -820,16 +814,95 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
 
         self.update_status(goto)
 
-    def discard_all_stashes(self, repo):
-        return self.git(['stash', 'clear'], cwd=repo)
+    # global discards
 
-    def discard_stashes(self, repo, stashes):
-        for n, t in stashes:
-            if sublime.ok_cancel_dialog('Discard stash %s?' % t):
-                self.git(['stash', 'drop', '--quiet', 'stash@{%s}' % n], cwd=repo)
+    def discard_all_stashes(self, repo):
+        if sublime.ok_cancel_dialog('Discard all stashes?', 'Discard'):
+            self.git(['stash', 'clear'], cwd=repo)
 
     def discard_all_untracked(self, repo):
-        return self.git(['clean', '-d', '--force'], cwd=repo)
+        if sublime.ok_cancel_dialog(self.DELETE_UNTRACKED_CONFIRMATION, 'Delete'):
+            self.git(['clean', '-d', '--force'], cwd=repo)
+
+    def discard_all(self, repo):
+        if sublime.ok_cancel_dialog("Discard all staged and unstaged changes?", "Discard"):
+            if sublime.ok_cancel_dialog("Are you absolutely sure?", "Discard"):
+                self.git(['reset', '--hard'], cwd=repo)
+
+    # individual discards
+
+    def discard_stashes(self, repo, stashes):
+        # build message
+        stashlist = "\n  ".join([t for _, t in stashes])
+        msgtemplate = "Are you sure you want to discard the following stashes?\n\n  {stashes}"
+
+        # ask for confirmation
+        if sublime.ok_cancel_dialog(msgtemplate.format(stashes=stashlist), 'Discard'):
+            nums = reversed(sorted(int(n) for n, _ in stashes))
+            for n in nums:
+                self.git(['stash', 'drop', '--quiet', 'stash@{%s}' % n], cwd=repo)
+
+    def discard_files(self, repo, files):
+        # See if any of the files cannot be discarded
+        error = "You can't discard staged changes to the following files. Please unstage them first:\n\n  {errfiles}"
+        errlist = []
+        for s, f in files:
+            if s == STAGED_CHANGES and not self.is_up_to_date(repo, f):
+                errlist.append(f)
+
+        if errlist:
+            errfiles = "\n  ".join(errlist)
+            sublime.error_message(error.format(errfiles=errfiles))
+            return
+
+        # Confirm before unstaging any files
+        confirm = "Are you sure you want to perform the following actions?\n\n  {actions}"
+        actionlist = []
+        for s, f in files:
+            staged = s == STAGED_CHANGES
+            status = self.get_staging_status(repo, f) if staged else self.get_worktree_status(repo, f)
+
+            if staged and f in errlist:
+                continue
+
+            if s == UNTRACKED_FILES or status == 'N':
+                action = 'Delete: '
+            elif status == 'D':
+                action = 'Resurrect: '
+            else:
+                action = 'Discard: '
+
+            actionlist.append("{action} {file}".format(action=action, file=f))
+
+        if not actionlist:
+            return
+
+        actions = "\n  ".join(actionlist)
+        if not sublime.ok_cancel_dialog(confirm.format(actions=actions), 'Continue'):
+            return
+
+        # perform various unstaging/deleting/resurrection actions
+        for s, f in files:
+            staged = s == STAGED_CHANGES
+            status = self.get_staging_status(repo, f) if staged else self.get_worktree_status(repo, f)
+
+            if staged and not self.is_up_to_date(repo, f):
+                continue
+
+            if s == UNTRACKED_FILES:
+                self.git(['clean', '-d', '--force', '--', f], cwd=repo)
+            elif status == 'D':
+                self.git(['reset', '-q', '--', f], cwd=repo)
+                self.git(['checkout', '--', f], cwd=repo)
+            elif status == 'N':
+                self.git(['rm', '-f', '--', f], cwd=repo)
+            else:
+                if staged:
+                    self.git(['checkout', 'HEAD', '--', f], cwd=repo)
+                else:
+                    self.git(['checkout', '--', f], cwd=repo)
+
+    # status helpers
 
     def is_up_to_date(self, repo, filename):
         return self.git_exit_code(['diff', '--quiet', '--', filename], cwd=repo) == 0
@@ -845,38 +918,6 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
         if output:
             status, _ = output.split('\t')
             return status
-
-    def discard_files(self, repo, files):
-        for s, f in files:
-            staged = s == STAGED_CHANGES
-
-            if staged and not self.is_up_to_date(repo, f):
-                sublime.error_message("Can't discard staged changes to this file. Please unstage it first.")
-                continue
-
-            if s == UNTRACKED_FILES:
-                if sublime.ok_cancel_dialog("Delete %s?" % f, 'Delete'):
-                    self.git(['clean', '-d', '--force', '--', f], cwd=repo)
-            else:
-                status = self.get_staging_status(repo, f) if staged else self.get_worktree_status(repo, f)
-                if status == 'D':
-                    if sublime.ok_cancel_dialog("Resurrect %s?" % f, 'Resurrect'):
-                        self.git(['reset', '-q', '--', f], cwd=repo)
-                        self.git(['checkout', '--', f], cwd=repo)
-                elif status == 'N':
-                    if sublime.ok_cancel_dialog("Delete %s?" % f, 'Delete'):
-                        self.git(['rm', '-f', '--', f], cwd=repo)
-                else:
-                    if sublime.ok_cancel_dialog("Discard changes to %s?" % f, 'Discard'):
-                        if staged:
-                            self.git(['checkout', 'HEAD', '--', f], cwd=repo)
-                        else:
-                            self.git(['checkout', '--', f], cwd=repo)
-
-    def discard_all(self, repo):
-        if sublime.ok_cancel_dialog("Discard all staged and unstaged changes?", "Discard"):
-            if sublime.ok_cancel_dialog("Are you absolutely sure?", "Discard"):
-                self.git(['reset', '--hard'], cwd=repo)
 
 
 class GitStatusStashCmd(GitStatusTextCmd, GitStashHelper, GitErrorHelper):
