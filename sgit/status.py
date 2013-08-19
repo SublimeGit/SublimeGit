@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import logging
+from functools import partial
 
 import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
@@ -233,24 +234,24 @@ class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
 
     def on_activated(self, view):
         if sublime.version() < '3000':
-            self.set_status(view)
+            sublime.set_timeout(partial(self.set_status, view), 50)
 
     def on_load(self, view):
         if sublime.version() < '3000':
-            self.set_status(view)
+            sublime.set_timeout(partial(self.set_status, view), 50)
 
     def on_post_save(self, view):
         if sublime.version() < '3000':
-            self.set_status(view)
+            sublime.set_timeout(partial(self.set_status, view), 50)
 
     def on_activated_async(self, view):
-        self.set_status(view)
+        sublime.set_timeout(partial(self.set_status, view), 50)
 
     def on_load_async(self, view):
-        self.set_status(view)
+        sublime.set_timeout(partial(self.set_status, view), 50)
 
     def on_post_save_async(self, view):
-        self.set_status(view)
+        sublime.set_timeout(partial(self.set_status, view), 50)
 
     def set_status(self, view):
         kind = get_setting('git_status_bar', 'fancy')
