@@ -278,7 +278,7 @@ class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
                 branch=branch,
                 dirty='*' if (staged or unstaged) else '',
                 repo=os.path.basename(repo),
-                unpushed=' with unpushed' if unpushed else ''
+                unpushed=' with unpushed' if unpushed == 1 else ''
             )
 
         view.set_status('git-status', msg)
