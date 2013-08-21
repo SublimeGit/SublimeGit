@@ -1,0 +1,10 @@
+SublimeGit 1.0.20
+=================
+
+
+Bug Fixes:
+----------
+ - Fixed issue on ST2 where status bar listeners were taking too long.
+
+ - Fixed issue with "unpushed" part of status bar message if no upstream
+   is set for the branch.
