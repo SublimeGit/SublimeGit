@@ -62,6 +62,7 @@ class GitDiffCommand(WindowCommand, GitCmd):
             view.settings().set('git_diff_cached', cached)
             view.settings().set('git_diff_unified', 3)
 
+        self.window.focus_view(view)
         view.run_command('git_diff_refresh', {'path': path, 'cached': cached, 'run_move': True})
 
     def get_view_title(self, path=None, cached=False):
