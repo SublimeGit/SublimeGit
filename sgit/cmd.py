@@ -110,17 +110,13 @@ class Cmd(object):
         return startupinfo
 
     # sync commands
-    def cmd(self, cmd, stdin=None, cwd=None, ignore_errors=False):
-        # if not cwd:
-        #     cwd = self.get_repo(silent=False)
-        #     if not cwd:
-        #         raise SublimeGitException("Could not find repo.")
+    def cmd(self, cmd, stdin=None, cwd=None, ignore_errors=False, encoding=None):
+        encoding = encoding or get_setting('encoding', 'utf-8')
 
         command = self.build_command(cmd)
         try:
             logger.debug("cmd: %s", command)
 
-            encoding = get_setting('encoding', 'utf-8')
             if stdin:
                 stdin = stdin.encode(encoding)
 

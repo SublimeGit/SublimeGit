@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import logging
+import threading
 from functools import partial
 
 import sublime
@@ -8,7 +9,7 @@ from sublime_plugin import WindowCommand, TextCommand, EventListener
 
 from .util import abbreviate_dir
 from .util import find_view_by_settings
-from .util import noop, get_setting
+from .util import noop, get_setting, get_executable
 from .cmd import GitCmd
 from .helpers import GitStatusHelper, GitRemoteHelper, GitStashHelper, GitErrorHelper
 
@@ -229,29 +230,66 @@ class GitStatusEventListener(EventListener):
             view.run_command('git_status_refresh', {'goto': goto})
 
 
-class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
+class GitStatusBarUpdater(threading.Thread, GitCmd):
+    _lpop = False
+
+    def __init__(self, bin, encoding, repo, kind, view, *args, **kwargs):
+        super(GitStatusBarUpdater, self).__init__(*args, **kwargs)
+        self.bin = bin
+        self.encoding = encoding
+        self.repo = repo
+        self.kind = kind
+        self.view = view
+
+    def build_command(self, cmd):
+        return self.bin + self.opts + [c for c in cmd if c]
+
+    def run(self):
+        branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=self.repo,
+                                 ignore_errors=True, encoding=self.encoding)
+        if not branch:
+            return
+
+        if self.kind == 'simple':
+            msg = "On {branch}".format(branch=branch)
+        else:
+            unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=self.repo, encoding=self.encoding)
+            staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=self.repo, encoding=self.encoding)
+            unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=self.repo, encoding=self.encoding)
+            msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
+                branch=branch,
+                dirty='*' if (staged or unstaged) else '',
+                repo=os.path.basename(self.repo),
+                unpushed=' with unpushed' if unpushed == 1 else ''
+            )
+
+        sublime.set_timeout(partial(self.view.set_status, 'git-status', msg), 0)
+        # self.view.set_status('git-status', msg)
+
+
+class GitStatusBarEventListener(EventListener, GitCmd):
     _lpop = False
 
     def on_activated(self, view):
         if sublime.version() < '3000':
-            sublime.set_timeout(partial(self.set_status, view), 50)
+            self.set_status(view)
 
     def on_load(self, view):
         if sublime.version() < '3000':
-            sublime.set_timeout(partial(self.set_status, view), 50)
+            self.set_status(view)
 
     def on_post_save(self, view):
         if sublime.version() < '3000':
-            sublime.set_timeout(partial(self.set_status, view), 50)
+            self.set_status(view)
 
     def on_activated_async(self, view):
-        sublime.set_timeout(partial(self.set_status, view), 50)
+        self.set_status(view)
 
     def on_load_async(self, view):
-        sublime.set_timeout(partial(self.set_status, view), 50)
+        self.set_status(view)
 
     def on_post_save_async(self, view):
-        sublime.set_timeout(partial(self.set_status, view), 50)
+        self.set_status(view)
 
     def set_status(self, view):
         kind = get_setting('git_status_bar', 'fancy')
@@ -262,26 +300,11 @@ class GitStatusBarEventListener(EventListener, GitStatusHelper, GitCmd):
         if not repo:
             return
 
-        branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=repo, ignore_errors=True)
-        if not branch:
-            return
+        bin = get_executable('git')
+        encoding = get_setting('encoding', 'utf-8')
 
-        branch = branch[11:] if branch.startswith('refs/heads/') else 'Detached HEAD'
-
-        if kind == 'simple':
-            msg = "On {branch}".format(branch=branch)
-        else:
-            unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=repo)
-            staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=repo)
-            unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=repo)
-            msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
-                branch=branch,
-                dirty='*' if (staged or unstaged) else '',
-                repo=os.path.basename(repo),
-                unpushed=' with unpushed' if unpushed == 1 else ''
-            )
-
-        view.set_status('git-status', msg)
+        updater = GitStatusBarUpdater(bin, encoding, repo, kind, view)
+        updater.start()
 
 
 class GitQuickStatusCommand(WindowCommand, GitCmd):
