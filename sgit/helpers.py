@@ -336,7 +336,7 @@ class GitDiffHelper(object):
             unified = int(unified)
         except:
             unified = None
-        args = ['-c', 'color.diff=false', 'diff',
+        args = ['diff',
                 '--cached' if cached else None,
                 '--unified=%s' % unified if unified else None]
         if path:

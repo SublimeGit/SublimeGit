@@ -29,7 +29,7 @@ class GitMergeCommand(WindowCommand, GitCmd, GitBranchHelper, GitErrorHelper):
 
         branch = choices[idx]
 
-        exit, stdout, stderr = self.git(['-c', 'color.diff=false', 'merge', '--no-progress', branch], cwd=repo)
+        exit, stdout, stderr = self.git(['merge', '--no-progress', branch], cwd=repo)
         if exit == 0:
             panel = self.window.get_output_panel('git-merge')
             panel.run_command('git_panel_write', {'content': stdout})

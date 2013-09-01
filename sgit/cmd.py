@@ -196,7 +196,10 @@ class Cmd(object):
 class GitCmd(GitRepoHelper, Cmd):
     executable = 'git'
     bin = ['git']
-    opts = ['--no-pager']
+    opts = ['--no-pager',
+            '-c', 'color.diff=false',
+            '-c', 'color.status=false',
+            '-c', 'color.branch=false']
 
     def git(self, cmd, *args, **kwargs):
         return self.cmd(cmd, *args, **kwargs)

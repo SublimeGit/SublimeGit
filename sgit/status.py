@@ -95,7 +95,7 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
 
         abbrev_dir = abbreviate_dir(repo)
 
-        head_rc, head, _ = self.git(['-c',  'color.diff=false', 'log', '--max-count=1', '--abbrev-commit', '--pretty=oneline'], cwd=repo)
+        head_rc, head, _ = self.git(['log', '--max-count=1', '--abbrev-commit', '--pretty=oneline'], cwd=repo)
 
         status = ""
         if remote:

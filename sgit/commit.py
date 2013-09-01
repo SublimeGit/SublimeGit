@@ -35,7 +35,7 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
         return get_setting('git_commit_verbose', True)
 
     def get_commit_template(self, repo, add=False, amend=False):
-        cmd = ['-c', 'color.diff=false', '-c', 'color.status=false', 'commit', '--dry-run', '--status',
+        cmd = ['commit', '--dry-run', '--status',
                '--all' if add else None,
                '--amend' if amend else None,
                '--verbose' if self.is_verbose else None]
