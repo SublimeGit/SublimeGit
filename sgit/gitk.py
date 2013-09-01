@@ -5,6 +5,7 @@ import threading
 import sublime
 from sublime_plugin import WindowCommand
 
+from .util import get_executable
 from .cmd import GitCmd
 
 
@@ -22,7 +23,7 @@ class GitGitkCommand(WindowCommand, GitCmd):
         if not cwd:
             return
 
-        cmd = ['gitk']
+        cmd = get_executable('gitk', ['gitk'])
 
         def async_inner():
             try:
