@@ -1,0 +1,18 @@
+SublimeGit 1.0.21
+=================
+
+Enhancements:
+-------------
+ - Makes the status bar completely async on both ST2 and ST3. This should
+   improve performance significantly when switching files.
+
+ - Adds a setting for the path to gitk.
+
+
+Bug Fixes:
+----------
+ - Focus on the existing diff view (if any) when using the diff command or
+   pressing d in the status view.
+
+ - Do not show ANSI escape codes in diff lines when pulling and merging
+   from a remote.
