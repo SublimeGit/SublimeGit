@@ -73,7 +73,7 @@ if sys.version_info[0] == 2:
             from sgit.git_extensions.legit import *
             from sgit.git_extensions.git_flow import *
         except ImportError:
-            raise e
+            raise
 
     # Enable plugins
     git_extensions.legit.enabled = ext.get('legit', True)
@@ -92,7 +92,7 @@ else:
             from .sgit.git_extensions.legit import *
             from .sgit.git_extensions.git_flow import *
         except ImportError:
-            raise e
+            raise
 
     def plugin_loaded():
         settings = sublime.load_settings('SublimeGit.sublime-settings')
