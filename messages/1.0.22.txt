@@ -1,0 +1,12 @@
+SublimeGit 1.0.22
+=================
+
+Enhancements:
+-------------
+
+ - Show tags in reverse chronological order (newest first.)
+
+
+Bug Fixes:
+----------
+ - Remove ctrl+[num] shortcuts for status view which were clashing with ST shortcuts.
