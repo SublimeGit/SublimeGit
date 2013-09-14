@@ -3,8 +3,14 @@ SublimeGit 1.0.22
 
 Enhancements:
 -------------
-
  - Show tags in reverse chronological order (newest first.)
+
+ - Mark the lines which were selected when running Git: Blame. These lines will have
+   a dot in the gutter, and the caret will be placed on the first line of the selection.
+
+ - Add a setting "git_commit_pedantic". When this is enabled, lines in the commit message
+   which do not follow the best practices for commit messages will be marked with a dot
+   in the gutter, as well as a red background (depending on your color scheme).
 
 
 Bug Fixes:
