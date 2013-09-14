@@ -396,7 +396,7 @@ class GitTagHelper(object):
 
     def format_quick_tags(self, tags):
         out = []
-        for t in tags:
+        for t in reversed(tags):
             tag, ann = t.split(' ', 1)
             out.append([tag, ann.strip()])
         return out
