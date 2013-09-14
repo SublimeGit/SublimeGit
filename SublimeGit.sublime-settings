@@ -40,7 +40,21 @@
      * will be shown below the commit overview when writing a
      * commit message.
      */
-    "git_commit_verbose": false,
+    "git_commit_verbose": true,
+
+    /*
+     * Pedantic commit messages
+     *
+     * The style guide for commit messages dictate that:
+     *  - The first line should be max 50 chars
+     *  - The second line should be empty
+     *  - Subsequent lines should be max 72 lines
+     *
+     * If this setting is true, SublimeGit will mark these
+     * errors with an icon in the gutter, and different color
+     * text for the offending lines.
+     */
+    "git_commit_pedantic": false,
 
     /*
      * Set Git Upstream on Push

@@ -143,6 +143,42 @@ class GitCommitTemplateCommand(TextCommand):
 class GitCommitEventListener(EventListener):
     _lpop = False
 
+    def mark_pedantic(self, view):
+        if view.settings().get('syntax', '').endswith('SublimeGit Commit Message.tmLanguage'):
+            # Header lines should be a max of 50 chars
+            view.erase_regions('git-commit.header')
+            firstline = view.line(view.text_point(0, 0))
+            if firstline.end() > 50 and not view.substr(firstline).startswith('#'):
+                view.add_regions('git-commit.header', [sublime.Region(50, firstline.end())], 'invalid', 'dot')
+
+            # The second line should be empty
+            view.erase_regions('git-commit.line2')
+            secondline = view.line(view.text_point(1, 0))
+            if secondline.end() - secondline.begin() > 0 and not view.substr(secondline).startswith('#'):
+                view.add_regions('git-commit.line2', [secondline], 'invalid', 'dot')
+
+            # Other lines should be at most 72 chars
+            view.erase_regions('git-commit.others')
+            for l in view.lines(sublime.Region(view.text_point(2, 0), view.size())):
+                if view.substr(l).startswith('#'):
+                    break
+                if l.end() - l.begin() > 72:
+                    view.add_regions('git-commit.others', [sublime.Region(l.begin() + 72, l.end())], 'invalid', 'dot')
+
+    def on_activated(self, view):
+        if sublime.version() < '3000':
+            self.mark_pedantic(view)
+
+    def on_modified(self, view):
+        if sublime.version() < '3000':
+            self.mark_pedantic(view)
+
+    def on_modified_async(self, view):
+        self.mark_pedantic(view)
+
+    def on_activated_async(self, view):
+        self.mark_pedantic(view)
+
     def on_close(self, view):
         if view.settings().get('git_view') == 'commit' and view.id() in GitCommit.windows:
             message = view.substr(sublime.Region(0, view.size()))
