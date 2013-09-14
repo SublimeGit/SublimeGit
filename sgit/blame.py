@@ -23,9 +23,10 @@ class GitBlameCommand(WindowCommand, GitCmd, GitStatusHelper):
     Run git blame on the current file.
 
     This will bring up a new window with the blame information to
-    the left of the file contents, on a per-line basis. When placing
-    the cursor on a line, the summary of the commit will be shown in
-    the status bar.
+    the left of the file contents, on a per-line basis. Lines which
+    are selected when executing the commands will be marked with a dot
+    in the gutter. When placing the cursor on a line, the summary of
+    the commit will be shown in the status bar.
 
     If the file has not been saved to the filesystem, or the file is
     not tracked by git, it's not possible to blame, and an error
@@ -68,10 +69,13 @@ class GitBlameCommand(WindowCommand, GitCmd, GitStatusHelper):
             return
 
         # figure out where we are in the file
-        row = None
+        rows = []
         sel = self.window.active_view().sel()
         if sel:
-            row, _ = self.window.active_view().rowcol(sel[0].begin())
+            for s in sel:
+                for l in self.window.active_view().lines(s):
+                    row, _ = self.window.active_view().rowcol(l.begin())
+                    rows.append(row)
 
         title = GIT_BLAME_TITLE_PREFIX + filename.replace(repo, '').lstrip('/\\')
         if revision:
@@ -92,7 +96,7 @@ class GitBlameCommand(WindowCommand, GitCmd, GitStatusHelper):
             view.settings().set('git_blame_file', filename)
             view.settings().set('git_blame_rev', revision)
 
-        view.run_command('git_blame_refresh', {'filename': filename, 'revision': revision, 'row': row})
+        view.run_command('git_blame_refresh', {'filename': filename, 'revision': revision, 'rows': rows})
 
 
 class GitBlameRefreshCommand(TextCommand, GitCmd):
@@ -181,7 +185,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
     def is_visible(self):
         return False
 
-    def run(self, edit, filename=None, revision=None, row=None):
+    def run(self, edit, filename=None, revision=None, rows=None):
         filename = filename or self.view.settings().get('git_blame_file')
         revision = revision or self.view.settings().get('git_blame_rev')
         repo = self.view.settings().get('git_repo')
@@ -202,8 +206,17 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
             self.view.insert(edit, 0, blame)
             self.view.set_read_only(True)
 
+            # mark lines selected
+            if rows:
+                lines = []
+                for row in rows:
+                    lines.append(self.view.line(self.view.text_point(row, 0)))
+
+                # add dots in the sidebar
+                self.view.add_regions('git-blame.lines', lines, 'git-blame.selection', 'dot', sublime.HIDDEN)
+
             # place cursor on same line as in old selection
-            row = row or 0
+            row = rows[0] if rows else 0
             point = self.view.text_point(row, 0)
             self.view.sel().clear()
             self.view.sel().add(sublime.Region(point))
