@@ -40,7 +40,7 @@
      * will be shown below the commit overview when writing a
      * commit message.
      */
-    "git_commit_verbose": true,
+    "git_commit_verbose": false,
 
     /*
      * Pedantic commit messages
