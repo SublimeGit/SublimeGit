@@ -199,13 +199,13 @@ class GitBranchHelper(object):
         return branch[11:] if branch.startswith('refs/heads/') else branch
 
     def get_branches(self, repo, remotes=False):
-        lines = self.git_lines(['show-branch', '--list', '--no-color', '--remotes' if remotes else None], cwd=repo)
+        lines = self.git_lines(['branch', '--list', '--no-color', '--remotes' if remotes else None], cwd=repo)
 
         branches = []
         for line in lines:
             current = line.startswith('*')
-            parts = re.split(r'[\[\]]', line, 3)
-            name = parts[1].strip()
+            nameparts = line[2:].split(' -> ')
+            name = nameparts[1] if len(nameparts) == 2 else nameparts[0]
             branches.append((current, name))
 
         return branches
@@ -312,9 +312,7 @@ class GitStatusHelper(object):
 
     def get_porcelain_status(self, repo):
         mode = self.get_untracked_mode()
-        cmd = ['status', '--porcelain']
-        if mode:
-            cmd.append('--untracked-files=%s' % mode)
+        cmd = ['status', '--porcelain', ('--untracked-files=%s' % mode) if mode else None]
         return self.git_lines(cmd, cwd=repo)
 
     def get_files_status(self, repo):

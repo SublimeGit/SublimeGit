@@ -19,7 +19,7 @@ class GitMergeCommand(WindowCommand, GitCmd, GitBranchHelper, GitErrorHelper):
             return
 
         branches = self.get_branches(repo)
-        choices = [name for current, name in branches if not current]
+        choices = [name for c, name in branches if not c]
 
         self.window.show_quick_panel(choices, partial(self.on_done, repo, choices), sublime.MONOSPACE_FONT)
 

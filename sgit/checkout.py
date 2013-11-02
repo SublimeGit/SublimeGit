@@ -162,7 +162,7 @@ class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
 
         b = '-b'
 
-        branches = [n for c, n in self.get_branches(repo)]
+        branches = [n for _, n in self.get_branches(repo)]
         if branch in branches:
             if sublime.ok_cancel_dialog(GIT_BRANCH_EXISTS_MSG % branch, 'Overwrite'):
                 b = '-B'
