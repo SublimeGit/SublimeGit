@@ -48,7 +48,7 @@
      * The style guide for commit messages dictate that:
      *  - The first line should be max 50 chars
      *  - The second line should be empty
-     *  - Subsequent lines should be max 72 lines
+     *  - Subsequent lines should be max 72 chars
      *
      * If this setting is true, SublimeGit will mark these
      * errors with an icon in the gutter, and different color

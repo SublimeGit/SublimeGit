@@ -56,7 +56,7 @@
 
     { "caption": "Git: Blame", "command": "git_blame"},
 
-    { "caption": "SublimeGit: Install License", "command": "sublime_git_install_license"},
+    { "caption": "SublimeGit: Add License", "command": "sublime_git_install_license"},
     { "caption": "SublimeGit: Buy License", "command": "sublime_git_buy_license"},
     { "caption": "SublimeGit: Documentation", "command": "sublime_git_documentation"},
     { "caption": "SublimeGit: Version", "command": "sublime_git_version"},
