@@ -11,7 +11,7 @@ from .status import GIT_WORKING_DIR_CLEAN
 
 
 GIT_COMMIT_VIEW_TITLE = "COMMIT_EDITMSG"
-GIT_COMMIT_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Commit Message.tmLanguage'
+GIT_COMMIT_VIEW_SYNTAX = 'Packages/SublimeGit/syntax/SublimeGit Commit Message.tmLanguage'
 
 GIT_NOTHING_STAGED = u'No changes added to commit. Use s on files/sections in the status view to stage changes.'
 GIT_COMMIT_TEMPLATE = u"""{old_msg}

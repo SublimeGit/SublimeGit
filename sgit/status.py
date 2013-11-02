@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 GOTO_DEFAULT = 'file:1'
 
 GIT_STATUS_VIEW_TITLE_PREFIX = '*git-status*: '
-GIT_STATUS_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Status.tmLanguage'
+GIT_STATUS_VIEW_SYNTAX = 'Packages/SublimeGit/syntax/SublimeGit Status.tmLanguage'
 GIT_STATUS_VIEW_SETTINGS = {
     'translate_tabs_to_spaces': False,
     'draw_white_space': 'none',

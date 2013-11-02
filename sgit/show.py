@@ -9,7 +9,7 @@ from .helpers import GitShowHelper
 
 
 GIT_SHOW_TITLE_PREFIX = '*git-show*: '
-GIT_SHOW_SYNTAX = 'Packages/SublimeGit/SublimeGit Show.tmLanguage'
+GIT_SHOW_SYNTAX = 'Packages/SublimeGit/syntax/SublimeGit Show.tmLanguage'
 
 
 class GitShowCommand(WindowCommand, GitCmd):

@@ -21,7 +21,7 @@ GIT_DIFF_CACHED_TITLE_PREFIX = GIT_DIFF_CACHED_TITLE + ': '
 GIT_DIFF_CLEAN = "Nothing to stage (no difference between working tree and index)"
 GIT_DIFF_CLEAN_CACHED = "Nothing to unstage (no changes in index)"
 
-GIT_DIFF_VIEW_SYNTAX = 'Packages/SublimeGit/SublimeGit Diff.tmLanguage'
+GIT_DIFF_VIEW_SYNTAX = 'Packages/SublimeGit/syntax/SublimeGit Diff.tmLanguage'
 
 GIT_DIFF_UNSTAGE_ERROR = "Cannot unstage hunks which have not been staged."
 GIT_DIFF_STAGE_ERROR = "Cannot stage hunks which are already staged."

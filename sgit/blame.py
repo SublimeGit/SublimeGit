@@ -10,7 +10,7 @@ from .helpers import GitStatusHelper, GitRepoHelper
 
 
 GIT_BLAME_TITLE_PREFIX = '*git-blame*: '
-GIT_BLAME_SYNTAX = 'Packages/SublimeGit/SublimeGit Blame.tmLanguage'
+GIT_BLAME_SYNTAX = 'Packages/SublimeGit/syntax/SublimeGit Blame.tmLanguage'
 
 
 class GitBlameCache(object):
