@@ -1,6 +1,6 @@
 # coding: utf-8
 
-__version__ = '1.0.23'
+__version__ = '1.0.24'
 
 
 # Import all the commands

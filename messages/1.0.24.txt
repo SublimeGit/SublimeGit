@@ -1,0 +1,32 @@
+SublimeGit 1.0.24
+=================
+
+Enhancements:
+-------------
+ - The "SublimeGit: Install License" command has been renamed to
+   "SublimeGit: Add License", to not pop up when searching for the
+   "Package Control: Install Package" command.
+
+ - .gitignore file management, now ensures that the file ends with a
+   newline. (Issue #40)
+
+ - Added a new setting git_status_untracked_files to control the
+   display of untracked files. (Issue #65)
+
+ - Added a new setting git_status_open_files_transient to control
+   the file mode of files opened from the status view. (Issue #42)
+
+ - Changed the keyboard shortcut for discard commands in the status
+   view to use backspace instead of k to be more Vintage friendly.
+   (Issue #44)
+
+ - Improved handling of multiple remotes with Push, Pull and Fetch
+   commands. Multiple remotes are now supported, and the commands
+   better mirror the functionality of the git cli. (Issue #52)
+
+Bug Fixes:
+----------
+ - Git Blame command now uses author name and timestamp, to correctly
+   refer to the original author of the commit. (Issue #39)
+
+ - Git checkout will now list all branches instead of only 25. (Issue #50)
