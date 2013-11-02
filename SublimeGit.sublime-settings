@@ -36,6 +36,17 @@
     "git_status_untracked_files": "auto",
 
     /*
+     * Open Files Transient
+     *
+     * When a file is opened from the status view, by default
+     * it is marked as transient. It will not get it's own tab
+     * until you start editing it. If you want to always open
+     * the file in its own tab, set this setting to false.
+     *
+     */
+    "git_status_open_files_transient": true,
+
+    /*
      * Change behavior of the status bar message
      *
      * If set to "fancy", SublimeGit will show a message like

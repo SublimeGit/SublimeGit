@@ -720,12 +720,16 @@ class GitStatusOpenFileCommand(TextCommand, GitStatusTextCmd):
         if not repo:
             return
 
+        transient = get_setting('git_status_open_files_transient', True) is True
         files = self.get_selected_files()
         window = self.view.window()
 
         for s, f in files:
             filename = os.path.join(repo, f)
-            window.open_file(filename, sublime.TRANSIENT)
+            if transient:
+                window.open_file(filename, sublime.TRANSIENT)
+            else:
+                window.open_file(filename)
 
 
 class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
