@@ -233,30 +233,17 @@ class GitRemoteHelper(GitBranchHelper):
             choices.append([remote, urls.get('(fetch)', None), urls.get('(push)', None)])
         return choices
 
-    def get_remote(self, repo, branch):
-        return self.git_string(['config', 'branch.%s.remote' % branch], cwd=repo)
-
-    def get_current_remote(self, repo):
-        return self.get_remote(repo, self.get_current_branch(repo))
-
-    def get_current_remote_or_origin(self, repo):
-        return self.get_remote_or_origin(repo, self.get_current_branch(repo))
-
     def get_remote_url(self, repo, remote):
         return self.git_string(['config', 'remote.%s.url' % remote], cwd=repo)
 
-    def get_merge_branch(self, repo, branch):
-        return self.git_string(['config', 'branch.%s.merge' % branch], cwd=repo)
+    def get_branch_upstream(self, repo, branch):
+        return (self.get_branch_remote(repo, branch), self.get_branch_merge(repo, branch))
 
-    def get_remote_or_origin(self, repo, branch=None):
-        if branch:
-            remote = self.git_string(['config', 'branch.%s.remote' % branch], cwd=repo)
-            if remote:
-                return remote
-        origin = self.git_string(['config', 'remote.origin.url'], cwd=repo)
-        if origin:
-            return 'origin'
-        return None
+    def get_branch_remote(self, repo, branch):
+        return self.git_string(['config', 'branch.%s.remote' % branch], cwd=repo)
+
+    def get_branch_merge(self, repo, branch):
+        return self.git_string(['config', 'branch.%s.merge' % branch], cwd=repo)
 
     def get_remote_branches(self, repo, remote):
         branches = [b for _, b in self.get_branches(repo, remotes=True)]

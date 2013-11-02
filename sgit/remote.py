@@ -4,7 +4,7 @@ from functools import partial
 import sublime
 from sublime_plugin import WindowCommand
 
-from .util import StatusSpinner, get_setting, noop
+from .util import StatusSpinner, noop
 from .cmd import GitCmd
 from .helpers import GitRemoteHelper
 
@@ -12,8 +12,14 @@ from .helpers import GitRemoteHelper
 NO_REMOTES = u"No remotes have been configured. Remotes can be added with the Git: Add Remote command. Do you want to add a remote now?"
 DELETE_REMOTE = u"Are you sure you want to delete the remote %s?"
 
-NO_ORIGIN_REMOTE = u"You are not on any branch and no origin has been configured. Please run Git: Remote Add to add a remote."
+NO_ORIGIN_REMOTE = u"You are not on any branch and no origin has been configured. Please check out a branch and run Git: Remote Add to add a remote."
 NO_BRANCH_REMOTES = u"No remotes have been configured for the branch %s and no origin exists. Please run Git: Remote Add to add a remote."
+
+CURRENT_NO_UPSTREAM = u"No upstream currently is currently specified for {branch}. Do you want to set the upstream to {merge} on {remote}?"
+CURRENT_DIFFERENT_UPSTREAM = u"The upstream for {branch} is currently set to {branch_merge} on {branch_remote}. Do you want to change it to {merge} on {remote}?"
+
+NO_UPSTREAM = u"No upstream is configured for your current branch. Do you want to run Git: Push Current Branch?"
+NO_TRACKING = u"No tracking information is configured for your current branch. Do you want to run Git: Pull Current Branch?"
 
 REMOTE_SHOW_TITLE_PREFIX = '*git-remote*: '
 
@@ -22,45 +28,44 @@ class GitFetchCommand(WindowCommand, GitCmd, GitRemoteHelper):
     """
     Fetches git objects from the remote repository
 
-    If the current branch is configured with a remote, this remote
-    will be used for fetching. If there are no remotes specified for
-    the current branch, the command will fall back to origin.
-
-    In the situation where the current branch does not have a remote,
-    and no origin is specified, a list of available remotes will be
-    presented to choose from. If there are no remotes configured,
-    you will be asked if you want to create a remote.
+    If there is only one remote configured, this remove will be
+    used for fetching. If there are multiple remotes, you will be
+    asked to select the remote to fetch from.
     """
 
-    def run(self):
+    def run(self, ask_remotes=False):
         repo = self.get_repo()
         if not repo:
             return
 
-        remote = self.get_current_remote_or_origin(repo)
+        remotes = self.get_remotes(repo)
+        if not remotes:
+            if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                self.window.run_command('git_remote_add')
+                return
 
-        if not remote:
-            remotes = self.get_remotes(repo)
+        if len(remotes) > 1:
             choices = self.format_quick_remotes(remotes)
-            if not remotes:
-                if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
-                    self.window.run_command('git_remote_add')
-                    return
+            choices.append(['+ All', 'Fetch from all configured remotes', 'git fetch --all'])
 
             def on_done(idx):
-                if idx != -1:
+                if idx == -1:
+                    return
+                if idx == len(choices) - 1:
+                    self.on_remote(repo)
+                else:
                     self.on_remote(repo, choices[idx][0])
 
             self.window.show_quick_panel(choices, on_done)
         else:
-            self.on_remote(repo, remote)
+            self.on_remote(repo, remote=remotes[0])
 
-    def on_remote(self, repo, remote):
+    def on_remote(self, repo, remote=None):
         self.panel = self.window.get_output_panel('git-fetch')
         self.panel_shown = False
 
-        thread = self.git_async(['fetch', '-v', remote], cwd=repo, on_data=self.on_data)
-        runner = StatusSpinner(thread, "Fetching from %s" % remote)
+        thread = self.git_async(['fetch', '-v', remote if remote else '--all'], cwd=repo, on_data=self.on_data)
+        runner = StatusSpinner(thread, "Fetching from %s" % (remote if remote else "all remotes"))
         runner.start()
 
     def on_data(self, d):
@@ -74,27 +79,16 @@ class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
     Push the current branch to a remote
 
     This is the command to use if you are pushing a branch to a remote
-    for the first time. Will push the current branch to a specified branch
-    on the given remote, creating the remote branch if it doesn't already
-    exist. Can also optionally set up the current branch to track the
-    remote branch for future push, pull and fetch commands.
+    for the first time, or to a different remote than the configured upstream.
+    Will push the current branch to a specified branch on the selected remote,
+    creating the remote branch if it doesn't already exist.
 
-    If tracking has already been set up for the current branch, it
-    will be used.
+    If there is only one remote configured, that will be used, otherwise you
+    will be asked to select a remote. If there are no remotes, you will be asked
+    to add one.
 
-    If the current branch does not have a remote, origin will be used
-    if it exists, otherwise you will be asked to select a remote. If
-    there are no remotes, you will be asked to add one.
-
-    If remote tracking has not been set up for the current branch,
-    you will be asked to supply a name to use for the branch on the
+    You will be asked to supply a name to use for the branch on the
     remote. By default, the current branch name will be suggested.
-
-    :setting git_set_upstream_on_push: If set to ``true``, the flag
-        ``--set-upstream`` will be used when pushing the branch.
-        This will set up the branch to track the remote branch, so
-        that argument-less pull, push and fetch will work. Set to
-        ``false`` to disable. Default: ``true``
 
     .. warning::
 
@@ -117,14 +111,13 @@ class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
         if not branch:
             return sublime.error_message("You really shouldn't push a detached head")
 
-        branch_remote = self.get_remote_or_origin(repo, branch)
+        remotes = self.get_remotes(repo)
+        if not remotes:
+            if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                self.window.run_command('git_remote_add')
+                return
 
-        if not branch_remote:
-            remotes = self.get_remotes(repo)
-            if not remotes:
-                if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
-                    self.window.run_command('git_remote_add')
-                    return
+        if len(remotes) > 1:
             choices = self.format_quick_remotes(remotes)
 
             def on_done(idx):
@@ -135,33 +128,35 @@ class GitPushCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
 
             self.window.show_quick_panel(choices, on_done)
         else:
-            self.on_remote(repo, branch, branch_remote)
+            self.on_remote(repo, branch, remotes[0])
 
-    def on_remote(self, repo, branch, branch_remote):
-        self.git(['config', 'branch.%s.remote' % branch, branch_remote], cwd=repo)
+    def on_remote(self, repo, branch, remote):
+        def on_done(rbranch):
+            rbranch = rbranch.strip()
+            if not rbranch:
+                return
+            self.on_remote_branch(repo, branch, remote, rbranch)
 
-        merge_branch = self.get_merge_branch(repo, branch)
-        if not merge_branch:
-            def on_done(rbranch):
-                rbranch = rbranch.strip()
-                if not rbranch:
-                    return
-                self.on_remote_branch(repo, branch, branch_remote, 'refs/heads/' + rbranch)
+        self.window.show_input_panel('Remote branch:', branch, on_done, noop, noop)
 
-            self.window.show_input_panel('Remote branch:', branch, on_done, noop, noop)
-        else:
-            self.on_remote_branch(repo, branch, branch_remote, merge_branch)
+    def on_remote_branch(self, repo, branch, remote, merge):
+        cmd = ['push', '-v', remote, '%s:%s' % (branch, merge)]
 
-    def on_remote_branch(self, repo, branch, branch_remote, merge_branch):
-        cmd = ['push', '-v', branch_remote, '%s:%s' % (branch, merge_branch)]
-        if get_setting('git_set_upstream_on_push', False):
-            cmd.append('--set-upstream')
+        branch_remote, branch_merge = self.get_branch_upstream(repo, branch)
+        if remote != branch_remote or branch_merge != ("refs/heads/%s" % merge):
+            if branch_remote == '' or branch_merge == '':
+                msg = CURRENT_NO_UPSTREAM.format(branch=branch, remote=remote, merge=merge)
+            else:
+                msg = CURRENT_DIFFERENT_UPSTREAM.format(branch=branch, branch_remote=branch_remote,
+                                                        branch_merge=branch_merge, remote=remote, merge=merge)
+            if sublime.ok_cancel_dialog(msg, "Set Upstream"):
+                cmd.append('--set-upstream')
 
         self.panel = self.window.get_output_panel('git-push')
         self.panel_shown = False
 
         thread = self.git_async(cmd, cwd=repo, on_data=self.on_data)
-        runner = StatusSpinner(thread, "Pushing %s to %s" % (branch, branch_remote))
+        runner = StatusSpinner(thread, "Pushing %s to %s" % (branch, remote))
         runner.start()
 
     def on_data(self, d):
@@ -181,55 +176,51 @@ class GitPullCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
             return
 
         branch = self.get_current_branch(repo)
-        branch_remote = self.get_remote_or_origin(repo, branch)
+        if not branch:
+            return sublime.error_message("Cannot pull in a detached head state")
 
-        if not branch_remote:
-            remotes = self.get_remotes(repo)
-            if not remotes:
-                if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
-                    self.window.run_command('git_remote_add')
-                    return
+        remotes = self.get_remotes(repo)
+        if not remotes:
+            if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                self.window.run_command('git_remote_add')
+                return
+
+        if len(remotes) > 1:
             choices = self.format_quick_remotes(remotes)
 
             def on_done(idx):
                 if idx == -1:
                     return
-                branch_remote = choices[idx][0]
-                self.on_remote(repo, branch, branch_remote)
+                remote = choices[idx][0]
+                self.on_remote(repo, branch, remote)
 
             self.window.show_quick_panel(choices, on_done)
         else:
-            self.on_remote(repo, branch, branch_remote)
+            self.on_remote(repo, branch, remotes[0])
 
-    def on_remote(self, repo, branch, branch_remote):
-        self.git(['config', 'branch.%s.remote' % branch, branch_remote], cwd=repo)
+    def on_remote(self, repo, branch, remote):
+        remote_branches = self.get_remote_branches(repo, remote)
+        if not remote_branches:
+            return sublime.error_message("No branches on remote %s" % remote)
 
-        merge_branch = self.get_merge_branch(repo, branch)
-        if not merge_branch:
-            remote_branches = self.get_remote_branches(repo, branch_remote)
-            if not remote_branches:
-                return sublime.error_message("No branches on remote %s" % branch_remote)
-            choices = self.format_quick_branches(remote_branches)
+        choices = self.format_quick_branches(remote_branches)
 
-            def on_done(idx):
-                if idx == -1:
-                    return
-                merge_branch = choices[idx][0]
-                self.git(['config', 'branch.%s.merge' % branch, "refs/heads/%s" % merge_branch], cwd=repo)
-                self.on_remote_branch(repo, branch, branch_remote, merge_branch)
+        def on_done(idx):
+            if idx == -1:
+                return
+            branch = choices[idx][0]
+            self.on_remote_branch(repo, branch, remote, branch)
 
-            self.window.show_quick_panel(choices, on_done)
-        else:
-            self.on_remote_branch(repo, branch, branch_remote, merge_branch)
+        sublime.set_timeout(partial(self.window.show_quick_panel, choices, on_done), 50)
 
-    def on_remote_branch(self, repo, branch, branch_remote, merge_branch):
+    def on_remote_branch(self, repo, branch, remote, merge):
         self.panel = self.window.get_output_panel('git-pull')
         self.panel_shown = False
 
-        cmd = ['pull', '-v', branch_remote, '%s:%s' % (branch, merge_branch)]
+        cmd = ['pull', '-v', remote, '%s:%s' % (branch, merge)]
 
         thread = self.git_async(cmd, cwd=repo, on_data=self.on_data)
-        runner = StatusSpinner(thread, "Pulling %s from %s" % (merge_branch, branch_remote))
+        runner = StatusSpinner(thread, "Pulling %s from %s" % (merge, remote))
         runner.start()
 
     def on_data(self, d):
@@ -238,63 +229,82 @@ class GitPullCurrentBranchCommand(WindowCommand, GitCmd, GitRemoteHelper):
         self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
-class GitPushPullAllCommand(WindowCommand, GitCmd, GitRemoteHelper):
+class GitPushCommand(WindowCommand, GitCmd, GitRemoteHelper):
+    """
+    Documentation coming soon.
+    """
 
-    def run(self, command):
-        if command not in ('push', 'pull'):
-            return
-
+    def run(self):
         repo = self.get_repo()
         if not repo:
             return
 
         branch = self.get_current_branch(repo)
-        branch_remote = self.get_remote_or_origin(repo, branch)
-        if not branch_remote:
-            if not branch:
-                return sublime.error_message(NO_ORIGIN_REMOTE)
-            else:
-                return sublime.error_message(NO_BRANCH_REMOTES % branch)
+        if not branch:
+            return sublime.error_message("You really shouldn't push a detached head")
 
-        if command == 'push':
-            spinner_msg = "Pushing to %s" % branch_remote
-        else:
-            spinner_msg = "Pulling from %s" % branch_remote
+        remotes = self.get_remotes(repo)
+        if not remotes:
+            if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                self.window.run_command('git_remote_add')
+                return
 
-        self.panel_name = 'git-%s' % command
+        branch_remote, branch_merge = self.get_branch_upstream(repo, branch)
+        if not branch_remote or not branch_merge:
+            if sublime.ok_cancel_dialog(NO_UPSTREAM, 'Yes'):
+                self.window.run_command('git_push_current_branch')
+            return
+
+        self.panel = self.window.get_output_panel('git-push')
         self.panel_shown = False
-        self.panel = self.window.get_output_panel(self.panel_name)
 
-        cmd = [command, '-v']
-        if command == 'push' and get_setting('git_set_upstream_on_push', False):
-            cmd.append('--set-upstream')
-
-        thread = self.git_async(cmd, cwd=repo, on_data=self.on_data)
-        runner = StatusSpinner(thread, spinner_msg)
+        thread = self.git_async(['push', '-v'], cwd=repo, on_data=self.on_data)
+        runner = StatusSpinner(thread, "Pushing to %s" % (branch_remote))
         runner.start()
 
     def on_data(self, d):
         if not self.panel_shown:
-            self.window.run_command('show_panel', {'panel': 'output.%s' % self.panel_name})
+            self.window.run_command('show_panel', {'panel': 'output.git-push'})
         self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
-class GitPushCommand(WindowCommand):
+class GitPullCommand(WindowCommand, GitCmd, GitRemoteHelper):
     """
     Documentation coming soon.
     """
 
     def run(self):
-        return self.window.run_command('git_push_pull_all', {'command': 'push'})
+        repo = self.get_repo()
+        if not repo:
+            return
 
+        branch = self.get_current_branch(repo)
+        if not branch:
+            return sublime.error_message("You really shouldn't push a detached head")
 
-class GitPullCommand(WindowCommand):
-    """
-    Documentation coming soon.
-    """
+        remotes = self.get_remotes(repo)
+        if not remotes:
+            if sublime.ok_cancel_dialog(NO_REMOTES, 'Add Remote'):
+                self.window.run_command('git_remote_add')
+                return
 
-    def run(self):
-        return self.window.run_command('git_push_pull_all', {'command': 'pull'})
+        branch_remote, branch_merge = self.get_branch_upstream(repo, branch)
+        if not branch_remote or not branch_merge:
+            if sublime.ok_cancel_dialog(NO_TRACKING, 'Yes'):
+                self.window.run_command('git_pull_current_branch')
+            return
+
+        self.panel = self.window.get_output_panel('git-pull')
+        self.panel_shown = False
+
+        thread = self.git_async(['pull', '-v'], cwd=repo, on_data=self.on_data)
+        runner = StatusSpinner(thread, "Pulling from %s" % (branch_remote))
+        runner.start()
+
+    def on_data(self, d):
+        if not self.panel_shown:
+            self.window.run_command('show_panel', {'panel': 'output.git-pull'})
+        self.panel.run_command('git_panel_append', {'content': d, 'scroll': True})
 
 
 class GitRemoteAddCommand(WindowCommand, GitCmd, GitRemoteHelper):

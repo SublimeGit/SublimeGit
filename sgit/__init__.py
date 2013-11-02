@@ -26,7 +26,7 @@ from .blame import (GitBlameCommand, GitBlameRefreshCommand, GitBlameShowCommand
 from .blame import GitBlameEventListener
 
 from .remote import (GitPushCurrentBranchCommand, GitPullCurrentBranchCommand,
-                     GitPushPullAllCommand, GitFetchCommand, GitPullCommand, GitPushCommand,
+                     GitFetchCommand, GitPullCommand, GitPushCommand,
                      GitRemoteCommand, GitRemoteAddCommand)
 
 from .status import (GitStatusCommand, GitStatusRefreshCommand, GitQuickStatusCommand,

@@ -82,16 +82,6 @@
     "git_commit_pedantic": false,
 
     /*
-     * Set Git Upstream on Push
-     *
-     * If set to true, Git: Push will set the upstream for
-     * the branch being pushed. This corresponds to adding
-     * the flag --set-upstream to the call to git-push.
-     * See git-push(1) for more information.
-     */
-    "git_set_upstream_on_push": true,
-
-    /*
      * Warning when opening multiple tabs from a blame view.
      *
      * If set to true, you will receive a warning when your

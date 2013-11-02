@@ -90,7 +90,7 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
 
     def build_status(self, repo):
         branch = self.get_current_branch(repo)
-        remote = self.get_remote(repo, branch)
+        remote = self.get_branch_remote(repo, branch)
         remote_url = self.get_remote_url(repo, remote)
 
         abbrev_dir = abbreviate_dir(repo)
