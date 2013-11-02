@@ -119,17 +119,17 @@
     },
 
     // Discard command
-    { "keys": ["k"], "command": "git_status_discard", "args": {"discard": "section"},
+    { "keys": ["backspace"], "command": "git_status_discard", "args": {"discard": "section"},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "constant.other.git-status.header"}
         ]
     },
-    { "keys": ["k"], "command": "git_status_discard", "args": {"discard": "item"},
+    { "keys": ["backspace"], "command": "git_status_discard", "args": {"discard": "item"},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
         ]
     },
-    { "keys": ["K"], "command": "git_status_discard", "args": {"discard": "all"},
+    { "keys": ["shift+backspace"], "command": "git_status_discard", "args": {"discard": "all"},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "text.git-status"}
         ]

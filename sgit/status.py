@@ -70,7 +70,7 @@ GIT_STATUS_HELP = """
 #    s = stage file/section, S = stage all unstaged files
 #    ctrl+shift+s = stage all unstaged and untracked files
 #    u = unstage file/section, U = unstage all files
-#    k = discard file/section, K = discard everything
+#    backspace = discard file/section, shift+backspace = discard everything
 #
 # Commit:
 #    c = commit, C = commit -a (add unstaged)
