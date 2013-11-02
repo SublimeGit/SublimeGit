@@ -4,6 +4,8 @@ import os
 import logging
 import sublime
 
+from .util import get_setting
+
 
 logger = logging.getLogger(__name__)
 
@@ -308,9 +310,16 @@ class GitStatusHelper(object):
     def has_unstaged_changes(self, repo):
         return self.git_exit_code(['diff', '--exit-code', '--quiet'], cwd=repo) != 0
 
+    def get_porcelain_status(self, repo):
+        mode = self.get_untracked_mode()
+        cmd = ['status', '--porcelain']
+        if mode:
+            cmd.append('--untracked-files=%s' % mode)
+        return self.git_lines(cmd, cwd=repo)
+
     def get_files_status(self, repo):
         untracked, unstaged, staged = [], [], []
-        status = self.git_lines(['status', '--porcelain', '--untracked-files=all'], cwd=repo)
+        status = self.get_porcelain_status(repo)
         for l in status:
             state, filename = l[0:2], l[3:]
             index, worktree = state
@@ -327,6 +336,17 @@ class GitStatusHelper(object):
                 if index != ' ':
                     staged.append((index, filename))
         return untracked, unstaged, staged
+
+    def get_untracked_mode(self):
+        # get untracked files mode
+        setting = get_setting('git_status_untracked_files', 'all')
+
+        mode = 'all'
+        if setting == 'none':
+            mode = 'no'
+        elif setting == 'auto':
+            mode = None
+        return mode
 
 
 class GitDiffHelper(object):

@@ -3,13 +3,14 @@ import sublime
 from sublime_plugin import WindowCommand, TextCommand
 
 from .cmd import GitCmd
+from .helpers import GitStatusHelper
 
 GIT_ADD_CLEAN = "No unstaged changes"
 GIT_ADD_ALL = "+ All files"
 GIT_ADD_ALL_UNSTAGED = "+ All unstaged files"
 
 
-class GitQuickAddCommand(WindowCommand, GitCmd):
+class GitQuickAddCommand(WindowCommand, GitCmd, GitStatusHelper):
     """
     Adds one or more files to the staging area by selecting them
     from the quick bar.
@@ -82,7 +83,7 @@ class GitQuickAddCommand(WindowCommand, GitCmd):
         self.window.show_quick_panel(status, on_done, sublime.MONOSPACE_FONT)
 
     def get_status_list(self, repo):
-        status = [l[1:] for l in self.git_lines(['status', '--porcelain', '-u'], cwd=repo) if l[1] != ' ']
+        status = [l[1:] for l in self.get_porcelain_status(repo) if l[1] != ' ']
         if not status:
             return [GIT_ADD_CLEAN]
         if len(status) > 1:

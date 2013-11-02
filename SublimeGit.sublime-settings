@@ -22,6 +22,20 @@
     "git_update_status_on_focus": true,
 
     /*
+     * Show Untracked Files in Status View
+     *
+     * If for some reason you have a lot of untracked files that
+     * you don't want to show up in the status view, you can use
+     * this setting. Also affects Git: Quick Add and Git: Quick Status
+     *
+     * Possible values:
+     *   "all": show all untracked files
+     *   "auto": obey the status.showUntrackedFiles git config setting
+     *   "none": never show untracked files
+     */
+    "git_status_untracked_files": "auto",
+
+    /*
      * Change behavior of the status bar message
      *
      * If set to "fancy", SublimeGit will show a message like

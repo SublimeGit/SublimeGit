@@ -128,6 +128,7 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
         return status
 
     def build_files_status(self, repo):
+        # get status
         status = ""
         untracked, unstaged, staged = self.get_files_status(repo)
 
@@ -307,7 +308,7 @@ class GitStatusBarEventListener(EventListener, GitCmd):
         updater.start()
 
 
-class GitQuickStatusCommand(WindowCommand, GitCmd):
+class GitQuickStatusCommand(WindowCommand, GitCmd, GitStatusHelper):
     """
     Show an abbreviated status in the quick bar.
 
@@ -338,7 +339,7 @@ class GitQuickStatusCommand(WindowCommand, GitCmd):
         if not repo:
             return
 
-        status = self.git_lines(['status', '--porcelain', '--untracked-files=all'], cwd=repo)
+        status = self.get_porcelain_status(repo)
         if not status:
             status = [GIT_WORKING_DIR_CLEAN]
 
