@@ -785,17 +785,27 @@ class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
     def add_to_gitignore(self, repo, patterns):
         gitignore = os.path.join(repo, '.gitignore')
         contents = []
+
+        # read existing gitignore
         if os.path.exists(gitignore):
             with open(gitignore, 'r+') as f:
                 contents = [l.strip() for l in f]
         logger.debug('Initial .gitignore: %s', contents)
+
+        # add new patterns to the end
         for p in patterns:
             if p not in contents:
                 logger.debug('Adding to .gitignore: %s', p)
                 contents.append(p)
+
+        # always add a newline
+        contents.append('')
+
+        # write gitignore
         with open(gitignore, 'w+') as f:
             f.write("\n".join(contents))
         logger.debug('Final .gitignore: %s', contents)
+
         return contents
 
 
