@@ -157,7 +157,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
         return commits, lines
 
     def get_commit_date(self, commit):
-        return datetime.fromtimestamp(commit.get('committer-time'))
+        return datetime.fromtimestamp(commit.get('author-time'))
 
     def format_blame(self, commits, lines):
         content = []
@@ -165,7 +165,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
 
         files = set(c.get('filename') for _, c in commits.items() if c.get('filename'))
         max_file = max(len(f) for f in files)
-        max_name = max(len(c.get('committer', '')) for _, c in commits.items())
+        max_name = max(len(c.get('author', '')) for _, c in commits.items())
         boundaries = any('boundary' in c for _, c in commits.items())
 
         for sha, line in lines:
@@ -175,7 +175,7 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
                 boundary='^' if 'boundary' in commit else (' ' if boundaries else ''),
                 sha=commit.get('abbrev'),
                 file=commit.get('filename').ljust(max_file + 1) if len(files) > 1 else '',
-                author=commit.get('committer', '').ljust(max_name + 1, ' '),
+                author=commit.get('author', '').ljust(max_name + 1, ' '),
                 date=date.strftime("%a %b %d %H:%M:%S %Y"),
                 line=line
             )
