@@ -1,0 +1,11 @@
+SublimeGit 1.0.25
+=================
+
+Enhancements:
+-------------
+
+
+Bug Fixes:
+----------
+ - Fixes occasional attributeerror as a result of the git_commit_pedantic
+   functionality. (Issue #66)
