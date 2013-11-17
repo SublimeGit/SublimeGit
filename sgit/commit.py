@@ -144,7 +144,8 @@ class GitCommitEventListener(EventListener):
     _lpop = False
 
     def mark_pedantic(self, view):
-        if view.settings().get('syntax', '').endswith('SublimeGit Commit Message.tmLanguage'):
+        syntax = view.settings().get('syntax')
+        if syntax and syntax.endswith('SublimeGit Commit Message.tmLanguage'):
             # Header lines should be a max of 50 chars
             view.erase_regions('git-commit.header')
             firstline = view.line(view.text_point(0, 0))
