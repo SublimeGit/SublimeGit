@@ -4,6 +4,7 @@ from functools import partial
 import sublime
 from sublime_plugin import WindowCommand
 
+from .util import get_setting
 from .cmd import GitCmd
 from .helpers import GitBranchHelper, GitErrorHelper
 
@@ -27,9 +28,16 @@ class GitMergeCommand(WindowCommand, GitCmd, GitBranchHelper, GitErrorHelper):
         if idx == -1:
             return
 
-        branch = choices[idx]
+        cmd = ['merge', '--no-progress']
 
-        exit, stdout, stderr = self.git(['merge', '--no-progress', branch], cwd=repo)
+        extra_flags = get_setting('git_merge_flags')
+        if isinstance(extra_flags, list):
+            cmd.extend(extra_flags)
+
+        branch = choices[idx]
+        cmd.append(branch)
+
+        exit, stdout, stderr = self.git(cmd, cwd=repo)
         if exit == 0:
             panel = self.window.get_output_panel('git-merge')
             panel.run_command('git_panel_write', {'content': stdout})

@@ -7,9 +7,9 @@ __version__ = '1.0.24'
 
 from .util import GitPanelWriteCommand, GitPanelAppendCommand
 
-#from .cli import GitCliCommand, GitCliAsyncCommand
-
 from .repo import GitInitCommand, GitSwitchRepoCommand
+
+from .custom import GitCustomCommand, GitCustomOutputCommand
 
 from .diff import (GitDiffCommand, GitDiffCachedCommand, GitDiffRefreshCommand, GitDiffMoveCommand,
                    GitDiffChangeHunkSizeCommand, GitDiffStageUnstageHunkCommand, GitDiffCurrentFileCommand,

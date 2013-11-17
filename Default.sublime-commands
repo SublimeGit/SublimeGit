@@ -1,12 +1,12 @@
 [
-    { "caption": "Git", "command": "git_cli"},
-    { "caption": "Git Async", "command": "git_cli_async"},
     { "caption": "Gitk", "command": "git_gitk"},
     { "caption": "Git: Version", "command": "git_version"},
     { "caption": "Git: Help", "command": "git_help"},
 
     { "caption": "Git: Init", "command": "git_init"},
     { "caption": "Git: Switch Repo", "command": "git_switch_repo"},
+
+    { "caption": "Git: Custom Command", "command": "git_custom"},
 
     { "caption": "Git: Status", "command": "git_status"},
     { "caption": "Git: Quick Status", "command": "git_quick_status"},

@@ -3,9 +3,23 @@ SublimeGit 1.0.25
 
 Enhancements:
 -------------
+ - Add the setting git_merge_flags for custom merge flags. This allows
+   specifying defaults such as --no-ff or --ff-only, or the merge
+   strategy. (Issue #60)
+
+ - Added Git: Custom Command, to allow for any command to be executed.
+   It also enables extending SublimeGit with your own commands. For more
+   information on how to do this, see https://docs.sublimegit.net/customizations.html
+   (Issue #71 and #58)
+
 
 
 Bug Fixes:
 ----------
  - Fixes occasional attributeerror as a result of the git_commit_pedantic
    functionality. (Issue #66)
+
+
+Documentation
+-------------
+ - Added Mario Basic's solution for windows to docs. (Issue #59)

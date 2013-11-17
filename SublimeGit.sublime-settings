@@ -82,6 +82,26 @@
     "git_commit_pedantic": false,
 
     /*
+     * Extra merge flags to use when running Git: Merge
+     *
+     * By default, git merge is run like this:
+     *
+     *  git merge --no-progress <branch>
+     *
+     * If you want to add something like '--no-ff', set this
+     * value to ['--no-ff']. Then the command run will be
+     *
+     *  git merge --no-progress --no-ff <branch>
+     *
+     * It is possible to add several options, using the default
+     * list syntax like so:
+     *
+     *  "git_merge_flags": ['--no-ff', '--strategy=ours']
+     *
+     */
+     "git_merge_flags": [],
+
+    /*
      * Warning when opening multiple tabs from a blame view.
      *
      * If set to true, you will receive a warning when your
