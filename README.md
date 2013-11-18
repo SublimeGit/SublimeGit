@@ -32,14 +32,17 @@ Various features (In no particular order):
  - Cherry-picking.
  - Improved syntax highlighting for `Git: Blame`.
  - Alternative short syntax for `Git: Blame`.
+ - Allow for `--word-diff` option in diff view.
 
 Bugs (In no particular order):
  - Handle username/password/passphrase freezes better.
- - Fix some whitespace problems.
+ - Fix some whitespace problems (It seems like the whitespace = cr-at-eol setting is getting ignored, and probably other whitespace settings too. Running git diff in Sublime Text shows ^M at end of line, doing the same in a terminal window omits the ^M as it should).
  - Improve reload logic to get rid of need to restart Sublime Text after some updates.
  - Improve status view cursor location logic. (Issue #10)
  - Commit message is empty on merge commits.
  - Git-flow issues. (Issue #63, #51)
+ - Binary files and diffs can cause issues. (Specifically, some fonts)
+ - File encoding issues in `Git: Blame` and `Git: Diff`. (Windows 1252 or ISO-8859-1 with characters like å)
 
 **1.1.0**
 
