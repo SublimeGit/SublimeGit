@@ -1,0 +1,15 @@
+SublimeGit 1.0.26
+=================
+
+Bug Fixes:
+----------
+ - Try to fix memory leak regarding git_commit_pedantic. This involves:
+     1. Turning it off by default.
+     2. Making sure that only git commit buffers are affected.
+     3. Making sure that the EventListener does as little work as possible.
+    (Issue #76)
+
+
+Documentation
+-------------
+ - Corrected examples in documentation for git_merge_flags. (Issue #77)

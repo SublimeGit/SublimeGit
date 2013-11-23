@@ -88,15 +88,15 @@
      *
      *  git merge --no-progress <branch>
      *
-     * If you want to add something like '--no-ff', set this
-     * value to ['--no-ff']. Then the command run will be
+     * If you want to add something like "--no-ff", set this
+     * value to ["--no-ff"]. Then the command run will be
      *
      *  git merge --no-progress --no-ff <branch>
      *
      * It is possible to add several options, using the default
      * list syntax like so:
      *
-     *  "git_merge_flags": ['--no-ff', '--strategy=ours']
+     *  "git_merge_flags": ["--no-ff", "--strategy=ours"]
      *
      */
      "git_merge_flags": [],

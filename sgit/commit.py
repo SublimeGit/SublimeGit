@@ -144,8 +144,7 @@ class GitCommitEventListener(EventListener):
     _lpop = False
 
     def mark_pedantic(self, view):
-        syntax = view.settings().get('syntax')
-        if syntax and syntax.endswith('SublimeGit Commit Message.tmLanguage'):
+        if view.settings().get('git_view') == 'commit' or view.file_name() == 'COMMIT_EDITMSG':
             # Header lines should be a max of 50 chars
             view.erase_regions('git-commit.header')
             firstline = view.line(view.text_point(0, 0))
@@ -167,18 +166,20 @@ class GitCommitEventListener(EventListener):
                     view.add_regions('git-commit.others', [sublime.Region(l.begin() + 72, l.end())], 'invalid', 'dot')
 
     def on_activated(self, view):
-        if sublime.version() < '3000':
+        if sublime.version() < '3000' and get_setting('git_commit_pedantic') is True:
             self.mark_pedantic(view)
 
     def on_modified(self, view):
-        if sublime.version() < '3000':
+        if sublime.version() < '3000' and get_setting('git_commit_pedantic') is True:
             self.mark_pedantic(view)
 
     def on_modified_async(self, view):
-        self.mark_pedantic(view)
+        if get_setting('git_commit_pedantic') is True:
+            self.mark_pedantic(view)
 
     def on_activated_async(self, view):
-        self.mark_pedantic(view)
+        if get_setting('git_commit_pedantic') is True:
+            self.mark_pedantic(view)
 
     def on_close(self, view):
         if view.settings().get('git_view') == 'commit' and view.id() in GitCommit.windows:
