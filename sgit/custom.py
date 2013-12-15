@@ -53,6 +53,8 @@ class GitCustomCommand(WindowCommand, GitCmd):
             self.on_command(repo, cmd, async=async)
 
     def on_command(self, repo, cmd, async):
+        if sublime.version() < '3000':
+            cmd = cmd.encode('utf-8')
         cmd = shlex.split(cmd)
         self.init_output(repo, cmd)
         if async:
