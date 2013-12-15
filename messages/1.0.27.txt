@@ -1,0 +1,9 @@
+SublimeGit 1.0.27
+=================
+
+Bug Fixes:
+----------
+ - Fix issue with git status output not being commented by
+   default on git 1.8.5+ (Issues #83 and #87)
+
+ - Fix issue with unicode and custom commands. (Issue #76)
