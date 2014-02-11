@@ -1,0 +1,7 @@
+SublimeGit 1.0.28
+=================
+
+Bug Fixes:
+----------
+ - Adds documentation for using backspace to delete stashes
+   in inline Git: Status help (issue #95)

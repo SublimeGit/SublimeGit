@@ -31,7 +31,6 @@ STASHES = "stashes"
 UNTRACKED_FILES = "untracked_files"
 UNSTAGED_CHANGES = "unstaged_changes"
 STAGED_CHANGES = "staged_changes"
-
 CHANGES = "changes"  # pseudo-section to ignore staging area
 
 SECTIONS = {
@@ -41,6 +40,15 @@ SECTIONS = {
     STAGED_CHANGES: 'Staged changes:\n',
     CHANGES: 'Changes:\n',
 }
+
+SECTION_ORDER = (
+    STASHES,
+    UNTRACKED_FILES,
+    UNSTAGED_CHANGES,
+    STAGED_CHANGES,
+    CHANGES,
+)
+
 
 SECTION_SELECTOR_PREFIX = 'meta.git-status.'
 
@@ -160,6 +168,307 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
         return status
 
 
+class GitStatusTextCmd(GitCmd):
+
+    def run(self, edit, *args):
+        sublime.error_message("Unimplemented!")
+
+    # status update
+    def update_status(self, goto=None):
+        self.view.run_command('git_status_refresh', {'goto': goto})
+
+    # selection commands
+    def get_first_point(self):
+        sels = self.view.sel()
+        if sels:
+            return sels[0].begin()
+
+    def get_all_points(self):
+        sels = self.view.sel()
+        return [s.begin() for s in sels]
+
+    # line helpers
+    def get_selected_lines(self):
+        sels = self.view.sel()
+        selected_lines = []
+        for selection in sels:
+            lines = self.view.lines(selection)
+            for line in lines:
+                if self.view.score_selector(line.begin(), 'meta.git-status.line') > 0:
+                    selected_lines.append(line)
+        return selected_lines
+
+    # stash helpers
+    def get_all_stash_regions(self):
+        return self.view.find_by_selector('meta.git-status.stash.name')
+
+    def get_all_stashes(self):
+        stashes = self.get_all_stash_regions()
+        return [(self.view.substr(s), self.view.substr(self.view.line(s)).strip()) for s in stashes]
+
+    def get_selected_stashes(self):
+        stashes = []
+        lines = self.get_selected_lines()
+
+        if lines:
+            for s in self.get_all_stash_regions():
+                for l in lines:
+                    if l.contains(s):
+                        name = self.view.substr(s)
+                        title = self.view.substr(self.view.line(s)).strip()
+                        stashes.append((name, title))
+        return stashes
+
+    # file helpers
+    def get_all_file_regions(self):
+        return self.view.find_by_selector('meta.git-status.file')
+
+    def get_all_files(self):
+        files = self.get_all_file_regions()
+        return [(self.section_at_region(f), self.view.substr(f)) for f in files]
+
+    def get_selected_file_regions(self):
+        files = []
+        lines = self.get_selected_lines()
+
+        if not lines:
+            return files
+
+        for f in self.get_all_file_regions():
+            for l in lines:
+                if l.contains(f):
+                    # check for renamed
+                    linestr = self.view.substr(l).strip()
+                    if linestr.startswith(STATUS_LABELS['R']) and ' -> ' in linestr:
+                        names = self.view.substr(f)
+                        # find position of divider
+                        e = names.find(' -> ')
+                        s = e + 4
+                        # add both files
+                        f1 = sublime.Region(f.begin(), f.begin() + e)
+                        f2 = sublime.Region(f.begin() + s, f.end())
+                        files.append((self.section_at_region(f), f1))
+                        files.append((self.section_at_region(f), f2))
+                    else:
+                        files.append((self.section_at_region(f), f))
+
+        return files
+
+    def get_selected_files(self):
+        return [(s, self.view.substr(f)) for s, f in self.get_selected_file_regions()]
+
+    def get_status_lines(self):
+        lines = []
+        chunks = self.view.find_by_selector('meta.git-status.line')
+        for c in chunks:
+            lines.extend(self.view.lines(c))
+        return lines
+
+    # section helpers
+    def get_sections(self):
+        sections = self.view.find_by_selector('constant.other.git-status.header')
+        return sections
+
+    def section_at_point(self, point):
+        for s in list(SECTIONS.keys()):
+            if self.view.score_selector(point, SECTION_SELECTOR_PREFIX + s) > 0:
+                return s
+
+    def section_at_region(self, region):
+        return self.section_at_point(region.begin())
+
+    # goto helpers
+    def logical_goto_next_file(self):
+        goto = "file:1"
+        files = self.get_selected_files()
+        if files:
+            section, filename = files[-1]
+            goto = "file:%s:%s" % (filename, section)
+        return goto
+
+    def logical_goto_next_stash(self):
+        goto = "stash:1"
+        stashes = self.get_selected_stashes()
+        if stashes:
+            goto = "stash:%s:stashes" % (stashes[-1][0])
+        return goto
+
+
+class GitStatusMoveCmd(GitStatusTextCmd):
+
+    def goto(self, goto):
+        what, which, where = self.parse_goto(goto)
+        if what == "section":
+            self.move_to_section(which, where)
+        elif what == "item":
+            self.move_to_item(which, where)
+        elif what == "file":
+            self.move_to_file(which, where)
+        elif what == "stash":
+            self.move_to_stash(which, where)
+        elif what == "point":
+            try:
+                point = int(which)
+                self.move_to_point(point)
+            except ValueError:
+                pass
+
+    def parse_goto(self, goto):
+        what, which, where = None, None, None
+        parts = goto.split(':')
+        what = parts[0]
+        if len(parts) > 1:
+            try:
+                which = int(parts[1])
+            except ValueError:
+                which = parts[1]
+        if len(parts) > 2:
+            try:
+                where = int(parts[2])
+            except ValueError:
+                where = parts[2]
+        return (what, which, where)
+
+    def move_to_point(self, point):
+        self.view.sel().clear()
+        self.view.sel().add(sublime.Region(point))
+
+        pointrow, _ = self.view.rowcol(point)
+        pointstart = self.view.text_point(max(pointrow - 3, 0), 0)
+        pointend = self.view.text_point(pointrow + 3, 0)
+
+        pointregion = sublime.Region(pointstart, pointend)
+
+        if not self.view.visible_region().contains(pointregion):
+            self.view.show(pointregion, False)
+
+        #sublime.set_timeout(partial(self.adjust_viewport, point), 0)
+
+    # def adjust_viewport(self, point):
+    #     _, view_begin = self.view.viewport_position()
+    #     _, view_height = self.view.viewport_extent()
+    #     view_end = view_begin + view_height
+
+    #     _, point_begin = self.view.text_to_layout(point)
+    #     point_end = point_begin + self.view.line_height()
+
+    #     underflow = max(view_begin - point_begin, 0)
+    #     overflow = max(point_end - view_end, 0)
+
+    #     if overflow > 0:
+    #         self.view.set_viewport_position((0.0, view_begin + overflow + 5), False)
+    #     elif underflow > 0:
+    #         self.view.set_viewport_position((0.0, view_begin - underflow - 5), False)
+
+    def move_to_region(self, region):
+        self.move_to_point(self.view.line(region).begin())
+
+    def prev_region(self, regions, point):
+        before = [r for r in regions if self.view.line(r).end() < point]
+        return before[-1] if before else regions[-1]
+
+    def next_region(self, regions, point):
+        after = [r for r in regions if self.view.line(r).begin() > point]
+        return after[0] if after else regions[0]
+
+    def next_or_prev_region(self, direction, regions, point):
+        if direction == "next":
+            return self.next_region(regions, point)
+        else:
+            return self.prev_region(regions, point)
+
+    def move_to_section(self, which, where=None):
+        if which in range(1, 5):
+            sections = self.get_sections()
+            if sections and len(sections) >= which:
+                section = sections[which - 1]
+                self.move_to_region(section)
+        elif which in list(SECTIONS.keys()):
+            sections = self.get_sections()
+            for section in sections:
+                if self.section_at_region(section) == which:
+                    self.move_to_region(section)
+                    return
+        elif which in ('next', 'prev'):
+            point = self.get_first_point()
+            sections = self.get_sections()
+            if point and sections:
+                next = self.next_or_prev_region(which, sections, point)
+                self.move_to_region(next)
+
+    def move_to_item(self, which=1, where=None):
+        if which in ('next', 'prev'):
+            point = self.get_first_point()
+            regions = self.get_status_lines()
+            if point and regions:
+                next = self.next_or_prev_region(which, regions, point)
+                self.move_to_region(next)
+
+    def move_to_file(self, which=1, where=None):
+        if isinstance(which, int):
+            files = self.get_all_file_regions()
+            if files:
+                if len(files) >= which:
+                    self.move_to_region(self.view.line(files[which - 1]))
+                else:
+                    self.move_to_region(self.view.line(files[-1]))
+            elif self.get_all_stash_regions():
+                self.move_to_stash(1)
+            elif self.view.find(GIT_WORKING_DIR_CLEAN, 0, sublime.LITERAL):
+                region = self.view.find(GIT_WORKING_DIR_CLEAN, 0, sublime.LITERAL)
+                self.move_to_region(region)
+        elif which in ('next', 'prev'):
+            point = self.get_first_point()
+            regions = self.get_all_file_regions()
+            if point and regions:
+                next = self.next_or_prev_region(which, regions, point)
+                self.move_to_region(next)
+        elif which and where:
+            regions = self.get_all_file_regions()
+            section_regions = [r for r in regions if self.section_at_region(r) == where]
+            if section_regions:
+                prev_regions = [r for r in section_regions if self.view.substr(r) < which]
+                next_regions = [r for r in section_regions if self.view.substr(r) >= which]
+                if next_regions:
+                    next = next_regions[0]
+                else:
+                    next = prev_regions[-1]
+                self.move_to_region(next)
+            else:
+                sections = set([self.section_at_region(r) for r in regions])
+                idx = SECTION_ORDER.index(where)
+                while idx > 0:
+                    idx -= 1
+                    section = SECTION_ORDER[idx]
+                    if section in sections:
+                        section_regions = [r for r in regions if self.section_at_region(r) == section]
+                        self.move_to_region(section_regions[-1])
+                        return
+                self.move_to_file(1)
+
+    def move_to_stash(self, which, where=None):
+        if which is not None and where:
+            which = str(which)
+            stash_regions = self.get_all_stash_regions()
+            if stash_regions:
+                prev_regions = [r for r in stash_regions if self.view.substr(r) < which]
+                next_regions = [r for r in stash_regions if self.view.substr(r) >= which]
+                if next_regions:
+                    next = next_regions[0]
+                else:
+                    next = prev_regions[-1]
+                self.move_to_region(next)
+            else:
+                self.move_to_file(1)
+        elif isinstance(which, int):
+            stashes = self.get_all_stash_regions()
+            if stashes:
+                if len(stashes) >= which:
+                    self.move_to_region(self.view.line(stashes[which - 1]))
+                else:
+                    self.move_to_region(self.view.line(stashes[-1]))
+
+
 class GitStatusCommand(WindowCommand, GitStatusBuilder):
     """
     Documentation coming soon.
@@ -192,7 +501,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
             view.run_command('git_status_refresh', {'goto': 'file:1'})
 
 
-class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
+class GitStatusRefreshCommand(TextCommand, GitStatusBuilder, GitStatusMoveCmd):
     _lpop = False
 
     def is_visible(self):
@@ -211,15 +520,13 @@ class GitStatusRefreshCommand(TextCommand, GitStatusBuilder):
             return
 
         self.view.set_read_only(False)
-        if self.view.size() > 0:
-            self.view.erase(edit, sublime.Region(0, self.view.size()))
-        self.view.insert(edit, 0, status)
+        self.view.replace(edit, sublime.Region(0, self.view.size()), status)
         self.view.set_read_only(True)
 
         if goto:
-            self.view.run_command('git_status_move', {'goto': goto})
+            self.goto(goto)
         else:
-            self.view.run_command('git_status_move', {'goto': GOTO_DEFAULT})
+            self.goto(GOTO_DEFAULT)
 
 
 class GitStatusEventListener(EventListener):
@@ -361,274 +668,13 @@ class GitQuickStatusCommand(WindowCommand, GitCmd, GitStatusHelper):
         self.window.show_quick_panel(status, on_done, sublime.MONOSPACE_FONT)
 
 
-class GitStatusTextCmd(GitCmd):
-
-    def run(self, edit, *args):
-        sublime.error_message("Unimplemented!")
-
-    # status update
-    def update_status(self, goto=None):
-        self.view.run_command('git_status_refresh', {'goto': goto})
-
-    # selection commands
-    def get_first_point(self):
-        sels = self.view.sel()
-        if sels:
-            return sels[0].begin()
-
-    def get_all_points(self):
-        sels = self.view.sel()
-        return [s.begin() for s in sels]
-
-    # line helpers
-    def get_selected_lines(self):
-        sels = self.view.sel()
-        selected_lines = []
-        for selection in sels:
-            lines = self.view.lines(selection)
-            for line in lines:
-                if self.view.score_selector(line.begin(), 'meta.git-status.line') > 0:
-                    selected_lines.append(line)
-        return selected_lines
-
-    # stash helpers
-    def get_all_stash_regions(self):
-        return self.view.find_by_selector('meta.git-status.stash.name')
-
-    def get_all_stashes(self):
-        stashes = self.get_all_stash_regions()
-        return [(self.view.substr(s), self.view.substr(self.view.line(s)).strip()) for s in stashes]
-
-    def get_selected_stashes(self):
-        stashes = []
-        lines = self.get_selected_lines()
-
-        if lines:
-            for s in self.get_all_stash_regions():
-                for l in lines:
-                    if l.contains(s):
-                        name = self.view.substr(s)
-                        title = self.view.substr(self.view.line(s)).strip()
-                        stashes.append((name, title))
-        return stashes
-
-    # file helpers
-    def get_all_file_regions(self):
-        return self.view.find_by_selector('meta.git-status.file')
-
-    def get_all_files(self):
-        files = self.get_all_file_regions()
-        return [(self.section_at_region(f), self.view.substr(f)) for f in files]
-
-    def get_selected_file_regions(self):
-        files = []
-        lines = self.get_selected_lines()
-
-        if not lines:
-            return files
-
-        for f in self.get_all_file_regions():
-            for l in lines:
-                if l.contains(f):
-                    # check for renamed
-                    linestr = self.view.substr(l).strip()
-                    if linestr.startswith(STATUS_LABELS['R']) and ' -> ' in linestr:
-                        names = self.view.substr(f)
-                        # find position of divider
-                        e = names.find(' -> ')
-                        s = e + 4
-                        # add both files
-                        f1 = sublime.Region(f.begin(), f.begin() + e)
-                        f2 = sublime.Region(f.begin() + s, f.end())
-                        files.append((self.section_at_region(f), f1))
-                        files.append((self.section_at_region(f), f2))
-                    else:
-                        files.append((self.section_at_region(f), f))
-
-        return files
-
-    def get_selected_files(self):
-        return [(s, self.view.substr(f)) for s, f in self.get_selected_file_regions()]
-
-    def get_status_lines(self):
-        lines = []
-        chunks = self.view.find_by_selector('meta.git-status.line')
-        for c in chunks:
-            lines.extend(self.view.lines(c))
-        return lines
-
-    # section helpers
-    def get_sections(self):
-        sections = self.view.find_by_selector('constant.other.git-status.header')
-        return sections
-
-    def section_at_point(self, point):
-        for s in list(SECTIONS.keys()):
-            if self.view.score_selector(point, SECTION_SELECTOR_PREFIX + s) > 0:
-                return s
-
-    def section_at_region(self, region):
-        return self.section_at_point(region.begin())
-
-    # goto helpers
-    def logical_goto_next_file(self):
-        goto = "file:1"
-        files = self.get_selected_files()
-        if files:
-            section, filename = files[-1]
-            goto = "file:%s:%s" % (filename, section)
-        return goto
-
-    def logical_goto_next_stash(self):
-        goto = "stash:1"
-        stashes = self.get_selected_stashes()
-        if stashes:
-            goto = "stash:%s:stashes" % (stashes[-1][0])
-        return goto
-
-
-class GitStatusMoveCommand(TextCommand, GitStatusTextCmd):
+class GitStatusMoveCommand(TextCommand, GitStatusMoveCmd):
 
     def is_visible(self):
         return False
 
     def run(self, edit, goto="file:1"):
-        what, which, where = self.parse_goto(goto)
-        if what == "section":
-            self.move_to_section(which, where)
-        elif what == "item":
-            self.move_to_item(which, where)
-        elif what == "file":
-            self.move_to_file(which, where)
-        elif what == "stash":
-            self.move_to_stash(which, where)
-        elif what == "point":
-            try:
-                point = int(which)
-                self.move_to_point(point)
-            except ValueError:
-                pass
-
-    def parse_goto(self, goto):
-        what, which, where = None, None, None
-        parts = goto.split(':')
-        what = parts[0]
-        if len(parts) > 1:
-            try:
-                which = int(parts[1])
-            except ValueError:
-                which = parts[1]
-        if len(parts) > 2:
-            try:
-                where = int(parts[2])
-            except ValueError:
-                where = parts[2]
-        return (what, which, where)
-
-    def move_to_point(self, point):
-        if not self.view.visible_region().contains(point):
-            self.view.show(point, True)
-        self.view.sel().clear()
-        self.view.sel().add(sublime.Region(point))
-
-    def move_to_region(self, region):
-        self.move_to_point(self.view.line(region).begin())
-
-    def prev_region(self, regions, point):
-        before = [r for r in regions if self.view.line(r).end() < point]
-        return before[-1] if before else regions[-1]
-
-    def next_region(self, regions, point):
-        after = [r for r in regions if self.view.line(r).begin() > point]
-        return after[0] if after else regions[0]
-
-    def next_or_prev_region(self, direction, regions, point):
-        if direction == "next":
-            return self.next_region(regions, point)
-        else:
-            return self.prev_region(regions, point)
-
-    def move_to_section(self, which, where=None):
-        if which in range(1, 5):
-            sections = self.get_sections()
-            if sections and len(sections) >= which:
-                section = sections[which - 1]
-                self.move_to_region(section)
-        elif which in list(SECTIONS.keys()):
-            sections = self.get_sections()
-            for section in sections:
-                if self.section_at_region(section) == which:
-                    self.move_to_region(section)
-                    return
-        elif which in ('next', 'prev'):
-            point = self.get_first_point()
-            sections = self.get_sections()
-            if point and sections:
-                next = self.next_or_prev_region(which, sections, point)
-                self.move_to_region(next)
-
-    def move_to_item(self, which=1, where=None):
-        if which in ('next', 'prev'):
-            point = self.get_first_point()
-            regions = self.get_status_lines()
-            if point and regions:
-                next = self.next_or_prev_region(which, regions, point)
-                self.move_to_region(next)
-
-    def move_to_file(self, which=1, where=None):
-        if isinstance(which, int):
-            files = self.get_all_file_regions()
-            if files:
-                if len(files) >= which:
-                    self.move_to_region(self.view.line(files[which - 1]))
-                else:
-                    self.move_to_region(self.view.line(files[-1]))
-            elif self.get_all_stash_regions():
-                self.move_to_stash(1)
-            elif self.view.find(GIT_WORKING_DIR_CLEAN, 0, sublime.LITERAL):
-                region = self.view.find(GIT_WORKING_DIR_CLEAN, 0, sublime.LITERAL)
-                self.move_to_region(region)
-        elif which in ('next', 'prev'):
-            point = self.get_first_point()
-            regions = self.get_all_file_regions()
-            if point and regions:
-                next = self.next_or_prev_region(which, regions, point)
-                self.move_to_region(next)
-        elif which and where:
-            regions = self.get_all_file_regions()
-            section_regions = [r for r in regions if self.section_at_region(r) == where]
-            if section_regions:
-                prev_regions = [r for r in section_regions if self.view.substr(r) < which]
-                next_regions = [r for r in section_regions if self.view.substr(r) >= which]
-                if next_regions:
-                    next = next_regions[0]
-                else:
-                    next = prev_regions[-1]
-                self.move_to_region(next)
-            else:
-                self.move_to_file(1)
-
-    def move_to_stash(self, which, where=None):
-        if which is not None and where:
-            which = str(which)
-            stash_regions = self.get_all_stash_regions()
-            if stash_regions:
-                prev_regions = [r for r in stash_regions if self.view.substr(r) < which]
-                next_regions = [r for r in stash_regions if self.view.substr(r) >= which]
-                if next_regions:
-                    next = next_regions[0]
-                else:
-                    next = prev_regions[-1]
-                self.move_to_region(next)
-            else:
-                self.move_to_file(1)
-        elif isinstance(which, int):
-            stashes = self.get_all_stash_regions()
-            if stashes:
-                if len(stashes) >= which:
-                    self.move_to_region(self.view.line(stashes[which - 1]))
-                else:
-                    self.move_to_region(self.view.line(stashes[-1]))
+        self.goto(goto)
 
 
 class GitStatusStageCommand(TextCommand, GitStatusTextCmd):
