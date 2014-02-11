@@ -83,7 +83,8 @@ GIT_STATUS_HELP = """
 #
 # Stashes:
 #    a = apply stash, A = pop stash
-#    z = create stash from worktree"""
+#    z = create stash from worktree
+#    backspace = discard stash"""
 
 
 class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper):
