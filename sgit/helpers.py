@@ -297,18 +297,37 @@ class GitStatusHelper(object):
     def has_unstaged_changes(self, repo):
         return self.git_exit_code(['diff', '--exit-code', '--quiet'], cwd=repo) != 0
 
+    # def get_porcelain_status(self, repo):
+    #     mode = self.get_untracked_mode()
+    #     cmd = ['status', '--porcelain', ('--untracked-files=%s' % mode) if mode else None]
+    #     return self.git_lines(cmd, cwd=repo)
+
     def get_porcelain_status(self, repo):
         mode = self.get_untracked_mode()
-        cmd = ['status', '--porcelain', ('--untracked-files=%s' % mode) if mode else None]
-        return self.git_lines(cmd, cwd=repo)
+        cmd = ['status', '-z', ('--untracked-files=%s' % mode) if mode else None]
+
+        output = self.git_string(cmd, cwd=repo, strip=False)
+        rows = output.split('\x00')
+        lines = []
+        idx = 0
+        while idx < len(rows):
+            row = rows[idx]
+            if row:
+                status, filename = row[:2], row[3:]
+                if status[0] == 'R':
+                    lines.append("%s %s -> %s" % (status, rows[idx+1], filename))
+                    idx += 1
+                else:
+                    lines.append("%s %s" % (status, filename))
+            idx += 1
+        return lines
 
     def get_files_status(self, repo):
         untracked, unstaged, staged = [], [], []
         status = self.get_porcelain_status(repo)
         for l in status:
-            state, filename = l[0:2], l[3:]
+            state, filename = l[:2], l[3:]
             index, worktree = state
-            filename = filename.strip('"')
             if state in ('DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'):
                 logger.warning("unmerged WTF: %s, %s", state, filename)
             elif state == '??':
