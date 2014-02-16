@@ -5,8 +5,8 @@ import logging
 import sublime
 
 # set up some logging
-logging.basicConfig(level=logging.WARNING, format="[%(asctime)s - %(levelname)s - %(name)s] %(message)s")
-logger = logging.getLogger('sgit')
+logging.basicConfig(level=logging.WARNING, format="[%(asctime)s - %(levelname)-8s - %(name)s] %(message)s")
+logger = logging.getLogger('SublimeGit')
 
 # reload modules if necessary
 LOAD_ORDER = [

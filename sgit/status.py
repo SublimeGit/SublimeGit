@@ -14,7 +14,7 @@ from .cmd import GitCmd
 from .helpers import GitStatusHelper, GitRemoteHelper, GitStashHelper, GitErrorHelper
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('SublimeGit.status')
 
 GOTO_DEFAULT = 'file:1'
 

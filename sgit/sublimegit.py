@@ -13,7 +13,7 @@ from .cmd import Cmd
 from .util import noop, get_settings, SETTINGS_FILE
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('SublimeGit.sublimegit')
 
 
 SUBLIMEGIT_LICENSE_EXISTS = ("You already have a license installed. "

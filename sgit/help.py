@@ -15,7 +15,7 @@ from .util import get_setting
 from .cmd import GitCmd
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('SublimeGit.help')
 
 MANPAGE_RE = re.compile(r'\(\d\) Manual Page\s*')
 

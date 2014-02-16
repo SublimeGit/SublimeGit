@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import print_function
 import os
 import sys
 import subprocess
@@ -14,7 +15,7 @@ from .util import get_executable, get_setting
 from .helpers import GitRepoHelper
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('SublimeGit.cmd')
 
 
 class SublimeGitException(Exception):

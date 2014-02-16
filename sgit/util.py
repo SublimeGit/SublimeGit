@@ -7,7 +7,7 @@ import sublime
 from sublime_plugin import TextCommand
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('SublimeGit.util')
 
 # Constants
 

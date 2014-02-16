@@ -7,7 +7,7 @@ import sublime
 from .util import get_setting
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('SublimeGit.helpers')
 
 
 GIT_INIT_DIALOG = ("Could not find any git repositories based on the open files and folders. "
