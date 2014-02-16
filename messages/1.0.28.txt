@@ -5,3 +5,13 @@ Bug Fixes:
 ----------
  - Adds documentation for using backspace to delete stashes
    in inline Git: Status help (issue #95)
+
+ - Improves scrolling to the correct position when dealing
+   with very long status views (issue #10)
+
+ - Improves placement of cursor after having removed the
+   last file from a status view section (issue #10)
+
+ - Deal properly with filenames containing spaces (issue #101)
+
+ - Fix logging issues in Sublime Text 3
