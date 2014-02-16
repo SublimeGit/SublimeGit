@@ -339,7 +339,9 @@ class GitStatusMoveCmd(GitStatusTextCmd):
 
         pointregion = sublime.Region(pointstart, pointend)
 
-        if not self.view.visible_region().contains(pointregion):
+        if pointstart == 0:
+            self.view.set_viewport_position((0.0, 0.0), False)
+        elif not self.view.visible_region().contains(pointregion):
             self.view.show(pointregion, False)
 
         #sublime.set_timeout(partial(self.adjust_viewport, point), 0)
