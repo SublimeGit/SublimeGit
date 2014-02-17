@@ -202,7 +202,8 @@ class GitCmd(GitRepoHelper, Cmd):
         '-c', 'color.diff=false',
         '-c', 'color.status=false',
         '-c', 'color.branch=false',
-        '-c', 'status.displayCommentPrefix=true'
+        '-c', 'status.displayCommentPrefix=true',
+        '-c', 'core.commentchar=#',
     ]
 
     def git(self, cmd, *args, **kwargs):

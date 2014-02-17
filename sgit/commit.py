@@ -17,10 +17,13 @@ GIT_NOTHING_STAGED = u'No changes added to commit. Use s on files/sections in th
 GIT_COMMIT_TEMPLATE = u"""{old_msg}
 # Please enter the commit message for your changes. Lines starting
 # with '#' will be ignored, and an empty message aborts the commit.
-{status}{errors}"""
+{status}"""
 
 GIT_AMEND_PUSHED = (u"It is discouraged to rewrite history which has already been pushed. "
                     u"Are you sure you want to amend the commit?")
+
+CUT_LINE = u"------------------------ >8 ------------------------\n"
+CUT_EXPLANATION = u"# Do not touch the line above.\n# Everything below will be removed.\n"
 
 
 class GitCommit(object):
@@ -32,7 +35,7 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
 
     @property
     def is_verbose(self):
-        return get_setting('git_commit_verbose', True)
+        return get_setting('git_commit_verbose', False)
 
     def get_commit_template(self, repo, add=False, amend=False):
         cmd = ['commit', '--dry-run', '--status',
@@ -40,19 +43,33 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
                '--amend' if amend else None,
                '--verbose' if self.is_verbose else None]
         exit, stdout, stderr = self.git(cmd, cwd=repo)
+
         stderr = stderr.strip()
-        errors = []
         if stderr:
             for line in stderr.splitlines():
-                errors.append("# %s" % line)
+                stdout += "# %s\n" % line
 
         old_msg = ''
         if amend:
             old_msg = self.git_lines(['rev-list', '--format=%B', '--max-count=1', 'HEAD'], cwd=repo)
             old_msg = "%s\n" % "\n".join(old_msg[1:])
 
-        msg = GIT_COMMIT_TEMPLATE.format(status=stdout, errors="\n".join(errors), old_msg=old_msg)
-        return msg
+        if self.is_verbose and CUT_LINE not in stdout:
+            comments = []
+            other = []
+            for line in stdout.splitlines():
+                if line.startswith('#'):
+                    comments.append(line)
+                else:
+                    other.append(line)
+            status = "\n".join(comments)
+            status += "\n# %s" % CUT_LINE
+            status += CUT_EXPLANATION
+            status += "\n".join(other)
+        else:
+            status = stdout
+
+        return GIT_COMMIT_TEMPLATE.format(status=status, old_msg=old_msg)
 
     def show_commit_panel(self, content):
         panel = self.window.get_output_panel('git-commit')
@@ -193,10 +210,12 @@ class GitCommitPerformCommand(WindowCommand, GitCommitWindowCmd):
 
     def run(self, repo, message, add=False, amend=False):
         cmd = ['commit', '--cleanup=strip',
-               '-a' if add else None,
+               '--all' if add else None,
                '--amend' if amend else None,
                '--verbose' if self.is_verbose else None, '-F', '-']
+
         exit, stdout, stderr = self.git(cmd, stdin=message, cwd=repo)
+
         self.show_commit_panel(stdout if exit == 0 else stderr)
         self.window.run_command('git_status', {'refresh_only': True})
 
