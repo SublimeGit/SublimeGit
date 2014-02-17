@@ -7,6 +7,11 @@ Enhancements:
    specifying the syntax that a view will be created with.
    (fixes issue #80)
 
+ - Update diff views on activate. If you change away from
+   a diff view, and then change back, the diff view will
+   be updated to reflect any changes you may have made.
+   (fixes issue #35)
+
 
 Bug Fixes:
 ----------

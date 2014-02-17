@@ -3,9 +3,12 @@ import re
 from functools import partial
 
 import sublime
-from sublime_plugin import WindowCommand, TextCommand
+from sublime_plugin import WindowCommand, TextCommand, EventListener
 
-from .util import find_view_by_settings
+from .util import find_view_by_settings, get_setting
+
+
+
 from .cmd import GitCmd
 from .helpers import GitDiffHelper, GitErrorHelper, GitStatusHelper
 
@@ -255,6 +258,13 @@ class GitDiffRefreshCommand(TextCommand, GitDiffTextCmd):
             line = self.view.line(row_begin)
             point = self.view.text_point(row, min(col, (line.end() - line.begin())))
             self.move_to_point(point)
+
+
+class GitDiffEventListener(EventListener):
+
+    def on_activated(self, view):
+        if view.settings().get('git_view') in ('diff', 'diff-cached') and get_setting('git_update_diff_on_focus', True):
+            view.run_command('git_diff_refresh')
 
 
 class GitDiffChangeHunkSizeCommand(TextCommand):
