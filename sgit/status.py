@@ -783,7 +783,12 @@ class GitStatusOpenFileCommand(TextCommand, GitStatusTextCmd):
 
 class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
 
-    IGNORE_CONFIRMATION = 'Are you sure you want add the following patterns to .gitignore?'
+    IGNORE_TRACKED = (u"The following files have already been added to git. "
+                      u"Adding them to .gitignore will not exclude them from being tracked by git. "
+                      u"Are you sure you want to continue?")
+    IGNORE_CONFIRMATION = u"Are you sure you want add the following patterns to .gitignore?"
+    IGNORE_BUTTON = u"Add to .gitignore"
+    IGNORE_NO_FILES = u"No files selected for ignore."
     IGNORE_LABEL = "Ignore pattern:"
 
     def run(self, edit, ask=True, edit_pattern=False):
@@ -793,9 +798,14 @@ class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
             return
 
         files = self.get_selected_files()
-        to_ignore = [f for s, f in files if s == UNTRACKED_FILES]
+        to_ignore = [f for _, f in files]
+
+        tracked = [f for s, f in files if s != UNTRACKED_FILES]
+        if tracked and not self.confirm_tracked(tracked):
+            return
 
         if not to_ignore:
+            sublime.error_message(self.IGNORE_NO_FILES)
             return
 
         if edit_pattern:
@@ -828,13 +838,19 @@ class GitStatusIgnoreCommand(TextCommand, GitStatusTextCmd):
             self.update_status(goto)
 
     def confirm_ignore(self, patterns):
-        msg = self.IGNORE_CONFIRMATION
+        return self.confirm(self.IGNORE_CONFIRMATION, patterns, self.IGNORE_BUTTON)
+
+    def confirm_tracked(self, patterns):
+        return self.confirm(self.IGNORE_TRACKED, patterns, u"Continue")
+
+    def confirm(self, message, patterns, button):
+        msg = message
         msg += "\n\n"
         msg += "\n".join(patterns[:10])
         if len(patterns) > 10:
             msg += "\n"
             msg += "(%s more...)" % len(patterns) - 10
-        return sublime.ok_cancel_dialog(msg, 'Add to .gitignore')
+        return sublime.ok_cancel_dialog(msg, button)
 
     def add_to_gitignore(self, repo, patterns):
         gitignore = os.path.join(repo, '.gitignore')
