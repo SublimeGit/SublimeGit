@@ -25,13 +25,16 @@ class GitCustomCommand(WindowCommand, GitCmd):
     * **cmd**: The command to execute (without the initial "git")
     * **async**: ``true`` to run asynchronously, ``false`` otherwise. Default: ``false``
     * **output**: ``"view"`` for a new buffer, ``"panel"`` for an output panel, ``null`` for no output. Default: ``"view"``
+    * **syntax**: If output is set to ``"view"``, the new buffer will get this syntax file. Should be a name along the
+                  lines of ``Packages/Python/Python.tmLanguage``. To see the current syntax for a view, execute
+                  ``view.settings().get('syntax')`` from the console.
 
     .. note::
         See :ref:`customizations-commands` for more information on how to create your own SublimeGit commands.
 
     """
 
-    def run(self, cmd=None, async=False, output="view"):
+    def run(self, cmd=None, async=False, output="view", syntax=None):
         repo = self.get_repo()
         if not repo:
             return
@@ -40,6 +43,7 @@ class GitCustomCommand(WindowCommand, GitCmd):
             sublime.error_message("Output parameter must be one of None, 'panel' or 'view'")
             return
         self.output = output
+        self.syntax = syntax
 
         if not cmd:
             def on_done(cmd):
@@ -84,9 +88,13 @@ class GitCustomCommand(WindowCommand, GitCmd):
             self.output_view.set_name(GIT_CUSTOM_TITLE + " ".join(cmd))
             self.output_view.set_scratch(True)
             self.output_view.set_read_only(True)
+            if self.syntax:
+                self.output_view.set_syntax_file(self.syntax)
 
             self.output_view.settings().set('git_view', 'custom')
             self.output_view.settings().set('git_repo', repo)
+
+            self.window.focus_view(self.output_view)
 
     def on_output(self, d):
         if self.output == "panel":

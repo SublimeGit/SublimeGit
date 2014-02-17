@@ -1,6 +1,13 @@
 SublimeGit 1.0.29
 =================
 
+Enhancements:
+-------------
+ - Adds "syntax" option to custom commands, to allow for
+   specifying the syntax that a view will be created with.
+   (fixes issue #80)
+
+
 Bug Fixes:
 ----------
  - Adds cut line when using git_commit_verbose setting
