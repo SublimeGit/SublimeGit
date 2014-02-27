@@ -17,8 +17,11 @@ Bug Fixes:
 ----------
  - Adds cut line when using git_commit_verbose setting
    to avoid including the patch in the commit message on
-   git > 1.8.5.4 (fixes issue #83).
+   git > 1.8.5.4. (fixes issue #83)
 
  - Adds more explicit messages when using the ignore
    commands on already tracked files, or when no files are
-   selected (fixes issue #38)
+   selected. (fixes issue #38)
+
+ - Fixes an issue when the status.branch config setting
+   was true. (fixes issue #108)
