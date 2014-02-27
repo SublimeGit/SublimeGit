@@ -22,6 +22,3 @@ Bug Fixes:
  - Adds more explicit messages when using the ignore
    commands on already tracked files, or when no files are
    selected. (fixes issue #38)
-
- - Fixes an issue when the status.branch config setting
-   was true. (fixes issue #108)
