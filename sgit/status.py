@@ -611,7 +611,7 @@ class GitStatusBarEventListener(EventListener, GitCmd):
         if not repo:
             return
 
-        bin = get_executable('git')
+        bin = get_executable('git', self.bin)
         encoding = get_setting('encoding', 'utf-8')
 
         updater = GitStatusBarUpdater(bin, encoding, repo, kind, view)
