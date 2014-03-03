@@ -14,3 +14,7 @@ Bug Fixes:
    the diff. (Issue #114)
 
  - Adds error message dialog to git custom command. (Issue #115)
+
+ - Force update of git index before running the status bar updater
+   to make sure repository isn't shown as dirty just because a file
+   has been saved. (Issue #106)
