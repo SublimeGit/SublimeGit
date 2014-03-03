@@ -567,6 +567,7 @@ class GitStatusBarUpdater(threading.Thread, GitCmd):
         if self.kind == 'simple':
             msg = "On {branch}".format(branch=branch)
         else:
+            self.git_exit_code(['update-index', '--refresh'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
             unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
             staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
             unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
@@ -619,7 +620,7 @@ class GitStatusBarEventListener(EventListener, GitCmd):
         fallback = get_setting('fallback_encodings', [])
 
         updater = GitStatusBarUpdater(bin, encoding, fallback, repo, kind, view)
-        sublime.set_timeout(updater.start, 100)
+        updater.start()
 
 
 class GitQuickStatusCommand(WindowCommand, GitCmd, GitStatusHelper):
