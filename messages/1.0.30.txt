@@ -6,3 +6,6 @@ Bug Fixes:
 ----------
  - Fixes issue with missing binary in the async status line updater.
    (Issues #32 and #33)
+
+ - Adds setting for fallback encodings, which should alleviate some
+   of the issues with using non-UTF-8 files. (Issues #32 and #53)

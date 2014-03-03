@@ -1,6 +1,30 @@
 {
+    /*
+     * Log level.
+     *
+     * If you are experiencing issues, please set this to DEBUG and
+     * provide the log when reporting an issue.
+     */
     "log_level": "WARNING",
+
+    /*
+     * Main encoding used for interacting with Git.
+     */
     "encoding": "utf-8",
+
+    /*
+     * Fallback encodings if the main encoding does not work.
+     *
+     * Git is a "stupid" content tracker, and as such it doesn't
+     * care about encodings, only streams of bytes. If you have commit
+     * messages or files which are not UTF-8 encoded, it might be necessary
+     * to add one or more special encodings to this setting.
+     *
+     * Be aware that they will be tried in order from front to back, so
+     * there is a small performance penalty if you add an encoding to the
+     * back of the list.
+     */
+    "fallback_encodings": ["cp1252", "iso-8859-1", "iso-8859-2", "cp1250"],
 
     /*
      * Show Inline Status Help

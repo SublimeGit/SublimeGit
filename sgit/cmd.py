@@ -109,11 +109,24 @@ class Cmd(object):
             startupinfo.wShowWindow = subprocess.SW_HIDE
         return startupinfo
 
-    # sync commands
-    def cmd(self, cmd, stdin=None, cwd=None, ignore_errors=False, encoding=None):
-        encoding = encoding or get_setting('encoding', 'utf-8')
+    def decode(self, stream, encoding, fallback=None):
+        try:
+            return stream.decode(encoding)
+        except UnicodeDecodeError:
+            if fallback:
+                for enc in fallback:
+                    try:
+                        return stream.decode(enc)
+                    except UnicodeDecodeError:
+                        pass
+            raise
 
+    # sync commands
+    def cmd(self, cmd, stdin=None, cwd=None, ignore_errors=False, encoding=None, fallback=None):
         command = self.build_command(cmd)
+        encoding = encoding or get_setting('encoding', 'utf-8')
+        fallback = fallback or get_setting('fallback_encodings', [])
+
         try:
             logger.debug("cmd: %s", command)
 
@@ -134,17 +147,23 @@ class Cmd(object):
 
             self.__check_license()
 
-            return (proc.returncode, stdout.decode(encoding), stderr.decode(encoding))
+            return (proc.returncode, self.decode(stdout, encoding, fallback), self.decode(stderr, encoding, fallback))
         except OSError as e:
             if ignore_errors:
                 return (0, '')
             sublime.error_message(self.get_executable_error())
             raise SublimeGitException("Could not execute command: %s" % e)
+        except UnicodeDecodeError as e:
+            if ignore_errors:
+                return (0, '')
+            sublime.error_message(self.get_decoding_error(encoding, fallback))
+            raise SublimeGitException("Could not execute command: %s" % command)
 
     # async commands
     def cmd_async(self, cmd, cwd=None, **callbacks):
         command = self.build_command(cmd)
         encoding = get_setting('encoding', 'utf-8')
+        fallback = get_setting('fallback_encodings', [])
 
         def async_inner(cmd, cwd, encoding, on_data=None, on_complete=None, on_error=None, on_exception=None):
             try:
@@ -160,7 +179,7 @@ class Cmd(object):
 
                 for line in iter(proc.stdout.readline, b''):
                     logger.debug('async-out: %s', line.strip())
-                    line = line.decode(encoding)
+                    line = self.decode(line, encoding, fallback)
                     if callable(on_data):
                         sublime.set_timeout(partial(on_data, line), 0)
 
@@ -173,7 +192,7 @@ class Cmd(object):
                     if callable(on_error):
                         sublime.set_timeout(partial(on_error, proc.returncode), 0)
 
-            except OSError as e:
+            except (OSError, UnicodeDecodeError) as e:
                 logger.debug('async-exception: %s' % e)
                 if callable(on_exception):
                     sublime.set_timeout(partial(on_exception, e), 0)
@@ -191,6 +210,18 @@ class Cmd(object):
         return self.EXECUTABLE_ERROR.format(executable=self.executable,
                                             path=path,
                                             bin=self.bin)
+
+    DECODING_ERROR = ("Could not decode output from git. This means that you have a commit "
+                      "message or some files in an unrecognized encoding. The following encodings "
+                      "were tried:\n\n"
+                      "{encodings}\n\n"
+                      "Try adjusting the fallback_encodings setting.")
+
+    def get_decoding_error(self, encoding, fallback):
+        encodings = [encoding]
+        if fallback:
+            encodings.extend(fallback)
+        return self.DECODING_ERROR.format(encodings="\n".join(encodings))
 
 
 class GitCmd(GitRepoHelper, Cmd):

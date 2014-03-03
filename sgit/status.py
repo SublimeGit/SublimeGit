@@ -544,10 +544,11 @@ class GitStatusEventListener(EventListener):
 class GitStatusBarUpdater(threading.Thread, GitCmd):
     _lpop = False
 
-    def __init__(self, bin, encoding, repo, kind, view, *args, **kwargs):
+    def __init__(self, bin, encoding, fallback, repo, kind, view, *args, **kwargs):
         super(GitStatusBarUpdater, self).__init__(*args, **kwargs)
         self.bin = bin
         self.encoding = encoding
+        self.fallback = fallback
         self.repo = repo
         self.kind = kind
         self.view = view
@@ -557,16 +558,18 @@ class GitStatusBarUpdater(threading.Thread, GitCmd):
 
     def run(self):
         branch = self.git_string(['symbolic-ref', '-q', 'HEAD'], cwd=self.repo,
-                                 ignore_errors=True, encoding=self.encoding)
+                                 ignore_errors=True, encoding=self.encoding, fallback=self.fallback)
         if not branch:
             return
+
+        branch = branch[11:] if branch.startswith('refs/heads/') else branch
 
         if self.kind == 'simple':
             msg = "On {branch}".format(branch=branch)
         else:
-            unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=self.repo, encoding=self.encoding)
-            staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=self.repo, encoding=self.encoding)
-            unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=self.repo, encoding=self.encoding)
+            unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
+            staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
+            unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
             msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
                 branch=branch,
                 dirty='*' if (staged or unstaged) else '',
@@ -613,8 +616,9 @@ class GitStatusBarEventListener(EventListener, GitCmd):
 
         bin = get_executable('git', self.bin)
         encoding = get_setting('encoding', 'utf-8')
+        fallback = get_setting('fallback_encodings', [])
 
-        updater = GitStatusBarUpdater(bin, encoding, repo, kind, view)
+        updater = GitStatusBarUpdater(bin, encoding, fallback, repo, kind, view)
         updater.start()
 
 
