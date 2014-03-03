@@ -9,3 +9,8 @@ Bug Fixes:
 
  - Adds setting for fallback encodings, which should alleviate some
    of the issues with using non-UTF-8 files. (Issues #32 and #53)
+
+ - Improves updating of diff view to scroll less when auto-updating
+   the diff. (Issue #114)
+
+ - Adds error message dialog to git custom command. (Issue #115)
