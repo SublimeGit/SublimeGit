@@ -9,7 +9,6 @@ import sublime
 from sublime_plugin import WindowCommand
 
 from . import __version__
-from .cmd import Cmd
 from .util import noop, get_settings, SETTINGS_FILE
 
 
@@ -22,7 +21,7 @@ SUBLIMEGIT_LICENSE_EXISTS = ("You already have a license installed. "
                              "License key:\n  %s")
 
 
-class SublimeGitInstallLicenseCommand(WindowCommand, Cmd):
+class SublimeGitInstallLicenseCommand(WindowCommand):
     """
     Install a SublimeGit license.
 
@@ -48,7 +47,7 @@ class SublimeGitInstallLicenseCommand(WindowCommand, Cmd):
         settings = get_settings()
 
         email = settings.get('email', '')
-        key = settings.get('product_key')
+        key = settings.get('product_key', '')
 
         if email and key:
             msg = SUBLIMEGIT_LICENSE_EXISTS % (email, key)
