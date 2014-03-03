@@ -6,12 +6,13 @@ import shlex
 
 from .util import noop, StatusSpinner
 from .cmd import GitCmd
+from .helpers import GitErrorHelper
 
 
 GIT_CUSTOM_TITLE = "*git-custom*: git "
 
 
-class GitCustomCommand(WindowCommand, GitCmd):
+class GitCustomCommand(WindowCommand, GitCmd, GitErrorHelper):
     """
     Execute a custom git command.
 
