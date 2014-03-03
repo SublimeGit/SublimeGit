@@ -619,7 +619,7 @@ class GitStatusBarEventListener(EventListener, GitCmd):
         fallback = get_setting('fallback_encodings', [])
 
         updater = GitStatusBarUpdater(bin, encoding, fallback, repo, kind, view)
-        updater.start()
+        sublime.set_timeout(updater.start, 100)
 
 
 class GitQuickStatusCommand(WindowCommand, GitCmd, GitStatusHelper):
