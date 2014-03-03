@@ -6,9 +6,6 @@ import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 
 from .util import find_view_by_settings, get_setting
-
-
-
 from .cmd import GitCmd
 from .helpers import GitDiffHelper, GitErrorHelper, GitStatusHelper
 
@@ -246,9 +243,7 @@ class GitDiffRefreshCommand(TextCommand, GitDiffTextCmd):
 
         self.view.settings().set('git_diff_clean', clean)
         self.view.set_read_only(False)
-        if self.view.size() > 0:
-            self.view.erase(edit, sublime.Region(0, self.view.size()))
-        self.view.insert(edit, 0, diff)
+        self.view.replace(edit, sublime.Region(0, self.view.size()), diff)
         self.view.set_read_only(True)
 
         if run_move:
