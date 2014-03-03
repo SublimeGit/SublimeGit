@@ -1,0 +1,8 @@
+SublimeGit 1.0.30
+=================
+
+
+Bug Fixes:
+----------
+ - Fixes issue with missing binary in the async status line updater.
+   (Issues #32 and #33)
