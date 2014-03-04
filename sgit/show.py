@@ -27,9 +27,12 @@ class GitShowCommand(WindowCommand, GitCmd):
         else:
             self.show(repo, obj)
 
-    def show(self, repo, obj):
+    def show(self, repo, obj=None):
         if not obj:
-            return
+            exit, obj, _ = self.git(['rev-parse', 'HEAD'], cwd=repo)
+            if exit != 0:
+                return sublime.error_message("Nothing committed (yet)")
+            obj = obj.strip()
 
         title = GIT_SHOW_TITLE_PREFIX + obj[:7] if len(obj) == 40 else obj
         view = find_view_by_settings(self.window, git_view='show', git_repo=repo, git_show_obj=obj)
