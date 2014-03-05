@@ -6,4 +6,4 @@ Bug Fixes:
 ----------
  - Fix parsing of remotes to handle spaces in remote url. (Issue #110)
 
- -
+ - Show HEAD if no object is given when running Git: Show. (Issue #109)
