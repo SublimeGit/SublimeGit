@@ -333,13 +333,14 @@ class GitStatusMoveCmd(GitStatusTextCmd):
         self.view.sel().clear()
         self.view.sel().add(sublime.Region(point))
 
+        #if not self.view.visible_region().contains(point):
         pointrow, _ = self.view.rowcol(point)
         pointstart = self.view.text_point(max(pointrow - 3, 0), 0)
         pointend = self.view.text_point(pointrow + 3, 0)
 
         pointregion = sublime.Region(pointstart, pointend)
 
-        if pointstart == 0:
+        if pointstart < 10:
             self.view.set_viewport_position((0.0, 0.0), False)
         elif not self.view.visible_region().contains(pointregion):
             self.view.show(pointregion, False)
@@ -500,7 +501,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
 
         if view is not None:
             self.window.focus_view(view)
-            view.run_command('git_status_refresh', {'goto': 'file:1'})
+            view.run_command('git_status_refresh')
 
 
 class GitStatusRefreshCommand(TextCommand, GitStatusBuilder, GitStatusMoveCmd):
