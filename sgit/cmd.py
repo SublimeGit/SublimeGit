@@ -56,6 +56,10 @@ class Cmd(object):
                 return True
         return False
 
+    def _is_licensed(self):
+        license = self.__get_license()
+        return self.__validate_license(license) if license else False
+
     URL = 'https://sublimegit.net/buy?utm_source=st%s&utm_medium=popup&utm_campaign=buy'
     LICENSE_POPUP = "SublimeGit Evaluation\n\nI hope you are enjoying SublimeGit. " +\
                     "If you are, please consider buying a license at https://sublimegit.net"

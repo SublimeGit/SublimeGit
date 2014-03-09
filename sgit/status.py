@@ -545,7 +545,7 @@ class GitStatusEventListener(EventListener):
 class GitStatusBarUpdater(threading.Thread, GitCmd):
     _lpop = False
 
-    def __init__(self, bin, encoding, fallback, repo, kind, view, *args, **kwargs):
+    def __init__(self, bin, encoding, fallback, repo, kind, view, licensed, *args, **kwargs):
         super(GitStatusBarUpdater, self).__init__(*args, **kwargs)
         self.bin = bin
         self.encoding = encoding
@@ -553,6 +553,7 @@ class GitStatusBarUpdater(threading.Thread, GitCmd):
         self.repo = repo
         self.kind = kind
         self.view = view
+        self.licensed = licensed
 
     def build_command(self, cmd):
         return self.bin + self.opts + [c for c in cmd if c]
@@ -564,19 +565,21 @@ class GitStatusBarUpdater(threading.Thread, GitCmd):
             return
 
         branch = branch[11:] if branch.startswith('refs/heads/') else branch
+        licensed = " (UNLICENSED)" if not self.licensed else ""
 
         if self.kind == 'simple':
-            msg = "On {branch}".format(branch=branch)
+            msg = "On {branch}{licensed}".format(branch=branch, licensed=licensed)
         else:
             self.git_exit_code(['update-index', '--refresh'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
             unpushed = self.git_exit_code(['diff', '--exit-code', '--quiet', '@{upstream}..'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
             staged = self.git_exit_code(['diff-index', '--quiet', '--cached', 'HEAD'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
             unstaged = self.git_exit_code(['diff-index', '--quiet', 'HEAD'], cwd=self.repo, encoding=self.encoding, fallback=self.fallback)
-            msg = 'On {branch}{dirty} in {repo}{unpushed}'.format(
+            msg = 'On {branch}{dirty} in {repo}{unpushed}{licensed}'.format(
                 branch=branch,
                 dirty='*' if (staged or unstaged) else '',
                 repo=os.path.basename(self.repo),
-                unpushed=' with unpushed' if unpushed == 1 else ''
+                unpushed=' with unpushed' if unpushed == 1 else '',
+                licensed=licensed
             )
 
         sublime.set_timeout(partial(self.view.set_status, 'git-status', msg), 0)
@@ -619,8 +622,9 @@ class GitStatusBarEventListener(EventListener, GitCmd):
         bin = get_executable('git', self.bin)
         encoding = get_setting('encoding', 'utf-8')
         fallback = get_setting('fallback_encodings', [])
+        licensed = self._is_licensed()
 
-        updater = GitStatusBarUpdater(bin, encoding, fallback, repo, kind, view)
+        updater = GitStatusBarUpdater(bin, encoding, fallback, repo, kind, view, licensed)
         updater.start()
 
 
