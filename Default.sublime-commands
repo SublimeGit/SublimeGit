@@ -2,6 +2,7 @@
     { "caption": "Gitk", "command": "git_gitk"},
     { "caption": "Git: Version", "command": "git_version"},
     { "caption": "Git: Help", "command": "git_help"},
+    { "caption": "Git: Garbage Collect", "command": "git_garbage_collect"},
 
     { "caption": "Git: Init", "command": "git_init"},
     { "caption": "Git: Switch Repo", "command": "git_switch_repo"},

@@ -1,6 +1,10 @@
 SublimeGit 1.0.31
 =================
 
+Enhancements:
+-------------
+ - Adds Git: Garbage Collect command. (Issue #97)
+
 
 Bug Fixes:
 ----------

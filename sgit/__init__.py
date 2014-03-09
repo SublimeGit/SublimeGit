@@ -19,6 +19,8 @@ from .show import GitShowCommand, GitShowRefreshCommand
 
 from .help import GitHelpCommand, GitVersionCommand
 
+from .gc import GitGarbageCollectCommand
+
 from .log import GitLogCommand, GitQuickLogCommand, GitQuickLogCurrentFileCommand
 
 from .blame import (GitBlameCommand, GitBlameRefreshCommand, GitBlameShowCommand,
