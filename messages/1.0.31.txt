@@ -7,3 +7,11 @@ Bug Fixes:
  - Fix parsing of remotes to handle spaces in remote url. (Issue #110)
 
  - Show HEAD if no object is given when running Git: Show. (Issue #109)
+
+ - Better scrolling in the git status view on inital creation. (Issue #104)
+
+
+Other:
+------
+ - Shows "(UNLICENSED)" in the status bar when a license haven't been
+   purchased yet. Just a little reminder to support SublimeGit :-)
