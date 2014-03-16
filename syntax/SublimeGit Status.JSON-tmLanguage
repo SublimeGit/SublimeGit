@@ -58,7 +58,7 @@
             "patterns": [
                 {
                     "name": "meta.git-status.line",
-                    "match": "\\t(.+): On (.+): (.+)\\n",
+                    "match": "\\t(.+): (?:WIP )?[oO]n (.+): (.+)\\n",
                     "captures": {
                         "1": { "name": "meta.git-status.stash.name" },
                         "2": { "name": "meta.git-status.stash.branch" },

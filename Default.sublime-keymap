@@ -168,6 +168,11 @@
             { "key": "selector", "operator": "equal", "operand": "text.git-status"}
         ]
     },
+    { "keys": ["Z"], "command": "git_stash", "args": {"untracked": true},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
     { "keys": ["a"], "command": "git_status_stash_apply",
         "context": [
             { "key": "selector", "operator": "equal", "operand": "meta.git-status.stashes"},
@@ -187,7 +192,7 @@
             { "key": "selector", "operator": "equal", "operand": "text.git-status"}
         ]
     },
-    { "keys": ["C"], "command": "git_commit", "args": {"add": true },
+    { "keys": ["C"], "command": "git_commit", "args": {"add": true},
         "context": [
             { "key": "selector", "operator": "equal", "operand": "text.git-status"}
         ]

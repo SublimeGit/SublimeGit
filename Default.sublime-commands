@@ -26,6 +26,7 @@
     { "caption": "Git: Quick Commit Current File", "command": "git_quick_commit_current_file"},
 
     { "caption": "Git: Stash", "command": "git_stash"},
+    { "caption": "Git: Stash Include Untracked", "command": "git_stash", "args": {"untracked": true}},
     { "caption": "Git: Snapshot", "command": "git_snapshot"},
     { "caption": "Git: Pop Stash", "command": "git_stash_pop"},
     { "caption": "Git: Apply Stash", "command": "git_stash_apply"},

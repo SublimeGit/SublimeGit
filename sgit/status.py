@@ -91,7 +91,7 @@ GIT_STATUS_HELP = """
 #
 # Stashes:
 #    a = apply stash, A = pop stash
-#    z = create stash from worktree
+#    z = create stash, Z = create stash including untracked files
 #    backspace = discard stash"""
 
 

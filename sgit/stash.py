@@ -6,7 +6,7 @@ from sublime_plugin import WindowCommand
 
 from .util import noop
 from .cmd import GitCmd
-from .helpers import GitStashHelper, GitErrorHelper
+from .helpers import GitStashHelper, GitStatusHelper, GitErrorHelper
 
 
 class GitStashWindowCmd(GitCmd, GitStashHelper, GitErrorHelper):
@@ -41,28 +41,33 @@ class GitStashWindowCmd(GitCmd, GitStashHelper, GitErrorHelper):
         return inner
 
 
-class GitStashCommand(WindowCommand, GitStashWindowCmd):
+class GitStashCommand(WindowCommand, GitCmd, GitStatusHelper):
     """
     Documentation coming soon.
     """
 
-    def run(self):
+    def run(self, untracked=False):
         repo = self.get_repo()
         if not repo:
             return
 
         def on_done(title):
             title = title.strip()
-            self.git(['stash', 'save', '--', title], cwd=repo)
+            self.git(['stash', 'save', '--include-untracked' if untracked else None, '--', title], cwd=repo)
             self.window.run_command('git_status', {'refresh_only': True})
 
         # update the index
         self.git_exit_code(['update-index', '--refresh'], cwd=repo)
 
-        if self.git_exit_code(['diff', '--exit-code', '--quiet'], cwd=repo) != 0:
-            self.window.show_input_panel('Stash title:', '', on_done, noop, noop)
-        else:
-            sublime.error_message("No local changes to save")
+        # get files status
+        untracked_files, unstaged_files, _ = self.get_files_status(repo)
+
+        # check for if there's something to stash
+        if not unstaged_files:
+            if (untracked and not untracked_files) or (not untracked):
+                return sublime.error_message("No local changes to save")
+
+        self.window.show_input_panel('Stash title:', '', on_done, noop, noop)
 
 
 class GitSnapshotCommand(WindowCommand, GitStashWindowCmd):

@@ -148,7 +148,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>\t(.+): On (.+): (.+)\n</string>
+					<string>\t(.+): (?:WIP )?[oO]n (.+): (.+)\n</string>
 					<key>name</key>
 					<string>meta.git-status.line</string>
 				</dict>

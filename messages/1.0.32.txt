@@ -1,0 +1,15 @@
+SublimeGit 1.0.32
+=================
+
+
+Enhancements
+------------
+ - Adds command for creating a stash including untracked files. This can be
+   run from the command palette, or by using Z in the status view.
+
+
+Bug Fixes:
+----------
+ - Fix clashes with Vintageous. (Issue #120)
+
+ - Fix issues with stashes not being applied/popped. (Issues #90 and #107)
