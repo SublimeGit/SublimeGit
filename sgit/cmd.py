@@ -144,7 +144,8 @@ class Cmd(object):
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
-                                    startupinfo=self.startupinfo())
+                                    startupinfo=self.startupinfo(),
+                                    env=os.environ)
             stdout, stderr = proc.communicate(stdin)
 
             logger.debug("out: (%s) %s", proc.returncode, [stdout[:100]])
@@ -179,7 +180,9 @@ class Cmd(object):
                 proc = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT,
-                                        startupinfo=self.startupinfo())
+                                        startupinfo=self.startupinfo(),
+                                        universal_newlines=True,
+                                        env=os.environ)
 
                 for line in iter(proc.stdout.readline, b''):
                     logger.debug('async-out: %s', line.strip())
