@@ -120,7 +120,7 @@ class GitDiffCachedCurrentFileCommand(GitDiffCurrentFileCommand):
     """
 
     def run(self, edit):
-        super(GitDiffCachedCurrentFileCommand, self).run(cached=True)
+        super(GitDiffCachedCurrentFileCommand, self).run(edit, cached=True)
 
 
 class GitDiffTextCmd(GitCmd, GitDiffHelper):
