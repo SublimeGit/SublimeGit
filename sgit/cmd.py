@@ -10,7 +10,7 @@ from functools import partial
 
 import sublime
 
-from .util import get_executable, get_setting
+from .util import get_executable, get_setting, text_type
 from .helpers import GitRepoHelper
 
 
@@ -105,6 +105,18 @@ class Cmd(object):
         bin = get_executable(self.executable, self.bin)
         return bin + self.opts + [c for c in cmd if c]
 
+    @property
+    def env(self):
+        env = os.environ.copy()
+        path = get_setting('git_force_path', [])
+        if path:
+            if isinstance(path, list):
+                env['PATH'] = os.pathsep.join(path)
+            elif isinstance(path, text_type):
+                env['PATH'] = path
+        return env
+
+    @property
     def startupinfo(self):
         startupinfo = None
         if hasattr(subprocess, 'STARTUPINFO'):
@@ -114,6 +126,9 @@ class Cmd(object):
         return startupinfo
 
     def decode(self, stream, encoding, fallback=None):
+        if not hasattr(stream, 'decode'):
+            return stream
+
         try:
             return stream.decode(encoding)
         except UnicodeDecodeError:
@@ -134,7 +149,7 @@ class Cmd(object):
         try:
             logger.debug("cmd: %s", command)
 
-            if stdin:
+            if stdin and hasattr(stdin, 'encode'):
                 stdin = stdin.encode(encoding)
 
             if cwd:
@@ -144,8 +159,8 @@ class Cmd(object):
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
-                                    startupinfo=self.startupinfo(),
-                                    env=os.environ)
+                                    startupinfo=self.startupinfo,
+                                    env=self.env)
             stdout, stderr = proc.communicate(stdin)
 
             logger.debug("out: (%s) %s", proc.returncode, [stdout[:100]])
@@ -180,11 +195,10 @@ class Cmd(object):
                 proc = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT,
-                                        startupinfo=self.startupinfo(),
-                                        universal_newlines=True,
-                                        env=os.environ)
+                                        startupinfo=self.startupinfo,
+                                        env=self.env)
 
-                for line in iter(proc.stdout.readline, b''):
+                for line in iter(proc.stdout.readline, ''):
                     logger.debug('async-out: %s', line.strip())
                     line = self.decode(line, encoding, fallback)
                     if callable(on_data):

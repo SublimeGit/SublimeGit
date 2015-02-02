@@ -165,6 +165,23 @@
     },
 
     /*
+     * Forced path
+     *
+     * If you are having issues with the path (especially on OS X),
+     * you can use this setting to force a path instead of having
+     * Sublime Text take it from the environment.
+     *
+     * It can be specified either as a string or as an array. If
+     * specified as an array, it will be concat'ed with the appropriate
+     * path separator for the platform. Examples:
+     *
+     * ['/usr/local/bin', '/usr/bin', '/bin']
+     * "/usr/local/bin:/usr/bin:/bin"
+     *
+     */
+     "git_force_path": null,
+
+    /*
      * Fancy Help
      *
      * If set to true, the Git: Help command will try to
