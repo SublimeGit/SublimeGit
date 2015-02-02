@@ -1,0 +1,9 @@
+SublimeGit 1.0.33
+=================
+
+Bug Fixes:
+----------
+ - Attempt to fix OS X Yosemite PATH issue. (Issue #150)
+   If the included fix does not work for you, please see the
+   setting "git_force_path", which will allow you to force a
+   specific path.

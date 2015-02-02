@@ -198,7 +198,7 @@ class Cmd(object):
                                         startupinfo=self.startupinfo,
                                         env=self.env)
 
-                for line in iter(proc.stdout.readline, ''):
+                for line in iter(proc.stdout.readline, b''):
                     logger.debug('async-out: %s', line.strip())
                     line = self.decode(line, encoding, fallback)
                     if callable(on_data):
