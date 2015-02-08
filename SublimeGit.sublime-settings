@@ -71,6 +71,18 @@
     "git_status_open_files_transient": true,
 
     /*
+     * Disable vintageous mode
+     *
+     * Vintageous is disabled by default, since otherwise
+     * you'd have to enter insert mode to use any of the
+     * SublimeGit keyboard shortcuts. If you know what
+     * you're doing, and you want a different behavior
+     * you can enable vintageous in the status view by
+     * setting this to false.
+     */
+     "git_status_disable_vintageous": true,
+
+    /*
      * Change behavior of the status bar message
      *
      * If set to "fancy", SublimeGit will show a message like

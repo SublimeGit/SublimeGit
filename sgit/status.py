@@ -493,7 +493,7 @@ class GitStatusCommand(WindowCommand, GitStatusBuilder):
 
             view.settings().set('git_view', 'status')
             view.settings().set('git_repo', repo)
-            view.settings().set('__vi_external_disable', True)
+            view.settings().set('__vi_external_disable', get_setting('git_status_disable_vintageous') is True)
 
             for key, val in list(GIT_STATUS_VIEW_SETTINGS.items()):
                 view.settings().set(key, val)
