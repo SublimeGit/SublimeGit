@@ -105,7 +105,6 @@ class Cmd(object):
         bin = get_executable(self.executable, self.bin)
         return bin + self.opts + [c for c in cmd if c]
 
-    @property
     def env(self):
         env = os.environ.copy()
         path = get_setting('git_force_path', [])
@@ -143,6 +142,7 @@ class Cmd(object):
     # sync commands
     def cmd(self, cmd, stdin=None, cwd=None, ignore_errors=False, encoding=None, fallback=None):
         command = self.build_command(cmd)
+        environment = self.env()
         encoding = encoding or get_setting('encoding', 'utf-8')
         fallback = fallback or get_setting('fallback_encodings', [])
 
@@ -160,7 +160,7 @@ class Cmd(object):
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
                                     startupinfo=self.startupinfo,
-                                    env=self.env)
+                                    env=environment)
             stdout, stderr = proc.communicate(stdin)
 
             logger.debug("out: (%s) %s", proc.returncode, [stdout[:100]])
@@ -182,6 +182,7 @@ class Cmd(object):
     # async commands
     def cmd_async(self, cmd, cwd=None, **callbacks):
         command = self.build_command(cmd)
+        environment = self.env()
         encoding = get_setting('encoding', 'utf-8')
         fallback = get_setting('fallback_encodings', [])
 
@@ -196,7 +197,7 @@ class Cmd(object):
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT,
                                         startupinfo=self.startupinfo,
-                                        env=self.env)
+                                        env=environment)
 
                 for line in iter(proc.stdout.readline, b''):
                     logger.debug('async-out: %s', line.strip())
