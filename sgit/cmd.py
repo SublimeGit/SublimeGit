@@ -115,7 +115,6 @@ class Cmd(object):
                 env['PATH'] = path
         return env
 
-    @property
     def startupinfo(self):
         startupinfo = None
         if hasattr(subprocess, 'STARTUPINFO'):
@@ -159,7 +158,7 @@ class Cmd(object):
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
-                                    startupinfo=self.startupinfo,
+                                    startupinfo=self.startupinfo(),
                                     env=environment)
             stdout, stderr = proc.communicate(stdin)
 
@@ -196,7 +195,7 @@ class Cmd(object):
                 proc = subprocess.Popen(cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT,
-                                        startupinfo=self.startupinfo,
+                                        startupinfo=self.startupinfo(),
                                         env=environment)
 
                 for line in iter(proc.stdout.readline, b''):

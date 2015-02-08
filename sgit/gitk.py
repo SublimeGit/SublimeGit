@@ -24,11 +24,17 @@ class GitGitkCommand(WindowCommand, GitCmd):
             return
 
         cmd = get_executable('gitk', ['gitk'])
+        startupinfo = self.startupinfo()
+        environment = self.env()
 
         def async_inner():
             try:
                 os.chdir(cwd)
-                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, startupinfo=self.startupinfo())
+                proc = subprocess.Popen(cmd,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            startupinfo=startupinfo,
+                            env=environment)
                 proc.wait()
             except OSError:
                 path = "\n".join(os.environ.get('PATH', '').split(':'))
