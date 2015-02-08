@@ -1,0 +1,17 @@
+SublimeGit 1.0.34
+=================
+
+Enhancements:
+-------------
+ - Adds setting to opt-out of disabling vintageous. It's called
+   "git_status_disable_vintageous" and defaults to true. If you wish
+   to use Vintageous in the status view, set it to false. (Issue #125)
+
+
+Bug Fixes:
+----------
+ - Fix regression caused by fix to path issue in Yosemite. (Issue #177)
+
+ - Fix issue with Gitk command not working. (Issue #178)
+
+ - Fix "git diff cached current file" command. (Issue #167)
