@@ -7,9 +7,7 @@ from functools import partial
 import sublime
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 
-from .util import abbreviate_dir
-from .util import find_view_by_settings
-from .util import noop, get_setting, get_executable
+from .util import abbreviate_dir, find_view_by_settings, noop, get_setting, get_executable
 from .cmd import GitCmd
 from .helpers import GitStatusHelper, GitRemoteHelper, GitStashHelper, GitErrorHelper
 

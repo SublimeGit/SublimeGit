@@ -317,7 +317,7 @@ class GitStatusHelper(object):
             if row and not row.startswith('#'):
                 status, filename = row[:2], row[3:]
                 if status[0] == 'R':
-                    lines.append("%s %s -> %s" % (status, rows[idx+1], filename))
+                    lines.append("%s %s -> %s" % (status, rows[idx + 1], filename))
                     idx += 1
                 else:
                     lines.append("%s %s" % (status, filename))
