@@ -1,0 +1,7 @@
+SublimeGit 1.0.35
+=================
+
+SublimeGit is going open source!
+
+Only change in this version is that the license check and license-related commands
+have been removed. Source code will be available on github shortly!

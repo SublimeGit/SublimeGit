@@ -29,62 +29,6 @@ class Cmd(object):
     bin = []
     opts = []
 
-    # license stuff
-    def __get_license(self):
-        email = get_setting('email')
-        key = get_setting('product_key')
-        if email is None or len(email) == 0:
-            return None
-        if key is None or len(key) != 32:
-            return None
-        return (email, key)
-
-    def __validate_license(self, license):
-        data, key = license
-        i = 0
-        s1, s2 = 0, 0
-        try:
-            c = ((int(key[-2:], 16) + 8) ^ 0xff) * 8
-        except ValueError:
-            return False
-        while i <= 1848:
-            s1 = (s1 + (ord(data[i]) & 0xff)) % 0xffff
-            s2 = (s1 + s2) % 0xffff
-            data += "%x" % ((s2 << 16) | s1)
-            i += 1
-            if i == c and data[-30:] == key[:-2]:
-                return True
-        return False
-
-    def _is_licensed(self):
-        license = self.__get_license()
-        return self.__validate_license(license) if license else False
-
-    URL = 'https://sublimegit.net/buy?utm_source=st%s&utm_medium=popup&utm_campaign=buy'
-    LICENSE_POPUP = "SublimeGit Evaluation\n\nI hope you are enjoying SublimeGit. " +\
-                    "If you are, please consider buying a license at https://sublimegit.net"
-
-    def __license_popup(self):
-        url = self.URL % sys.version_info[0]
-        if sublime.ok_cancel_dialog(self.LICENSE_POPUP, 'Buy SublimeGit'):
-            webbrowser.open(url)
-
-    def __check_license(self):
-        seconds_since_start = (datetime.today() - Cmd.started_at).seconds
-        seconds_since_popup = (datetime.today() - Cmd.last_popup_at).seconds if Cmd.last_popup_at else None
-
-        if hasattr(self, '_lpop') and self._lpop is False:
-            return
-        if seconds_since_start < 30 * 60:
-            return
-        if seconds_since_popup is not None and seconds_since_popup < 120 * 60:
-            return
-
-        license = self.__get_license()
-        if not license or not self.__validate_license(license):
-            sublime.set_timeout(self.__license_popup, 0)
-            Cmd.last_popup_at = datetime.today()
-
     # cmd helpers
     def _string(self, cmd, strip=True, *args, **kwargs):
         _, stdout, _ = self.cmd(cmd, *args, **kwargs)
@@ -163,8 +107,6 @@ class Cmd(object):
             stdout, stderr = proc.communicate(stdin)
 
             logger.debug("out: (%s) %s", proc.returncode, [stdout[:100]])
-
-            self.__check_license()
 
             return (proc.returncode, self.decode(stdout, encoding, fallback), self.decode(stderr, encoding, fallback))
         except OSError as e:

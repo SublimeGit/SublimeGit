@@ -1,6 +1,6 @@
 # coding: utf-8
 
-__version__ = '1.0.34'
+__version__ = '1.0.35'
 
 
 # Import all the commands
@@ -59,8 +59,7 @@ from .merge import GitMergeCommand
 
 from .gitk import GitGitkCommand
 
-from .sublimegit import (SublimeGitInstallLicenseCommand, SublimeGitBuyLicenseCommand,
-                         SublimeGitDocumentationCommand, SublimeGitVersionCommand)
+from .sublimegit import (SublimeGitDocumentationCommand, SublimeGitVersionCommand)
 
 
 # import plugins
