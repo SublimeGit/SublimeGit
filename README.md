@@ -6,7 +6,7 @@ SublimeGit is going open source. This is a short TODO list of what needs to happ
  - [x] Remove licensing code and commands
  - [x] Release plugin code in SublimeGit repo
  - [x] Add license 
- - [ ] Remove code for dealing with bytecode distribution
+ - [x] Remove code for dealing with bytecode distribution
  - [ ] Change SublimeGit repo in Package Control to install from Github
  - [ ] Move documentation to readthedocs, or a github pages site or something
  - [ ] Redirect SublimeGit domains to this repository

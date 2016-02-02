@@ -44,12 +44,11 @@ LOAD_ORDER = [
 needs_reload = [n for n, m in list(sys.modules.items()) if n[0:4] == 'sgit' and m is not None]
 
 reloaded = []
-for prefix in ('sgit', 'sgit2', 'sgit3'):
-    for postfix in LOAD_ORDER:
-        module = prefix + postfix
-        if module in needs_reload:
-            reloaded.append(module)
-            reload(sys.modules[module])
+for postfix in LOAD_ORDER:
+    module = 'sgit' + postfix
+    if module in needs_reload:
+        reloaded.append(module)
+        reload(sys.modules[module])
 if reloaded:
     logger.info('Reloaded %s' % ", ".join(reloaded))
 
@@ -62,17 +61,9 @@ if sys.version_info[0] == 2:
     lvl = getattr(logging, settings.get('log_level', '').upper(), logging.WARNING)
     logger.setLevel(lvl)
 
-    try:
-        from sgit2 import *  # noqa
-        from sgit2.git_extensions.legit import *  # noqa
-        from sgit2.git_extensions.git_flow import *  # noqa
-    except ImportError as e:
-        try:
-            from sgit import *  # noqa
-            from sgit.git_extensions.legit import *  # noqa
-            from sgit.git_extensions.git_flow import *  # noqa
-        except ImportError:
-            raise
+    from sgit import *  # noqa
+    from sgit.git_extensions.legit import *  # noqa
+    from sgit.git_extensions.git_flow import *  # noqa
 
     # Enable plugins
     git_extensions.legit.enabled = settings.get('git_extensions', {}).get('legit', True)
@@ -81,17 +72,9 @@ if sys.version_info[0] == 2:
     def unload_handler():
         logging.shutdown()
 else:
-    try:
-        from .sgit3 import *  # noqa
-        from .sgit3.git_extensions.legit import *  # noqa
-        from .sgit3.git_extensions.git_flow import *  # noqa
-    except ImportError as e:
-        try:
-            from .sgit import *  # noqa
-            from .sgit.git_extensions.legit import *  # noqa
-            from .sgit.git_extensions.git_flow import *  # noqa
-        except ImportError:
-            raise
+    from .sgit import *  # noqa
+    from .sgit.git_extensions.legit import *  # noqa
+    from .sgit.git_extensions.git_flow import *  # noqa
 
     def plugin_loaded():
         settings = sublime.load_settings('SublimeGit.sublime-settings')
