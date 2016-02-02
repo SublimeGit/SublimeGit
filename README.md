@@ -1,15 +1,19 @@
-SublimeGit Issues
-=================
+SublimeGit
+==========
 
-This is a public repository for hosting the Issue Tracker. Please see if the issue you're about to report is already on the roadmap. Of course, if you have anything to add, feel free to create the issue anyway.
+SublimeGit is going open source. This is a short TODO list of what needs to happen:
+ - [x] Split plugin code from website code
+ - [x] Remove licensing code and commands
+ - [x] Release plugin code in SublimeGit repo
+ - [x] Add license 
+ - [ ] Remove code for dealing with bytecode distribution
+ - [ ] Change SublimeGit repo in Package Control to install from Github
+ - [ ] Move documentation to readthedocs, or a github pages site or something
+ - [ ] Redirect SublimeGit domains to this repository
 
-This is pretty much a dump of my internal todo-list, and as such it doesn't contain references to all of the issues. It's more about my thoughts on where SublimeGit is headed. So just because an issue isn't on this list doesn't mean it's not being worked on.
 
-I generally try to release at least one new feature as well as a couple of bugfixes in each release. Release frequency varies, but I try my best to release a minor feature every 1-3 weeks.
-
-
-Roadmap
--------
+Old Roadmap
+-----------
 
 **1.0.X (Minor releases)**
 
