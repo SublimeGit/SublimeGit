@@ -109,7 +109,7 @@ class AutoWindowCommand(Directive):
         return clsname.lower()  # make it lowercase
 
     def get_sublime_caption(self, clsname):
-        path = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../SublimeGit/Default.sublime-commands'))
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../Default.sublime-commands'))
 
         command = self.cls_to_sublime_command(clsname)
         with open(path, 'r') as f:
