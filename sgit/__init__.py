@@ -53,7 +53,7 @@ from .tag import GitTagCommand, GitAddTagCommand
 
 from .checkout import (GitCheckoutBranchCommand, GitCheckoutCommitCommand,
                        GitCheckoutNewBranchCommand, GitCheckoutCurrentFileCommand,
-                       GitCheckoutTagCommand)
+                       GitCheckoutTagCommand, GitCheckoutRemoteBranchCommand)
 
 from .merge import GitMergeCommand
 
