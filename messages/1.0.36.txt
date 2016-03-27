@@ -1,0 +1,6 @@
+SublimeGit 1.0.36
+=================
+
+SublimeGit is going open source!
+
+Only change in this version is that SublimeGit is now distributed as an open source project directly from github.
