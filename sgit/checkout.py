@@ -12,9 +12,7 @@ from .helpers import GitTagHelper
 
 GIT_BRANCH_EXISTS_MSG = "The branch %s already exists. Do you want to overwrite it?"
 
-# start for GitCheckoutRemoteBranchCommand
 NO_REMOTES = u"No remotes have been configured. Remotes can be added with the Git: Add Remote command. Do you want to add a remote now?"
-# end for GitCheckoutRemoteBranchCommand
 
 class GitCheckoutWindowCmd(GitCmd, GitBranchHelper, GitLogHelper, GitErrorHelper):
     pass
@@ -206,10 +204,15 @@ class GitCheckoutRemoteBranchCommand(WindowCommand, GitCheckoutWindowCmd, GitRem
             if not remote_branches:
                 return sublime.error_message("No branches on remote %s" % remote)
 
-            branches = self.format_quick_branches(remote_branches)
+            formatted_remote_branches = self.format_quick_branches(remote_branches)
+            local_branches = [b for _, b in self.get_branches(repo)]
+            remote_only_branches = [b for b in formatted_remote_branches if b[0] not in frozenset(local_branches)]
+
+            if not remote_only_branches:
+                return sublime.error_message("All remote branches are already present locally")
 
             def on_remote():
-                self.window.show_quick_panel(branches, partial(self.remote_branch_panel_done, repo, branches))
+                self.window.show_quick_panel(remote_only_branches, partial(self.remote_branch_panel_done, repo, remote_only_branches))
 
             sublime.set_timeout(on_remote, 50)
 
