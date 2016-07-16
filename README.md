@@ -1,5 +1,6 @@
 SublimeGit
 ==========
+[![Documentation](https://readthedocs.org/projects/sublimegit/badge/?version=latest&style=flat)](http://sublimegit.readthedocs.io/en/latest/)
 
 SublimeGit is going open source. This is a short TODO list of what needs to happen:
  - [x] Split plugin code from website code
