@@ -7,7 +7,7 @@ from sublime_plugin import WindowCommand, TextCommand, EventListener
 
 from .util import find_view_by_settings, get_setting
 from .cmd import GitCmd
-from .helpers import GitDiffHelper, GitErrorHelper, GitStatusHelper
+from .helpers import GitDiffHelper, GitErrorHelper, GitStatusHelper, GitLogHelper
 
 
 RE_DIFF_HEAD = re.compile(r'(---|\+\+\+){3} (a|b)/(dev/null)?')
@@ -18,6 +18,7 @@ GIT_DIFF_TITLE_PREFIX = GIT_DIFF_TITLE + ': '
 GIT_DIFF_CACHED_TITLE = '*git-diff-cached*'
 GIT_DIFF_CACHED_TITLE_PREFIX = GIT_DIFF_CACHED_TITLE + ': '
 
+GIT_DIFF_CHOICE_WORK = ["<Working Tree>", "View changes in the working tree", "(difference between working tree and index)"]
 GIT_DIFF_CLEAN = "Nothing to stage (no difference between working tree and index)"
 GIT_DIFF_CLEAN_CACHED = "Nothing to unstage (no changes in index)"
 
@@ -38,7 +39,7 @@ class GitDiffCommand(WindowCommand, GitCmd):
     or press ``d`` when the cursor is on a file in the status view.
     """
 
-    def run(self, repo=None, path=None, cached=False):
+    def run(self, repo=None, path=None, cached=False, obj=None):
         repo = repo or self.get_repo()
         if not repo:
             return
@@ -63,7 +64,7 @@ class GitDiffCommand(WindowCommand, GitCmd):
             view.settings().set('git_diff_unified', 3)
 
         self.window.focus_view(view)
-        view.run_command('git_diff_refresh', {'path': path, 'cached': cached, 'run_move': True})
+        view.run_command('git_diff_refresh', {'path': path, 'cached': cached, 'run_move': True, 'obj': obj})
 
     def get_view_title(self, path=None, cached=False):
         if cached:
@@ -89,12 +90,12 @@ class GitDiffCachedCommand(GitDiffCommand):
         super(GitDiffCachedCommand, self).run(path=path, cached=True)
 
 
-class GitDiffCurrentFileCommand(GitCmd, GitStatusHelper, TextCommand):
+class GitDiffCurrentFileCommand(GitCmd, GitStatusHelper, TextCommand, GitLogHelper, GitDiffHelper):
     """
     Shows a diff for the current file, if possible.
     """
 
-    def run(self, edit, cached=False):
+    def run(self, edit):
         # check if file is saved
         filename = self.view.file_name()
         if not filename:
@@ -111,16 +112,26 @@ class GitDiffCurrentFileCommand(GitCmd, GitStatusHelper, TextCommand):
             sublime.error_message('The file %s is not tracked by git.' % filename.replace(repo, '').lstrip('/'))
             return
 
-        self.view.window().run_command('git_diff', {'repo': repo, 'path': filename, 'cached': cached})
+        log = self.get_quick_log(repo, path=filename, follow=True)
+        hashes, choices = self.format_quick_log(log)
 
+        index_changes = bool(self.get_diff(repo, filename, True))
+        work_changes = bool(self.get_diff(repo, filename, False))
+        if index_changes and work_changes:
+            hashes.insert(0, None)
+            choices.insert(0, GIT_DIFF_CHOICE_WORK)
 
-class GitDiffCachedCurrentFileCommand(GitDiffCurrentFileCommand):
-    """
-    Shows a cached diff for the current file, if possible.
-    """
+        def on_done(idx):
+            if idx == -1:
+                return
+            commit = hashes[idx]
+            if idx == 0 and index_changes and work_changes:
+                cached = False
+            else:
+                cached = index_changes
+            self.view.window().run_command('git_diff', {'repo': repo, 'path': filename, 'cached': cached, 'obj': commit})
 
-    def run(self, edit):
-        super(GitDiffCachedCurrentFileCommand, self).run(edit, cached=True)
+        self.view.window().show_quick_panel(choices, on_done)
 
 
 class GitDiffTextCmd(GitCmd, GitDiffHelper):
@@ -223,7 +234,7 @@ class GitDiffRefreshCommand(TextCommand, GitDiffTextCmd):
     def is_visible(self):
         return False
 
-    def run(self, edit, path=None, cached=False, run_move=False):
+    def run(self, edit, path=None, cached=False, run_move=False, obj=None):
         path = path if path else self.view.settings().get('git_diff_path')
         cached = cached if cached else self.view.settings().get('git_diff_cached')
         unified = self.view.settings().get('git_diff_unified', 3)
@@ -235,7 +246,7 @@ class GitDiffRefreshCommand(TextCommand, GitDiffTextCmd):
         point = self.view.sel()[0].begin() if self.view.sel() else 0
         row, col = self.view.rowcol(point)
 
-        diff = self.get_diff(repo, path, cached, unified=unified)
+        diff = self.get_diff(repo, path, cached, unified=unified, obj=obj)
         clean = False
         if not diff:
             diff = GIT_DIFF_CLEAN_CACHED if cached else GIT_DIFF_CLEAN
