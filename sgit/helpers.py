@@ -357,14 +357,15 @@ class GitStatusHelper(object):
 
 class GitDiffHelper(object):
 
-    def get_diff(self, repo, path=None, cached=False, unified=None):
+    def get_diff(self, repo, path=None, cached=False, unified=None, obj=None):
         try:
             unified = int(unified)
         except:
             unified = None
         args = ['diff',
                 '--cached' if cached else None,
-                '--unified=%s' % unified if unified else None]
+                '--unified=%s' % unified if unified else None,
+                obj]
         if path:
             args.extend(['--', path])
         return self.git_string(args, cwd=repo, strip=False)

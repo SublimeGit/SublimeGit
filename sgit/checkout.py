@@ -179,7 +179,7 @@ class GitCheckoutNewBranchCommand(WindowCommand, GitCheckoutWindowCmd):
         self.window.run_command('git_status', {'refresh_only': True})
 
 
-class GitCheckoutCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
+class GitCheckoutCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper, GitLogHelper):
     """
     Documentation coming soon.
     """
@@ -195,13 +195,24 @@ class GitCheckoutCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper):
             return
 
         if not self.file_in_git(repo, filename):
-            sublime.error_message("The file %s is not tracked by git.")
+            sublime.error_message("The file %s is not tracked by git." % filename.replace(repo, '').lstrip('/'))
             return
 
-        exit, stdout, stderr = self.git(['checkout', '--quiet', '--', filename], cwd=repo)
-        if exit == 0:
-            sublime.status_message('Checked out %s' % filename)
-            view = self.view
-            sublime.set_timeout(partial(view.run_command, 'revert'), 50)
-        else:
-            sublime.error_message('git error: %s' % stderr)
+        log = self.get_quick_log(repo, path=filename, follow=True)
+        hashes, choices = self.format_quick_log(log)
+
+        def on_done(idx):
+            if idx == -1:
+                return
+            commit = hashes[idx]
+            args = ['checkout', '--quiet', commit, '--', filename]
+            exit, stdout, stderr = self.git(args, cwd=repo)
+            if exit == 0:
+                sublime.status_message('Checked out %s' % filename)
+                view = self.view
+                sublime.set_timeout(partial(view.run_command, 'revert'), 50)
+            else:
+                sublime.error_message('git error: %s' % stderr)
+
+        self.view.window().show_quick_panel(choices, on_done)
+

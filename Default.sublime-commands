@@ -15,7 +15,6 @@
     { "caption": "Git: Diff", "command": "git_diff"},
     { "caption": "Git: Diff Cached", "command": "git_diff_cached"},
     { "caption": "Git: Diff Current File", "command": "git_diff_current_file"},
-    { "caption": "Git: Diff Cached Current File", "command": "git_diff_cached_current_file"},
 
     { "caption": "Git: Add Current File", "command": "git_add_current_file"},
     { "caption": "Git: Quick Add", "command": "git_quick_add"},
