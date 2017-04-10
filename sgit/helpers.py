@@ -319,6 +319,9 @@ class GitStatusHelper(object):
                 if status[0] == 'R':
                     lines.append("%s %s -> %s" % (status, rows[idx + 1], filename))
                     idx += 1
+                elif status[0] == 'C':
+                    lines.append("%s %s -> %s" % (status, rows[idx + 1], filename))
+                    idx += 1
                 else:
                     lines.append("%s %s" % (status, filename))
             idx += 1
