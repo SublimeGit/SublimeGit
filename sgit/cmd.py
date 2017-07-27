@@ -216,8 +216,9 @@ class GitCmd(GitRepoHelper, Cmd):
 
 
 class GitFlowCmd(GitRepoHelper, Cmd):
-    executable = 'git_flow'
-    bin = ['git-flow']
+    executable = 'git'
+    bin = ['git']
+    opts = ['flow']
 
     def git_flow(self, cmd, *args, **kwargs):
         return self.cmd(cmd, *args, **kwargs)
