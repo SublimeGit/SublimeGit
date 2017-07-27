@@ -227,6 +227,13 @@
         ]
     },
 
+    // Open file at hunk
+    { "keys": ["enter"], "command": "git_diff_open_file_at_hunk",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
+        ]
+    },
+
     // Increase and decrease hunk size
     { "keys": ["+"], "command": "git_diff_change_hunk_size", "args": {"action": "increase"},
         "context": [

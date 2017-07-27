@@ -1,4 +1,5 @@
 # coding: utf-8
+import os
 import re
 from functools import partial
 
@@ -363,3 +364,55 @@ class GitDiffStageUnstageHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand
             if exit != 0:
                 sublime.error_message(self.format_error_message(stderr))
             self.view.run_command('git_diff_refresh')
+
+class GitDiffOpenFileAtHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit):
+        repo = self.view.settings().get('git_repo')
+        if not repo:
+            return
+
+        # There is nothing to do here
+        if self.view.settings().get('git_diff_clean') is True:
+            return
+
+        # No hunks?
+        hunks = self.get_hunks_from_selection(self.view.sel())
+        if not hunks:
+            return
+
+        hunk = self.get_first_hunk(hunks)
+        row, col = self.get_position(hunk)
+
+        path = self.view.settings().get('git_diff_path')
+        filename = os.path.join(repo, path)
+        filename = "{file}:{row}:{col}".format(file=filename, row=row, col=col)
+        self.view.window().open_file(filename, sublime.ENCODED_POSITION)
+
+    def get_first_hunk(self, hunks):
+        for hunk in hunks.values():
+            for line in hunk:
+                return line
+
+    def get_position(self, hunk):
+        # Get first selection
+        cursor = next(iter(self.view.sel()))
+
+        cursor_line, cursor_col = self.view.rowcol(cursor.a)
+        hunk_line, _ = self.view.rowcol(hunk.a)
+        offset = cursor_line - hunk_line - 1
+
+        # Calcule the line position relative to the cursor position and ignoring deleted lines
+        for region in self.view.lines(hunk):
+            line = self.view.substr(self.view.full_line(region))
+            if line.startswith("@@"):
+                offset += int(re.search(r"@@ \-\d+(,-?\d+)? \+(\d+)", line).groups()[1])
+            elif line.startswith("-"):
+                offset -= 1
+            if region.contains(cursor):
+                break
+
+        return (offset, cursor_col)
