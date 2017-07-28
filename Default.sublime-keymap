@@ -273,5 +273,12 @@
         "context": [
             { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
         ]
+    },
+
+    // Discard hunk command
+    { "keys": ["backspace"], "command": "git_diff_discard_hunk",
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "source.git-diff"}
+        ]
     }
 ]
