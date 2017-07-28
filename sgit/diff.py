@@ -386,8 +386,13 @@ class GitDiffDiscardHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand):
         if not hunks:
             return
 
+        # Select the hunks
+        for hunk in hunks.values():
+            for r in hunk:
+                self.view.sel().add(r)
+
         patch = self.create_patch(hunks)
-        if sublime.ok_cancel_dialog('Discard this hunk?', 'Discard'):
+        if sublime.ok_cancel_dialog('Discard the selected hunks?', 'Discard'):
             cmd = ['apply', '--ignore-whitespace', '--reverse']
             exit, stdout, stderr = self.git(cmd, stdin=patch, cwd=repo)
             if exit != 0:
