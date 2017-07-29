@@ -170,8 +170,7 @@
      * ['git', 'flow']
      */
     "git_executables": {
-        "git": ["git"],
-        "git_flow": ["git-flow"],
+        "git": ["git"],        
         "legit": ["legit"],
         "gitk": ["gitk"]
     },

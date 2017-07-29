@@ -101,7 +101,6 @@ After performing these changes, your user settings might look like this::
     {
         "git_executables": {
             "git": ["/usr/local/bin/git"],
-            "git_flow": ["/usr/local/bin/git", "flow"],
             "legit": ["legit"]
         }
     }
