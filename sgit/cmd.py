@@ -101,7 +101,7 @@ class Cmd(object):
             proc = subprocess.Popen(command,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT,
                                     startupinfo=self.startupinfo(),
                                     env=environment)
             stdout, stderr = proc.communicate(stdin)
