@@ -144,7 +144,13 @@ class GitBlameRefreshCommand(TextCommand, GitCmd):
                 sublime.error_message('Error parsing git blame output: %s', e)
                 return {}, []
 
-        abbrev_length = 7
+        config_core_abbrev = self.git_lines(['config', '--get', 'core.abbrev'], cwd=repo)
+
+        if config_core_abbrev:
+            abbrev_length = int(config_core_abbrev[0])
+        else:
+            abbrev_length = 8
+        
         while abbrev_length < 40:
             abbrevs = [c['sha'][:abbrev_length] for c in commits.values()]
             if len(abbrevs) == len(set(abbrevs)):
