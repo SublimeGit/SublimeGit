@@ -17,11 +17,12 @@ GIT_DIFF_TITLE = '*git-diff*'
 GIT_DIFF_TITLE_PREFIX = GIT_DIFF_TITLE + ': '
 GIT_DIFF_CACHED_TITLE = '*git-diff-cached*'
 GIT_DIFF_CACHED_TITLE_PREFIX = GIT_DIFF_CACHED_TITLE + ': '
-
+GIT_DIFF_EDIT_HUNK_TITLE = '*git-edit-hunk*'
 GIT_DIFF_CLEAN = "Nothing to stage (no difference between working tree and index)"
 GIT_DIFF_CLEAN_CACHED = "Nothing to unstage (no changes in index)"
 
 GIT_DIFF_VIEW_SYNTAX = 'Packages/SublimeGit/syntax/SublimeGit Diff.tmLanguage'
+NORMAL_DIFF_VIEW_SYNTAX = "Packages/Diff/Diff.sublime-syntax"
 
 GIT_DIFF_UNSTAGE_ERROR = "Cannot unstage hunks which have not been staged."
 GIT_DIFF_STAGE_ERROR = "Cannot stage hunks which are already staged."
@@ -261,6 +262,14 @@ class GitDiffEventListener(EventListener):
         if view.settings().get('git_view') in ('diff', 'diff-cached') and get_setting('git_update_diff_on_focus', True):
             view.run_command('git_diff_refresh')
 
+    def on_close(self, view):
+        if view.settings().get('git_view') == 'edit-hunk' and view.size() > 0:
+            view.sel().add(sublime.Region(0, view.size()))
+            view.run_command('git_diff_stage_unstage_hunk', {'recount': True})
+
+            git_prev_view_id = view.settings().get('git_prev_view_id')
+            prev_view = next(v for v in sublime.active_window().views() if v.id() is git_prev_view_id)
+            prev_view.run_command('git_diff_refresh') 
 
 class GitDiffChangeHunkSizeCommand(TextCommand):
 
@@ -340,7 +349,7 @@ class GitDiffStageUnstageHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand
     def is_visible(self):
         return False
 
-    def run(self, edit, reverse=False):
+    def run(self, edit, reverse=False, recount=False):
         repo = self.view.settings().get('git_repo')
 
         # we can't unstage stuff hasn't been staged
@@ -358,8 +367,86 @@ class GitDiffStageUnstageHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand
         hunks = self.get_hunks_from_selection(self.view.sel())
         if hunks:
             patch = self.create_patch(hunks)
-            cmd = ['apply', '--ignore-whitespace', '--cached', '--reverse' if reverse else None, '-']
+            cmd = [
+                'apply',
+                '--ignore-whitespace',
+                '--cached',
+                '--reverse' if reverse else None,
+                '--recount' if recount else None,
+                '-']
             exit, stdout, stderr = self.git(cmd, stdin=patch, cwd=repo)
             if exit != 0:
                 sublime.error_message(self.format_error_message(stderr))
             self.view.run_command('git_diff_refresh')
+
+
+class GitDiffEditHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand):
+    _header = ( "############################################################################\n"
+                "#\n"
+                "# Manual hunk edit mode -- see bottom for a quick guide.\n"
+                "#\n"
+                "############################################################################\n")
+
+    _footer = ( "############################################################################\n"
+                "#\n"
+                "# To remove '-' lines, make them ' ' lines (context).\n"
+                "# To remove '+' lines, delete them.\n"
+                "# Lines starting with # will be removed.\n"
+                "# \n"
+                "# If the patch applies cleanly, the edited hunk will immediately be\n"
+                "# marked for staging.\n"
+                "# An empty view aborts the stage of the hunks.\n"
+                "#\n"
+                "############################################################################")
+
+    def is_visible(self):
+        return False
+
+    def get_first_hunk(self, hunks):
+        for hunk in hunks.values():
+            for line in hunk:
+                return line
+
+    def run(self, edit, reverse=False):
+        repo = self.view.settings().get('git_repo')
+
+        # we can't edit stuff has been staged
+        if self.view.settings().get('git_diff_cached') is True:
+            sublime.error_message(GIT_DIFF_STAGE_ERROR)
+            return
+
+        # There is nothing to do here
+        if self.view.settings().get('git_diff_clean') is True:
+            return
+
+        hunks = self.get_hunks_from_selection(self.view.sel())
+        if hunks:
+            patch = self.create_patch(hunks)
+            window = self.view.window()
+            view = window.new_file()
+            view.set_name(GIT_DIFF_EDIT_HUNK_TITLE)
+            view.set_syntax_file(NORMAL_DIFF_VIEW_SYNTAX)
+            view.set_scratch(True)
+            view.set_read_only(False)
+
+            view.settings().set('git_prev_view_id', self.view.id())
+            view.settings().set('git_view', 'edit-hunk')
+            view.settings().set('git_repo', repo)
+            view.settings().set('git_diff_cached', False)
+
+            view.insert(edit, view.size(), patch)
+
+            # Calcule cursor position
+            line = self.get_first_hunk(hunks)
+            cursor = next(iter(self.view.sel()))
+            hunk_row, _ = self.view.rowcol(line.a)
+            cursor_row, col = self.view.rowcol(cursor.a)
+            row = cursor_row - hunk_row + 4 # lines of the diff header
+            view.sel().clear()
+            view.sel().add(sublime.Region(view.text_point(row, col)))
+            
+            # Add header and footer
+            view.insert(edit, 0, self._header)
+            view.insert(edit, view.size(), self._footer)
+            
+            window.focus_view(view)
