@@ -363,3 +363,38 @@ class GitDiffStageUnstageHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand
             if exit != 0:
                 sublime.error_message(self.format_error_message(stderr))
             self.view.run_command('git_diff_refresh')
+
+
+class GitDiffDiscardHunkCommand(GitDiffTextCmd, GitErrorHelper, TextCommand):
+
+    def is_visible(self):
+        return False
+
+    def run(self, edit):
+        repo = self.view.settings().get('git_repo')
+
+        # we can't unstage stuff hasn't been staged
+        if self.view.settings().get('git_diff_cached') is True:
+            sublime.error_message("Can't discard a staged hunk. Unstage it first.")
+            return
+
+        # There is nothing to do here
+        if self.view.settings().get('git_diff_clean') is True:
+            return
+
+        hunks = self.get_hunks_from_selection(self.view.sel())
+        if not hunks:
+            return
+
+        # Select the hunks
+        for hunk in hunks.values():
+            for r in hunk:
+                self.view.sel().add(r)
+
+        patch = self.create_patch(hunks)
+        if sublime.ok_cancel_dialog('Discard the selected hunks?', 'Discard'):
+            cmd = ['apply', '--ignore-whitespace', '--reverse']
+            exit, stdout, stderr = self.git(cmd, stdin=patch, cwd=repo)
+            if exit != 0:
+                sublime.error_message(self.format_error_message(stderr))
+            self.view.run_command('git_diff_refresh')
