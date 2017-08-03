@@ -31,6 +31,7 @@ class LegitWindowCmd(LegitCmd):
                 continue
             current = l[0:2]
             name, pub = l[2:].split(None, 1)
+            pub = pub.strip('\r')
             pub = pub.strip(' \t()')
             if not pub in filter:
                 continue
