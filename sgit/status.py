@@ -106,9 +106,13 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
 
         status = ""
         if remote:
-            status += "Remote:   %s @ %s\n" % (remote, remote_url)
-        status += "Local:    %s %s\n" % (branch if branch else '(no branch)', abbrev_dir)
-        status += "Head:     %s\n" % ("nothing committed (yet)" if head_rc != 0 else head)
+            status += "Remote:\t%s/%s @ %s\n" % (remote, branch, remote_url)
+            result = self.git_string(['rev-list', '--left-right', '--count', remote + "/" + branch + "..." + branch], cwd=repo)
+            remote_ahead, local_ahead = result.split('\t')
+            if local_ahead != "0":
+                status += "\t\t%s\n" % ("Your branch is ahead of by" + local_ahead + "commits")
+        status += "Local:\t%s %s\n" % (branch if branch else '(no branch)', abbrev_dir)
+        status += "Head:\t%s\n" % ("nothing committed (yet)" if head_rc != 0 else head)
         status += "\n"
 
         # update index
