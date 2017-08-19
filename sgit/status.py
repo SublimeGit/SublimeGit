@@ -112,7 +112,7 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
                                      cwd=repo)
             remote_ahead, local_ahead = result.split('\t')
             if local_ahead != "0":
-                status += "\t\tYour branch is ahead of by %s commits\n" \
+                status += "\t\tYour branch is ahead by %s commits\n" \
                             % (local_ahead)
         status += "Local:\t%s %s\n" % (branch if branch else '(no branch)', abbrev_dir)
         status += "Head:\t%s\n" % ("nothing committed (yet)" if head_rc != 0 else head)
