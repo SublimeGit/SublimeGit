@@ -111,9 +111,17 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
                                      remote + "/" + branch + "..." + branch],
                                      cwd=repo)
             remote_ahead, local_ahead = result.split('\t')
-            if local_ahead != "0":
+            if local_ahead != "0" and remote_ahead != "0":
+                status += "\t\tYour branch and %s/%s have diverged,\n" \
+                            % (remote, branch)
+                status += "\t\tand have %s and %s different commit each, " \
+                            "respectively\n" % (local_ahead, remote_ahead)
+            elif local_ahead != "0":
                 status += "\t\tYour branch is ahead by %s commits\n" \
                             % (local_ahead)
+            elif remote_ahead != "0":
+                status += "\t\tRemote branch is ahead by %s commits\n" \
+                            % (remote_ahead)
         status += "Local:\t%s %s\n" % (branch if branch else '(no branch)', abbrev_dir)
         status += "Head:\t%s\n" % ("nothing committed (yet)" if head_rc != 0 else head)
         status += "\n"
