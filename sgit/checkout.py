@@ -198,7 +198,7 @@ class GitCheckoutCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper, GitLog
             sublime.error_message("The file %s is not tracked by git." % filename.replace(repo, '').lstrip('/'))
             return
 
-        log = self.get_quick_log(repo, path=filename, follow=True)
+        log = self.get_quick_log(repo, path=filename, extra=['--follow'])
         hashes, choices = self.format_quick_log(log)
 
         def on_done(idx):
@@ -215,4 +215,3 @@ class GitCheckoutCurrentFileCommand(TextCommand, GitCmd, GitStatusHelper, GitLog
                 sublime.error_message('git error: %s' % stderr)
 
         self.view.window().show_quick_panel(choices, on_done)
-

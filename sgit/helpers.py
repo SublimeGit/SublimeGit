@@ -387,10 +387,10 @@ class GitLogHelper(object):
                             '%ar'    # auth date relative
                             '%x04')
 
-    def get_quick_log(self, repo, path=None, follow=False):
-        cmd = ['log', '--no-color', '--date=local', '--format=%s' % self.GIT_QUICK_LOG_FORMAT]
-        if follow:
-            cmd.append('--follow')
+    def get_quick_log(self, repo, path=None, extra=None):
+        cmd = ['log', '--no-color', '--no-merges', '--date=local', '--format=%s' % self.GIT_QUICK_LOG_FORMAT]
+        if extra:
+            cmd.extend(extra)
         if path:
             cmd.extend(['--', path])
         out = self.git_string(cmd, cwd=repo, strip=False)

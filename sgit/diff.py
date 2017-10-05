@@ -112,7 +112,7 @@ class GitDiffCurrentFileCommand(GitCmd, GitStatusHelper, TextCommand, GitLogHelp
             sublime.error_message('The file %s is not tracked by git.' % filename.replace(repo, '').lstrip('/'))
             return
 
-        log = self.get_quick_log(repo, path=filename, follow=True)
+        log = self.get_quick_log(repo, path=filename, extra=['--follow'])
         hashes, choices = self.format_quick_log(log)
 
         index_changes = bool(self.get_diff(repo, filename, True))
