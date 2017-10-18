@@ -201,7 +201,7 @@ Let's use the ``U`` command since that will unstage everything at once. Press ``
 
 Sharing Our Project With the World
 ----------------------------------
-Now that we're getting some traction on our project, we might want to start sharing it with the world. To do that we've created a github (or bitbucket, or google code, or breanstalk, etc.) repository for it. In our case it has the url *git@github.com:SublimeGit/djangotut.git*.
+Now that we're getting some traction on our project, we might want to start sharing it with the world. To do that we've created a github (or bitbucket, or google code, or breanstalk, etc.) repository for it. In our case it has the url *https://github.comSublimeGit/djangotut.git*.
 
 Adding a Remote
 ~~~~~~~~~~~~~~~
