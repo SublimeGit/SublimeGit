@@ -114,7 +114,9 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
         # update index
         self.git_exit_code(['update-index', '--refresh'], cwd=repo)
 
-        status += self.build_stashes(repo)
+        if get_setting('git_status_stashes') is True:
+            status += self.build_stashes(repo)
+
         status += self.build_files_status(repo)
 
         if get_setting('git_show_status_help', True):
