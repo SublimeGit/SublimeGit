@@ -36,6 +36,16 @@
     "git_show_status_help": true,
 
     /*
+     * Show stashes in Git Status
+     *
+     * If set to true, the stashes are shown. 
+     * On Windows getting stashes takes a vew seconds why this slows down
+     * the git status view. You might want to set it to false if you do 
+     * not need the stashes. 
+     */
+    "git_status_stashes": true,
+
+    /*
      * Update Status View on Focus
      *
      * If set to true, the status view will be updated whenever
