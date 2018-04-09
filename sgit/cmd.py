@@ -95,8 +95,14 @@ class Cmd(object):
             if stdin and hasattr(stdin, 'encode'):
                 stdin = stdin.encode(encoding)
 
-            if cwd:
-                os.chdir(cwd)
+            try:
+                if cwd:
+                  os.chdir(cwd)
+            except OSError as chdir_error:
+                if ignore_errors:
+                    return (0, '')
+                sublime.error_message("Repository path {cwd} not found.".format(cwd=self.cwd))
+                raise SublimeGitException("Repository path not found: %s" % e)
 
             proc = subprocess.Popen(command,
                                     stdin=subprocess.PIPE,
