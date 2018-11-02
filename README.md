@@ -93,3 +93,7 @@ should allow
  - rebase
  - rename
  - etc.
+
+Reference
+--------------------
+Git Status Interactively: [gsti](https://github.com/Gcaufy/gsti)
