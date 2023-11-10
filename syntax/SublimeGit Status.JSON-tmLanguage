@@ -101,7 +101,7 @@
             "patterns": [
                 {
                     "name": "meta.git-status.line",
-                    "match": "\\t(\\w+) *(.+)\\n",
+                    "match": "\\t(\\w+\-) *(.+)\\n",
                     "captures": {
                         "2": { "name": "meta.git-status.file" }
                     }
@@ -118,7 +118,7 @@
             "patterns": [
                 {
                     "name": "meta.git-status.line",
-                    "match": "\\t(\\w+) *(.+)\\n",
+                    "match": "\\t(\\w+\\-) *(.+)\\n",
                     "captures": {
                         "2": { "name": "meta.git-status.file" }
                     }
