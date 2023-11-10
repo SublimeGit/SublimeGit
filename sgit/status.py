@@ -28,6 +28,7 @@ GIT_STATUS_VIEW_SETTINGS = {
 STASHES = "stashes"
 UNTRACKED_FILES = "untracked_files"
 UNSTAGED_CHANGES = "unstaged_changes"
+UNMERGED_CHANGES = "unmerged_changes"
 STAGED_CHANGES = "staged_changes"
 CHANGES = "changes"  # pseudo-section to ignore staging area
 
@@ -35,6 +36,7 @@ SECTIONS = {
     STASHES: 'Stashes:\n',
     UNTRACKED_FILES: 'Untracked files:\n',
     UNSTAGED_CHANGES: 'Unstaged changes:\n',
+    UNMERGED_CHANGES: 'Unmerged changes:\n',
     STAGED_CHANGES: 'Staged changes:\n',
     CHANGES: 'Changes:\n',
 }
@@ -43,6 +45,7 @@ SECTION_ORDER = (
     STASHES,
     UNTRACKED_FILES,
     UNSTAGED_CHANGES,
+    UNMERGED_CHANGES,
     STAGED_CHANGES,
     CHANGES,
 )
@@ -51,19 +54,28 @@ SECTION_ORDER = (
 SECTION_SELECTOR_PREFIX = 'meta.git-status.'
 
 STATUS_LABELS = {
-    ' ': 'Unmodified',
-    'M': 'Modified  ',
-    'A': 'Added     ',
-    'D': 'Deleted   ',
-    'R': 'Renamed   ',
-    'C': 'Copied    ',
-    'U': 'Unmerged  ',
-    '?': 'Untracked ',
-    '!': 'Ignored   ',
-    'T': 'Typechange'
+    ' ' : 'Unmodified',
+    'M' : 'Modified  ',
+    'A' : 'Added     ',
+    'D' : 'Deleted   ',
+    'R' : 'Renamed   ',
+    'C' : 'Copied    ',
+    'U' : 'Unmerged  ',
+    '?' : 'Untracked ',
+    '!' : 'Ignored   ',
+    'T' : 'Type-Change',
+    'DD': 'Deleted-by-both ',
+    'AU': 'Added-by-Us     ',
+    'UD': 'Deleted-by-Them ',
+    'UA': 'Added-by-Them   ',
+    'DU': 'Deleted-by-Us   ',
+    'AA': 'Added-by-Both   ',
+    'UU': 'Modified-by-Both',
 }
 
 GIT_WORKING_DIR_CLEAN = "Nothing to commit (working directory clean)"
+GIT_MERGE_IN_PROGRESS_UNMERGED = "Merge in progress (fix conflicts or abort)"
+GIT_MERGE_IN_PROGRESS_READY = "Merge in progress (all conflicts resolved; commit to finish merge)"
 
 GIT_STATUS_HELP = """
 # Movement:
@@ -77,6 +89,10 @@ GIT_STATUS_HELP = """
 #    ctrl+shift+s = stage all unstaged and untracked files
 #    u = unstage file/section, U = unstage all files
 #    backspace = discard file/section, shift+backspace = discard everything
+#
+# Merging:
+#    o = use our version and discard remote changes, O = discard all remote changes
+#    t = use their version and discard local changes, T = discard all local changes
 #
 # Commit:
 #    c = commit, C = commit -a (add unstaged)
@@ -137,31 +153,46 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
     def build_files_status(self, repo):
         # get status
         status = ""
-        untracked, unstaged, staged = self.get_files_status(repo)
+        untracked, unstaged, staged, unmerged = self.get_files_status(repo)
 
-        if not untracked and not unstaged and not staged:
+        if not untracked and not unstaged and not staged and not unmerged:
             status += GIT_WORKING_DIR_CLEAN + "\n"
+
+        if self.is_merging(repo):
+            if not unmerged:
+                status += GIT_MERGE_IN_PROGRESS_READY + "\n"
+            else:
+                status += GIT_MERGE_IN_PROGRESS_UNMERGED + "\n"
 
         # untracked files
         if untracked:
+            status += "\n" if len(status) != 0 else ""
             status += SECTIONS[UNTRACKED_FILES]
             for s, f in untracked:
                 status += "\t%s\n" % f.strip()
-            status += "\n"
 
         # unstaged changes
         if unstaged:
+            status += "\n" if len(status) != 0 else ""
             status += SECTIONS[UNSTAGED_CHANGES] if staged else SECTIONS[CHANGES]
             for s, f in unstaged:
                 status += "\t%s %s\n" % (STATUS_LABELS[s], f)
-            status += "\n"
+
+        # unmerged files
+        if unmerged:
+            status += "\n" if len(status) != 0 else ""
+            status += SECTIONS[UNMERGED_CHANGES]
+            for s, f in unmerged:
+                status += "\t%s %s\n" % (STATUS_LABELS[s], f)
 
         # staged changes
         if staged:
+            status += "\n" if len(status) != 0 else ""
             status += SECTIONS[STAGED_CHANGES]
             for s, f in staged:
                 status += "\t%s %s\n" % (STATUS_LABELS[s], f)
-            status += "\n"
+
+        status += "\n"
 
         return status
 
@@ -953,11 +984,13 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
 
     def discard_files(self, repo, files):
         # See if any of the files cannot be discarded
-        error = "You can't discard staged changes to the following files. Please unstage them first:\n\n  {errfiles}"
+        error = "You can't discard staged changes to the following files. Please unstage them or fix merge conflicts first:\n\n  {errfiles}"
         errlist = []
         for s, f in files:
             if s == STAGED_CHANGES and not self.is_up_to_date(repo, f):
-                errlist.append(f)
+                errlist.append('%s (unstage)' % f)
+            elif self.get_worktree_status(repo, f) == 'U':
+                errlist.append('%s (unmerged)' % f)
 
         if errlist:
             errfiles = "\n  ".join(errlist)
@@ -1017,15 +1050,17 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
         return self.git_exit_code(['diff', '--quiet', '--', filename], cwd=repo) == 0
 
     def get_worktree_status(self, repo, filename):
-        output = self.git_string(['diff', '--name-status', '--', filename], cwd=repo)
+        # unmerged files have two lines, normal files only one line
+        output = self.git_lines(['diff', '--name-status', '--', filename], cwd=repo)
         if output:
-            status, _ = output.split('\t')
+            status, _ = output[0].split('\t')
             return status
 
     def get_staging_status(self, repo, filename):
-        output = self.git_string(['diff', '--name-status', '--cached', '--', filename], cwd=repo)
+        # unmerged files have two lines, normal files only one line
+        output = self.git_lines(['diff', '--name-status', '--cached', '--', filename], cwd=repo)
         if output:
-            status, _ = output.split('\t')
+            status, _ = output[0].split('\t')
             return status
 
 
@@ -1079,3 +1114,74 @@ class GitStatusDiffCommand(TextCommand, GitStatusTextCmd):
             if s != UNTRACKED_FILES:
                 cached = (s == STAGED_CHANGES)
                 window.run_command('git_diff', {'repo': repo, 'path': f, 'cached': cached})
+
+
+class GitStatusCheckoutCommand(TextCommand, GitStatusTextCmd):
+
+    def run(self, edit, discard="item", which="ours"):
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        goto = None
+        if discard == "section" or discard == "all":
+            self.checkout_all(repo, which)
+
+        elif discard == "item":
+            files = self.get_selected_files()
+            if files:
+                self.checkout_files(repo, files, which)
+            goto = self.logical_goto_next_file()
+
+        self.update_status(goto)
+
+    # global checkout
+
+    def checkout_all(self, repo, which):
+        if which != "ours" and which != "theirs":
+            logger.warning("unknown 'which' argument %s" % which)
+            return
+
+        keep = "local" if which == "ours" else "remote"
+        discard = "remote" if which == "ours" else "local"
+        message = "Discard all unmerged %s changes and keep %s changes instead?" % (discard, keep)
+
+        if sublime.ok_cancel_dialog(message, "Discard"):
+            if sublime.ok_cancel_dialog("Are you absolutely sure?", "Discard"):
+                self.git(['checkout', '--%s' % which, '.'], cwd=repo)
+
+    # individual checkout
+
+    def checkout_files(self, repo, files, which):
+        keep = "local" if which == "ours" else "remote"
+        discard = "remote" if which == "ours" else "local"
+
+        # See if any of the files cannot be discarded
+        error = "You can't checkout {keep} changes for the following untracked files:\n\n  {errfiles}"
+        errlist = []
+        for s, f in files:
+            if s == UNTRACKED_FILES:
+                errlist.append(f)
+
+        if errlist:
+            errfiles = "\n  ".join(errlist)
+            sublime.error_message(error.format(keep=keep, errfiles=errfiles))
+            return
+
+        # Confirm before unstaging any files
+        confirm = "Are you sure you want to perform the following actions?\n\n  {actions}"
+        actionlist = []
+        for s, f in files:
+            action = 'Discard %s changes: ' % discard
+            actionlist.append("{action} {file}".format(action=action, file=f))
+
+        if not actionlist:
+            return
+
+        actions = "\n  ".join(actionlist)
+        if not sublime.ok_cancel_dialog(confirm.format(actions=actions), 'Continue'):
+            return
+
+        for s, f in files:
+            self.git(['checkout', '--%s' % which, '--', f], cwd=repo)
+            self.git(['add', '--', f], cwd=repo)

@@ -50,6 +50,13 @@
             }
         },
         {
+            "name": "meta.git-status.merging",
+            "match": "^(Merge in progress \\((fix conflicts or abort|all conflicts resolved; commit to finish merge)\\))\\n",
+            "captures": {
+                "1": { "name": "markup.inserted.git-status.merging" }
+            }
+        },
+        {
             "name": "meta.git-status.stashes",
             "begin": "^(Stashes:\\n)",
             "beginCaptures": {
@@ -87,14 +94,14 @@
         },
         {
             "name": "meta.git-status.unstaged_changes",
-            "begin": "^((?:Unstaged changes:\\n)|(?:Changes:\\n))",
+            "begin": "^((?:Unstaged changes:\\n)|(?:Changes:\\n)|(?:Unmerged changes:\\n))",
             "beginCaptures": {
                 "1": { "name": "constant.other.git-status.header" }
             },
             "patterns": [
                 {
                     "name": "meta.git-status.line",
-                    "match": "\\t(\\w+) *(.+)\\n",
+                    "match": "\\t(\\w+\-) *(.+)\\n",
                     "captures": {
                         "2": { "name": "meta.git-status.file" }
                     }
@@ -111,7 +118,7 @@
             "patterns": [
                 {
                     "name": "meta.git-status.line",
-                    "match": "\\t(\\w+) *(.+)\\n",
+                    "match": "\\t(\\w+\\-) *(.+)\\n",
                     "captures": {
                         "2": { "name": "meta.git-status.file" }
                     }

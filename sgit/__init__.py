@@ -36,7 +36,7 @@ from .status import (GitStatusCommand, GitStatusRefreshCommand, GitQuickStatusCo
                      GitStatusUnstageCommand, GitStatusDiscardCommand,
                      GitStatusOpenFileCommand, GitStatusDiffCommand,
                      GitStatusIgnoreCommand, GitStatusStashCmd, GitStatusStashApplyCommand,
-                     GitStatusStashPopCommand)
+                     GitStatusStashPopCommand, GitStatusCheckoutCommand)
 from .status import GitStatusBarEventListener, GitStatusEventListener
 
 from .add import GitQuickAddCommand, GitAddCurrentFileCommand
@@ -55,7 +55,7 @@ from .checkout import (GitCheckoutBranchCommand, GitCheckoutCommitCommand,
                        GitCheckoutNewBranchCommand, GitCheckoutCurrentFileCommand,
                        GitCheckoutTagCommand, GitCheckoutRemoteBranchCommand)
 
-from .merge import GitMergeCommand
+from .merge import GitMergeCommand, GitMergeAbortCommand
 
 from .gitk import GitGitkCommand
 
