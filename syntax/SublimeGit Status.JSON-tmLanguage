@@ -51,7 +51,7 @@
         },
         {
             "name": "meta.git-status.merging",
-            "match": "^(Merge in progress \\(continue or abort\\))\\n",
+            "match": "^(Merge in progress \\((fix conflicts or abort|all conflicts resolved; commit to finish merge)\\))\\n",
             "captures": {
                 "1": { "name": "markup.inserted.git-status.merging" }
             }

@@ -121,7 +121,7 @@
 				</dict>
 			</dict>
 			<key>match</key>
-			<string>^(Merge in progress \(continue or abort\))\n</string>
+			<string>^(Merge in progress \((fix conflicts or abort|all conflicts resolved; commit to finish merge)\))\n</string>
 			<key>name</key>
 			<string>meta.git-status.merging</string>
 		</dict>

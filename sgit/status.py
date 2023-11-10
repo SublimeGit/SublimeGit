@@ -74,7 +74,8 @@ STATUS_LABELS = {
 }
 
 GIT_WORKING_DIR_CLEAN = "Nothing to commit (working directory clean)"
-GIT_MERGE_IN_PROGRESS = "Merge in progress (continue or abort)"
+GIT_MERGE_IN_PROGRESS_UNMERGED = "Merge in progress (fix conflicts or abort)"
+GIT_MERGE_IN_PROGRESS_READY = "Merge in progress (all conflicts resolved; commit to finish merge)"
 
 GIT_STATUS_HELP = """
 # Movement:
@@ -158,7 +159,10 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
             status += GIT_WORKING_DIR_CLEAN + "\n"
 
         if self.is_merging(repo):
-            status += GIT_MERGE_IN_PROGRESS + "\n"
+            if not unmerged:
+                status += GIT_MERGE_IN_PROGRESS_READY + "\n"
+            else:
+                status += GIT_MERGE_IN_PROGRESS_UNMERGED + "\n"
 
         # untracked files
         if untracked:
