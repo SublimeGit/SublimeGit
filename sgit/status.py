@@ -970,11 +970,13 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
 
     def discard_files(self, repo, files):
         # See if any of the files cannot be discarded
-        error = "You can't discard staged changes to the following files. Please unstage them first:\n\n  {errfiles}"
+        error = "You can't discard staged changes to the following files. Please unstage them or fix merge conflicts first:\n\n  {errfiles}"
         errlist = []
         for s, f in files:
             if s == STAGED_CHANGES and not self.is_up_to_date(repo, f):
-                errlist.append(f)
+                errlist.append('%s (unstage)' % f)
+            elif self.get_worktree_status(repo, f) == 'U':
+                errlist.append('%s (unmerged)' % f)
 
         if errlist:
             errfiles = "\n  ".join(errlist)
