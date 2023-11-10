@@ -36,7 +36,7 @@ from .status import (GitStatusCommand, GitStatusRefreshCommand, GitQuickStatusCo
                      GitStatusUnstageCommand, GitStatusDiscardCommand,
                      GitStatusOpenFileCommand, GitStatusDiffCommand,
                      GitStatusIgnoreCommand, GitStatusStashCmd, GitStatusStashApplyCommand,
-                     GitStatusStashPopCommand)
+                     GitStatusStashPopCommand, GitStatusCheckoutCommand)
 from .status import GitStatusBarEventListener, GitStatusEventListener
 
 from .add import GitQuickAddCommand, GitAddCurrentFileCommand

@@ -88,6 +88,10 @@ GIT_STATUS_HELP = """
 #    u = unstage file/section, U = unstage all files
 #    backspace = discard file/section, shift+backspace = discard everything
 #
+# Merging:
+#    o = use our version and discard remote changes, O = discard all remote changes
+#    t = use their version and discard local changes, T = discard all local changes
+#
 # Commit:
 #    c = commit, C = commit -a (add unstaged)
 #    ctrl+shift+c = commit --amend (amend previous commit)
@@ -1100,3 +1104,74 @@ class GitStatusDiffCommand(TextCommand, GitStatusTextCmd):
             if s != UNTRACKED_FILES:
                 cached = (s == STAGED_CHANGES)
                 window.run_command('git_diff', {'repo': repo, 'path': f, 'cached': cached})
+
+
+class GitStatusCheckoutCommand(TextCommand, GitStatusTextCmd):
+
+    def run(self, edit, discard="item", which="ours"):
+        repo = self.get_repo()
+        if not repo:
+            return
+
+        goto = None
+        if discard == "section" or discard == "all":
+            self.checkout_all(repo, which)
+
+        elif discard == "item":
+            files = self.get_selected_files()
+            if files:
+                self.checkout_files(repo, files, which)
+            goto = self.logical_goto_next_file()
+
+        self.update_status(goto)
+
+    # global checkout
+
+    def checkout_all(self, repo, which):
+        if which != "ours" and which != "theirs":
+            logger.warning("unknown 'which' argument %s" % which)
+            return
+
+        keep = "local" if which == "ours" else "remote"
+        discard = "remote" if which == "ours" else "local"
+        message = "Discard all unmerged %s changes and keep %s changes instead?" % (discard, keep)
+
+        if sublime.ok_cancel_dialog(message, "Discard"):
+            if sublime.ok_cancel_dialog("Are you absolutely sure?", "Discard"):
+                self.git(['checkout', '--%s' % which, '.'], cwd=repo)
+
+    # individual checkout
+
+    def checkout_files(self, repo, files, which):
+        keep = "local" if which == "ours" else "remote"
+        discard = "remote" if which == "ours" else "local"
+
+        # See if any of the files cannot be discarded
+        error = "You can't checkout {keep} changes for the following untracked files:\n\n  {errfiles}"
+        errlist = []
+        for s, f in files:
+            if s == UNTRACKED_FILES:
+                errlist.append(f)
+
+        if errlist:
+            errfiles = "\n  ".join(errlist)
+            sublime.error_message(error.format(keep=keep, errfiles=errfiles))
+            return
+
+        # Confirm before unstaging any files
+        confirm = "Are you sure you want to perform the following actions?\n\n  {actions}"
+        actionlist = []
+        for s, f in files:
+            action = 'Discard %s changes: ' % discard
+            actionlist.append("{action} {file}".format(action=action, file=f))
+
+        if not actionlist:
+            return
+
+        actions = "\n  ".join(actionlist)
+        if not sublime.ok_cancel_dialog(confirm.format(actions=actions), 'Continue'):
+            return
+
+        for s, f in files:
+            self.git(['checkout', '--%s' % which, '--', f], cwd=repo)
+            self.git(['add', '--', f], cwd=repo)
