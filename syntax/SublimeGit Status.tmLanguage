@@ -214,7 +214,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>\t(\w+) *(.+)\n</string>
+					<string>\t([\w\-]+) *(.+)\n</string>
 					<key>name</key>
 					<string>meta.git-status.line</string>
 				</dict>
@@ -247,7 +247,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>\t(\w+) *(.+)\n</string>
+					<string>\t([\w\-]+) *(.+)\n</string>
 					<key>name</key>
 					<string>meta.git-status.line</string>
 				</dict>

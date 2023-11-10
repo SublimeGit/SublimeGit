@@ -63,14 +63,14 @@ STATUS_LABELS = {
     'U' : 'Unmerged  ',
     '?' : 'Untracked ',
     '!' : 'Ignored   ',
-    'T' : 'Typechange',
-    'DD': 'Both deleted   ',
-    'AU': 'Added by us    ',
-    'UD': 'Deleted by them',
-    'UA': 'Added by them  ',
-    'DU': 'Deleted by us  ',
-    'AA': 'Both added     ',
-    'UU': 'Both modified  ',
+    'T' : 'Type-Change',
+    'DD': 'Deleted-by-both ',
+    'AU': 'Added-by-Us     ',
+    'UD': 'Deleted-by-Them ',
+    'UA': 'Added-by-Them   ',
+    'DU': 'Deleted-by-Us   ',
+    'AA': 'Added-by-Both   ',
+    'UU': 'Modified-by-Both',
 }
 
 GIT_WORKING_DIR_CLEAN = "Nothing to commit (working directory clean)"
