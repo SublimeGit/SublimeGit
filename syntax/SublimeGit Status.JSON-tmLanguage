@@ -50,6 +50,13 @@
             }
         },
         {
+            "name": "meta.git-status.merging",
+            "match": "^(Merge in progress \\(continue or abort\\))\\n",
+            "captures": {
+                "1": { "name": "markup.inserted.git-status.merging" }
+            }
+        },
+        {
             "name": "meta.git-status.stashes",
             "begin": "^(Stashes:\\n)",
             "beginCaptures": {

@@ -299,6 +299,12 @@ class GitStatusHelper(object):
     def has_unstaged_changes(self, repo):
         return self.git_exit_code(['diff', '--exit-code', '--quiet'], cwd=repo) != 0
 
+    def has_unmerged_changes(self, repo):
+        return self.git_exit_code(['diff', '--exit-code', '--quiet', '--diff-filter=U'], cwd=repo) != 0
+
+    def is_merging(self, repo):
+        return os.path.exists(os.path.join(repo, '.git', 'MERGE_HEAD'))
+
     # def get_porcelain_status(self, repo):
     #     mode = self.get_untracked_mode()
     #     cmd = ['status', '--porcelain', ('--untracked-files=%s' % mode) if mode else None]

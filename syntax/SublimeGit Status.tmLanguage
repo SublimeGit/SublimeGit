@@ -112,6 +112,20 @@
 			<string>meta.git-status.clean</string>
 		</dict>
 		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>markup.inserted.git-status.merging</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(Merge in progress \(continue or abort\))\n</string>
+			<key>name</key>
+			<string>meta.git-status.merging</string>
+		</dict>
+		<dict>
 			<key>begin</key>
 			<string>^(Stashes:\n)</string>
 			<key>beginCaptures</key>

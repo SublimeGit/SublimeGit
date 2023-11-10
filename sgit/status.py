@@ -74,6 +74,7 @@ STATUS_LABELS = {
 }
 
 GIT_WORKING_DIR_CLEAN = "Nothing to commit (working directory clean)"
+GIT_MERGE_IN_PROGRESS = "Merge in progress (continue or abort)"
 
 GIT_STATUS_HELP = """
 # Movement:
@@ -156,33 +157,38 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
         if not untracked and not unstaged and not staged and not unmerged:
             status += GIT_WORKING_DIR_CLEAN + "\n"
 
+        if self.is_merging(repo):
+            status += GIT_MERGE_IN_PROGRESS + "\n"
+
         # untracked files
         if untracked:
+            status += "\n" if len(status) != 0 else ""
             status += SECTIONS[UNTRACKED_FILES]
             for s, f in untracked:
                 status += "\t%s\n" % f.strip()
-            status += "\n"
 
         # unstaged changes
         if unstaged:
+            status += "\n" if len(status) != 0 else ""
             status += SECTIONS[UNSTAGED_CHANGES] if staged else SECTIONS[CHANGES]
             for s, f in unstaged:
                 status += "\t%s %s\n" % (STATUS_LABELS[s], f)
-            status += "\n"
 
         # unmerged files
         if unmerged:
+            status += "\n" if len(status) != 0 else ""
             status += SECTIONS[UNMERGED_CHANGES]
             for s, f in unmerged:
                 status += "\t%s %s\n" % (STATUS_LABELS[s], f)
-            status += "\n"
 
         # staged changes
         if staged:
+            status += "\n" if len(status) != 0 else ""
             status += SECTIONS[STAGED_CHANGES]
             for s, f in staged:
                 status += "\t%s %s\n" % (STATUS_LABELS[s], f)
-            status += "\n"
+
+        status += "\n"
 
         return status
 
