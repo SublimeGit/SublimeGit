@@ -28,6 +28,7 @@ GIT_STATUS_VIEW_SETTINGS = {
 STASHES = "stashes"
 UNTRACKED_FILES = "untracked_files"
 UNSTAGED_CHANGES = "unstaged_changes"
+UNMERGED_CHANGES = "unmerged_CHANGES"
 STAGED_CHANGES = "staged_changes"
 CHANGES = "changes"  # pseudo-section to ignore staging area
 
@@ -35,6 +36,7 @@ SECTIONS = {
     STASHES: 'Stashes:\n',
     UNTRACKED_FILES: 'Untracked files:\n',
     UNSTAGED_CHANGES: 'Unstaged changes:\n',
+    UNMERGED_CHANGES: 'Unmerged changes:\n',
     STAGED_CHANGES: 'Staged changes:\n',
     CHANGES: 'Changes:\n',
 }
@@ -43,6 +45,7 @@ SECTION_ORDER = (
     STASHES,
     UNTRACKED_FILES,
     UNSTAGED_CHANGES,
+    UNMERGED_CHANGES,
     STAGED_CHANGES,
     CHANGES,
 )
@@ -51,16 +54,23 @@ SECTION_ORDER = (
 SECTION_SELECTOR_PREFIX = 'meta.git-status.'
 
 STATUS_LABELS = {
-    ' ': 'Unmodified',
-    'M': 'Modified  ',
-    'A': 'Added     ',
-    'D': 'Deleted   ',
-    'R': 'Renamed   ',
-    'C': 'Copied    ',
-    'U': 'Unmerged  ',
-    '?': 'Untracked ',
-    '!': 'Ignored   ',
-    'T': 'Typechange'
+    ' ' : 'Unmodified',
+    'M' : 'Modified  ',
+    'A' : 'Added     ',
+    'D' : 'Deleted   ',
+    'R' : 'Renamed   ',
+    'C' : 'Copied    ',
+    'U' : 'Unmerged  ',
+    '?' : 'Untracked ',
+    '!' : 'Ignored   ',
+    'T' : 'Typechange',
+    'DD': 'Both deleted   ',
+    'AU': 'Added by us    ',
+    'UD': 'Deleted by them',
+    'UA': 'Added by them  ',
+    'DU': 'Deleted by us  ',
+    'AA': 'Both added     ',
+    'UU': 'Both modified  ',
 }
 
 GIT_WORKING_DIR_CLEAN = "Nothing to commit (working directory clean)"
@@ -137,9 +147,9 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
     def build_files_status(self, repo):
         # get status
         status = ""
-        untracked, unstaged, staged = self.get_files_status(repo)
+        untracked, unstaged, staged, unmerged = self.get_files_status(repo)
 
-        if not untracked and not unstaged and not staged:
+        if not untracked and not unstaged and not staged and not unmerged:
             status += GIT_WORKING_DIR_CLEAN + "\n"
 
         # untracked files
@@ -153,6 +163,13 @@ class GitStatusBuilder(GitCmd, GitStatusHelper, GitRemoteHelper, GitStashHelper)
         if unstaged:
             status += SECTIONS[UNSTAGED_CHANGES] if staged else SECTIONS[CHANGES]
             for s, f in unstaged:
+                status += "\t%s %s\n" % (STATUS_LABELS[s], f)
+            status += "\n"
+
+        # unmerged files
+        if unmerged:
+            status += SECTIONS[UNMERGED_CHANGES]
+            for s, f in unmerged:
                 status += "\t%s %s\n" % (STATUS_LABELS[s], f)
             status += "\n"
 

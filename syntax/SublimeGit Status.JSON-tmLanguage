@@ -87,7 +87,7 @@
         },
         {
             "name": "meta.git-status.unstaged_changes",
-            "begin": "^((?:Unstaged changes:\\n)|(?:Changes:\\n))",
+            "begin": "^((?:Unstaged changes:\\n)|(?:Changes:\\n)|(?:Unmerged changes:\\n))",
             "beginCaptures": {
                 "1": { "name": "constant.other.git-status.header" }
             },

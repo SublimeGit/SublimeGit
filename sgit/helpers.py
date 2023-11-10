@@ -325,13 +325,13 @@ class GitStatusHelper(object):
         return lines
 
     def get_files_status(self, repo):
-        untracked, unstaged, staged = [], [], []
+        untracked, unstaged, staged, unmerged = [], [], [], []
         status = self.get_porcelain_status(repo)
         for l in status:
             state, filename = l[:2], l[3:]
             index, worktree = state
             if state in ('DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'):
-                logger.warning("unmerged WTF: %s, %s", state, filename)
+                unmerged.append((state, filename))
             elif state == '??':
                 untracked.append(('?', filename))
             elif state == '!!':
@@ -341,7 +341,7 @@ class GitStatusHelper(object):
                     unstaged.append((worktree, filename))
                 if index != ' ':
                     staged.append((index, filename))
-        return untracked, unstaged, staged
+        return untracked, unstaged, staged, unmerged
 
     def get_untracked_mode(self):
         # get untracked files mode

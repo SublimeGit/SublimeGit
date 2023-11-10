@@ -189,7 +189,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^((?:Unstaged changes:\n)|(?:Changes:\n))</string>
+			<string>^((?:Unstaged changes:\n)|(?:Changes:\n)|(?:Unmerged changes:\n))</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
