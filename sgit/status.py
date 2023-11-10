@@ -28,7 +28,7 @@ GIT_STATUS_VIEW_SETTINGS = {
 STASHES = "stashes"
 UNTRACKED_FILES = "untracked_files"
 UNSTAGED_CHANGES = "unstaged_changes"
-UNMERGED_CHANGES = "unmerged_CHANGES"
+UNMERGED_CHANGES = "unmerged_changes"
 STAGED_CHANGES = "staged_changes"
 CHANGES = "changes"  # pseudo-section to ignore staging area
 
