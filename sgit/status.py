@@ -1043,9 +1043,10 @@ class GitStatusDiscardCommand(TextCommand, GitStatusTextCmd):
             return status
 
     def get_staging_status(self, repo, filename):
-        output = self.git_string(['diff', '--name-status', '--cached', '--', filename], cwd=repo)
+        # unmerged files have two lines, normal files only one line
+        output = self.git_lines(['diff', '--name-status', '--cached', '--', filename], cwd=repo)
         if output:
-            status, _ = output.split('\t')
+            status, _ = output[0].split('\t')
             return status
 
 
