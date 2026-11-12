@@ -35,7 +35,11 @@ class GitCustomCommand(WindowCommand, GitCmd, GitErrorHelper):
 
     """
 
-    def run(self, cmd=None, async=False, output="view", syntax=None):
+    def run(self, cmd=None, is_async=False, output="view", syntax=None, **kwargs):
+        # 'async' is a reserved keyword in Python 3.7+, so accept legacy {"async": ...} via **kwargs.
+        is_async = kwargs.pop('async', is_async)
+        if kwargs:
+            raise TypeError("run() got an unexpected keyword argument %r" % next(iter(kwargs)))
         repo = self.get_repo()
         if not repo:
             return
@@ -51,18 +55,18 @@ class GitCustomCommand(WindowCommand, GitCmd, GitErrorHelper):
                 cmd = cmd.strip()
                 if not cmd:
                     return
-                self.on_command(repo, cmd, async=async)
+                self.on_command(repo, cmd, is_async=is_async)
 
             self.window.show_input_panel('git', '', on_done, noop, noop)
         else:
-            self.on_command(repo, cmd, async=async)
+            self.on_command(repo, cmd, is_async=is_async)
 
-    def on_command(self, repo, cmd, async):
+    def on_command(self, repo, cmd, is_async):
         if sublime.version() < '3000':
             cmd = cmd.encode('utf-8')
         cmd = shlex.split(cmd)
         self.init_output(repo, cmd)
-        if async:
+        if is_async:
             self.run_async(repo, cmd)
         else:
             self.run_sync(repo, cmd)
