@@ -1,0 +1,43 @@
+repos:
+  -
+    repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      -
+        id: check-ast
+        language_version: python3.12
+      -
+        id: check-case-conflict
+      -
+        id: check-executables-have-shebangs
+      -
+        id: check-merge-conflict
+      -
+        id: check-yaml
+      -
+        id: end-of-file-fixer
+      -
+        id: check-shebang-scripts-are-executable
+      -
+        id: detect-private-key
+      -
+        id: trailing-whitespace
+        args:
+          - '--markdown-linebreak-ext=rst'
+  -
+    repo: https://github.com/asottile/pyupgrade
+    rev: v3.22.0
+    hooks:
+      - id: pyupgrade
+        args: [ --py312-plus ]
+  -
+    repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.17.5
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [  --target-version, py312, --fix ]
+      # Run the formatter.
+      - id: ruff-format
+        args: [  --target-version, py312 ]
