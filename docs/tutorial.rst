@@ -44,11 +44,6 @@ Adding Content
 --------------
 So now that we have an empty repository, we can start adding our files.
 
-.. warning::
-    Using SublimeGit to perform the initial commit on a huge project (1000+ files) might not be the best way to go. Getting the list of untracked files from git, and formatting them nicely can take some time.
-
-    If you are dealing with a huge project, you might want to use the command line for the initial commit.
-
 
 The Status View
 ~~~~~~~~~~~~~~~
