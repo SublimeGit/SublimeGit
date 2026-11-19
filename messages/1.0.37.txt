@@ -1,0 +1,6 @@
+SublimeGit 1.0.37
+=================
+
+Features:
+----------
+ - Add new command to checkout branch of remote repository (PR #216)
