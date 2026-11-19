@@ -1,6 +1,5 @@
-# coding: utf-8
-import sys
 import logging
+import sys
 import webbrowser
 
 import sublime
@@ -8,8 +7,7 @@ from sublime_plugin import WindowCommand
 
 from . import __version__
 
-
-logger = logging.getLogger('SublimeGit.sublimegit')
+logger = logging.getLogger("SublimeGit.sublimegit")
 
 
 class SublimeGitVersionCommand(WindowCommand):
@@ -18,7 +16,7 @@ class SublimeGitVersionCommand(WindowCommand):
     """
 
     def run(self):
-        sublime.message_dialog("You have SublimeGit %s" % __version__)
+        sublime.message_dialog(f"You have SublimeGit {__version__}")
 
 
 class SublimeGitDocumentationCommand(WindowCommand):
