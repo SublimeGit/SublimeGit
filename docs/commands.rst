@@ -59,6 +59,7 @@ Branching and Merging
 .. autowindowcmd:: sgit.checkout.GitCheckoutCommitCommand
 .. autowindowcmd:: sgit.checkout.GitCheckoutNewBranchCommand
 .. autowindowcmd:: sgit.merge.GitMergeCommand
+.. autowindowcmd:: sgit.merge.GitMergeAbortCommand
 
 
 Working with Remotes

@@ -38,6 +38,7 @@
     { "caption": "Git: Checkout Tag", "command": "git_checkout_tag"},
     { "caption": "Git: Checkout Current File", "command": "git_checkout_current_file"},
     { "caption": "Git: Merge", "command": "git_merge"},
+    { "caption": "Git: Abort Merge", "command": "git_merge_abort"},
 
     { "caption": "Git: Add Remote", "command": "git_remote_add"},
     { "caption": "Git: Remote", "command": "git_remote"},

@@ -162,6 +162,28 @@
         ]
     },
 
+    // Merge commands
+    { "keys": ["o"], "command": "git_status_checkout", "args": {"discard": "item", "which": "ours"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+    { "keys": ["O"], "command": "git_status_checkout", "args": {"discard": "all", "which": "ours"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+    { "keys": ["t"], "command": "git_status_checkout", "args": {"discard": "item", "which": "theirs"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "meta.git-status.line"}
+        ]
+    },
+    { "keys": ["T"], "command": "git_status_checkout", "args": {"discard": "all", "which": "theirs"},
+        "context": [
+            { "key": "selector", "operator": "equal", "operand": "text.git-status"}
+        ]
+    },
+
     // Stashes
     { "keys": ["z"], "command": "git_stash",
         "context": [

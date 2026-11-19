@@ -112,6 +112,20 @@
 			<string>meta.git-status.clean</string>
 		</dict>
 		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>markup.inserted.git-status.merging</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>^(Merge in progress \((fix conflicts or abort|all conflicts resolved; commit to finish merge)\))\n</string>
+			<key>name</key>
+			<string>meta.git-status.merging</string>
+		</dict>
+		<dict>
 			<key>begin</key>
 			<string>^(Stashes:\n)</string>
 			<key>beginCaptures</key>
@@ -189,7 +203,7 @@
 		</dict>
 		<dict>
 			<key>begin</key>
-			<string>^((?:Unstaged changes:\n)|(?:Changes:\n))</string>
+			<string>^((?:Unstaged changes:\n)|(?:Changes:\n)|(?:Unmerged changes:\n))</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -214,7 +228,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>\t(\w+) *(.+)\n</string>
+					<string>\t([\w\-]+) *(.+)\n</string>
 					<key>name</key>
 					<string>meta.git-status.line</string>
 				</dict>
@@ -247,7 +261,7 @@
 						</dict>
 					</dict>
 					<key>match</key>
-					<string>\t(\w+) *(.+)\n</string>
+					<string>\t([\w\-]+) *(.+)\n</string>
 					<key>name</key>
 					<string>meta.git-status.line</string>
 				</dict>

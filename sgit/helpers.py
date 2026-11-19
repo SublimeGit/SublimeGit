@@ -299,6 +299,12 @@ class GitStatusHelper(object):
     def has_unstaged_changes(self, repo):
         return self.git_exit_code(['diff', '--exit-code', '--quiet'], cwd=repo) != 0
 
+    def has_unmerged_changes(self, repo):
+        return self.git_exit_code(['diff', '--exit-code', '--quiet', '--diff-filter=U'], cwd=repo) != 0
+
+    def is_merging(self, repo):
+        return os.path.exists(os.path.join(repo, '.git', 'MERGE_HEAD'))
+
     # def get_porcelain_status(self, repo):
     #     mode = self.get_untracked_mode()
     #     cmd = ['status', '--porcelain', ('--untracked-files=%s' % mode) if mode else None]
@@ -325,13 +331,13 @@ class GitStatusHelper(object):
         return lines
 
     def get_files_status(self, repo):
-        untracked, unstaged, staged = [], [], []
+        untracked, unstaged, staged, unmerged = [], [], [], []
         status = self.get_porcelain_status(repo)
         for l in status:
             state, filename = l[:2], l[3:]
             index, worktree = state
             if state in ('DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'):
-                logger.warning("unmerged WTF: %s, %s", state, filename)
+                unmerged.append((state, filename))
             elif state == '??':
                 untracked.append(('?', filename))
             elif state == '!!':
@@ -341,7 +347,7 @@ class GitStatusHelper(object):
                     unstaged.append((worktree, filename))
                 if index != ' ':
                     staged.append((index, filename))
-        return untracked, unstaged, staged
+        return untracked, unstaged, staged, unmerged
 
     def get_untracked_mode(self):
         # get untracked files mode

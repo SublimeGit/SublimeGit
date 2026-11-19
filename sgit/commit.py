@@ -7,7 +7,7 @@ from sublime_plugin import WindowCommand, TextCommand, EventListener
 from .util import find_view_by_settings, noop, get_setting
 from .cmd import GitCmd
 from .helpers import GitStatusHelper
-from .status import GIT_WORKING_DIR_CLEAN
+from .status import GIT_WORKING_DIR_CLEAN, GIT_MERGE_IN_PROGRESS_UNMERGED
 
 
 GIT_COMMIT_VIEW_TITLE = "COMMIT_EDITMSG"
@@ -21,6 +21,8 @@ GIT_COMMIT_TEMPLATE = u"""{old_msg}
 
 GIT_AMEND_PUSHED = (u"It is discouraged to rewrite history which has already been pushed. "
                     u"Are you sure you want to amend the commit?")
+
+GIT_MERGE_TEMPLATE = u"Merge branch '%s' into %s"
 
 CUT_LINE = u"------------------------ >8 ------------------------\n"
 CUT_EXPLANATION = u"# Do not touch the line above.\n# Everything below will be removed.\n"
@@ -37,7 +39,7 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
     def is_verbose(self):
         return get_setting('git_commit_verbose', False)
 
-    def get_commit_template(self, repo, add=False, amend=False):
+    def get_commit_template(self, repo, add=False, amend=False, merge=False):
         cmd = ['commit', '--dry-run', '--status',
                '--all' if add else None,
                '--amend' if amend else None,
@@ -53,6 +55,10 @@ class GitCommitWindowCmd(GitCmd, GitStatusHelper):
         if amend:
             old_msg = self.git_lines(['rev-list', '--format=%B', '--max-count=1', 'HEAD'], cwd=repo)
             old_msg = "%s\n" % "\n".join(old_msg[1:])
+        elif merge:
+            current_branch = self.git_string(['branch', '--show-current'], cwd=repo)
+            merged_branch = self.git_string(['name-rev', '--name-only', 'MERGE_HEAD'], cwd=repo)
+            old_msg = GIT_MERGE_TEMPLATE % (merged_branch, current_branch)
 
         if self.is_verbose and CUT_LINE not in stdout:
             comments = []
@@ -89,11 +95,17 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
 
         staged = self.has_staged_changes(repo)
         dirty = self.has_unstaged_changes(repo)
+        merging = self.is_merging(repo)
+        unmerged = self.has_unmerged_changes(repo)
 
-        if not add and not staged:
-            return sublime.error_message(GIT_NOTHING_STAGED)
-        elif add and (not staged and not dirty):
-            return sublime.error_message(GIT_WORKING_DIR_CLEAN)
+        if merging:
+            if unmerged:
+                return sublime.error_message(GIT_MERGE_IN_PROGRESS_UNMERGED)
+        else:
+            if not add and not staged:
+                return sublime.error_message(GIT_NOTHING_STAGED)
+            elif add and (not staged and not dirty):
+                return sublime.error_message(GIT_WORKING_DIR_CLEAN)
 
         view = find_view_by_settings(self.window, git_view='commit', git_repo=repo)
         if not view:
@@ -108,7 +120,7 @@ class GitCommitCommand(WindowCommand, GitCommitWindowCmd):
         GitCommit.windows[view.id()] = (self.window, add, False)
         self.window.focus_view(view)
 
-        template = self.get_commit_template(repo, add=add)
+        template = self.get_commit_template(repo, add=add, merge=merging)
         view.run_command('git_commit_template', {'template': template})
 
 

@@ -31,6 +31,13 @@ Committing
 * ``enter``: Open file
 * ``d``: View diff
 
+Merging
+~~~~~~~
+* ``o``: Checkout --ours
+* ``O``: Checkout --ours all files
+* ``t``: Checkout --theirs
+* ``T``: Checkout --theirs all files
+
 Stashes
 ~~~~~~~
 * ``a``: Apply stash
