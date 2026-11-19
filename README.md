@@ -14,6 +14,7 @@ New Task List
 ----------------
 
 - [ ] ensure compatibility with latest ST4 builds
+- [ ] convert to asyncio using [sublime_aio](https://github.com/packagecontrol/sublime_aio)
 - [ ] add CI/CD
 - [ ] modernize code to Python 3.12
 - [ ] support Python 3.13+
@@ -26,7 +27,7 @@ SublimeGit is going open source. This is a short TODO list of what needs to happ
  - [x] Split plugin code from website code
  - [x] Remove licensing code and commands
  - [x] Release plugin code in SublimeGit repo
- - [x] Add license 
+ - [x] Add license
  - [x] Remove code for dealing with bytecode distribution
  - [x] Move documentation to readthedocs, or a github pages site or something
  - [x] Redirect SublimeGit domains to this repository
