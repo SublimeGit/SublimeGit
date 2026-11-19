@@ -24,7 +24,7 @@ You should make sure that git is accesible on your path. You can do this by runn
 
     .. code-block:: python
 
-        import os; print os.getenv('PATH')
+        import os; print(os.environ.get("PATH"))
 
     To verify that you have access to the Git executable from within Sublime Text, you can execute the following snippet, which will print ``0`` if everything worked as expected:
 
