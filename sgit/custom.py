@@ -24,7 +24,7 @@ class GitCustomCommand(WindowCommand, GitCmd, GitErrorHelper):
     It takes 3 arguments:
 
     * **cmd**: The command to execute (without the initial "git")
-    * **async**: ``true`` to run asynchronously, ``false`` otherwise. Default: ``false``
+    * **run_async**: ``true`` to run asynchronously, ``false`` otherwise. Default: ``false``
     * **output**: ``"view"`` for a new buffer, ``"panel"`` for an output panel, ``null`` for no output. Default: ``"view"``
     * **syntax**: If output is set to ``"view"``, the new buffer will get this syntax file. Should be a name along the
                   lines of ``Packages/Python/Python.tmLanguage``. To see the current syntax for a view, execute
@@ -35,7 +35,11 @@ class GitCustomCommand(WindowCommand, GitCmd, GitErrorHelper):
 
     """
 
-    def run(self, cmd=None, async=False, output="view", syntax=None):
+    def run(self, cmd=None, run_async=False, output="view", syntax=None, **kwargs):
+        run_async = kwargs.pop("async", run_async)
+        if kwargs:
+            arg, *_ = kwargs.keys()
+            raise TypeError("run() got unexpected keyword argument %r" % (arg,))
         repo = self.get_repo()
         if not repo:
             return
@@ -51,18 +55,18 @@ class GitCustomCommand(WindowCommand, GitCmd, GitErrorHelper):
                 cmd = cmd.strip()
                 if not cmd:
                     return
-                self.on_command(repo, cmd, async=async)
+                self.on_command(repo, cmd, run_async=run_async)
 
             self.window.show_input_panel('git', '', on_done, noop, noop)
         else:
-            self.on_command(repo, cmd, async=async)
+            self.on_command(repo, cmd, run_async=run_async)
 
-    def on_command(self, repo, cmd, async):
+    def on_command(self, repo, cmd, run_async):
         if sublime.version() < '3000':
             cmd = cmd.encode('utf-8')
         cmd = shlex.split(cmd)
         self.init_output(repo, cmd)
-        if async:
+        if run_async:
             self.run_async(repo, cmd)
         else:
             self.run_sync(repo, cmd)
