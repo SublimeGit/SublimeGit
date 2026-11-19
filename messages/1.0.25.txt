@@ -9,7 +9,7 @@ Enhancements:
 
  - Added Git: Custom Command, to allow for any command to be executed.
    It also enables extending SublimeGit with your own commands. For more
-   information on how to do this, see https://docs.sublimegit.net/customizations.html
+   information on how to do this, see https://sublimegit.readthedocs.io/en/latest/customizations.html
    (Issue #71 and #58)
 
 

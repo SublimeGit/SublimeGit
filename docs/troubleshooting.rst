@@ -71,7 +71,7 @@ If you are on Windows and when you try to push or pull using this plugin nothing
 The Output From Git Commands Look Weird (ANSI Escape Codes)
 -----------------------------------------------------------
 
-This happens if you have any of the ``color.*`` git options set to ``true`` (or ``always``). SublimeGit tries to remove the colors on everything, but sometimes one slip through. If you see one in the wild, please report it at support@sublimegit.net.
+This happens if you have any of the ``color.*`` git options set to ``true`` (or ``always``). SublimeGit tries to remove the colors on everything, but sometimes one slip through. If you see one in the wild, please report it at https://github.com/SublimeGit/SublimeGit/issues.
 
 To make sure that you don't get the escape codes in SublimeGit, but still get pretty colors when using git from the terminal, we recommend setting the ``color.*`` config values to ``auto`` like so::
 

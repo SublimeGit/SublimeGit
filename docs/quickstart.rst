@@ -4,9 +4,9 @@ Quickstart
 Prerequisites
 -------------
 
-Sublime Text 2 or 3
+Sublime Text 4
 ~~~~~~~~~~~~~~~~~~~
-Needless to say, Sublime Text is required to use SublimeGit. Any version of Sublime Text 2 or 3 should work.
+Needless to say, Sublime Text is required to use SublimeGit. Any version of Sublime Text 4 should work.
 
 Git
 ~~~
@@ -68,7 +68,7 @@ Using Package Control
 Installing From Package
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Download the SublimeGit.zip file from https://release.sublimegit.net/SublimeGit.zip.
+1. Download the latest release from https://github.com/SublimeGit/SublimeGit
 2. Unzip the package inside your Sublime Text package directory.
 
    - **Windows**: %APPDATA%\Sublime Text 2\Packages
@@ -83,7 +83,7 @@ Installing From Package
 Configuration
 -------------
 
-SublimeGit comes with sensible defaults, so if you don't need to add a license, and you can execute the command **Git: Version**, you can skip straight to the :doc:`tutorial`.
+SublimeGit comes with sensible defaults, you can execute the command **Git: Version**, you can skip straight to the :doc:`tutorial`.
 
 .. _config-git-path:
 
@@ -120,34 +120,6 @@ If you don't use a plugin, it might be annoying that its commands keep showing u
             "legit": true
         }
     }
-
-.. _add-license:
-
-Adding a License
-----------------
-
-If you decide to buy a license, the email you receive will contain information on how to install it. There are two ways to do it, depending on how comfortable you are with Sublime Text. Also, we love You.
-
-Automatic
-~~~~~~~~~
-
-Run the command **SublimeGit: Add License** and follow the instructions. Almost couldn't be easier!
-
-
-Manual
-~~~~~~
-
-Simply add the following to your SublimeGit User Settings file::
-
-    "email": "MY_EMAIL",
-    "product_key": "MY_LICENSE_KEY"
-
-Replacing ``MY_EMAIL`` and ``MY_LICENSE_KEY`` with the correct values. If you've lost your license, send us an email at support@sublimegit.net and we'll get you sorted out.
-
-.. note::
-
-    To find the correct settings file, navigate to **Preferences > Package Settings > SublimeGit > Settings - User**
-
 
 Using SublimeGit
 ----------------

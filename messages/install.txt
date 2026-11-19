@@ -1,9 +1,8 @@
 Welcome to SublimeGit
 =====================
 
-SublimeGit is a full-featured, commercial plugin for integrating
-git into Sublime Text 2 and 3. To read more about it, or purchase
-a license, go to https://sublimegit.net.
+SublimeGit is a full-featured, open source plugin for integrating
+git into Sublime Text 4. To read more about it, go to https://sublimegit.readthedocs.io/en/latest/
 
 
 Quickstart
@@ -24,7 +23,7 @@ Tutorial
 --------
 For the full tutorial, go to:
 
-    https://docs.sublimegit.net/tutorial.html
+    https://sublimegit.readthedocs.io/en/latest/tutorial.html
 
 
 Trouble Getting Started?
@@ -33,12 +32,11 @@ If you are on windows, or don't usually use git from the command
 line, there might be some things you'll need to set up. Go here
 for instructions on how to get set up:
 
-    https://docs.sublimegit.net/quickstart.html
+    https://sublimegit.readthedocs.io/en/latest/quickstart.html
 
 
 Issues, Questions or Bugs?
 --------------------------
-Send a mail to support@sublimegit.net, or report it in the issue
-tracker:
+Report it on the issue tracker:
 
     https://github.com/SublimeGit/SublimeGit/issues
