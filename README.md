@@ -2,6 +2,26 @@ SublimeGit
 ==========
 [![Documentation](https://readthedocs.org/projects/sublimegit/badge/?version=latest&style=flat)](http://sublimegit.readthedocs.io/en/latest/)
 
+
+Call for Developers/Maintainers
+---------------------------------
+
+SublimeGit needs some more people to bring it forwards!
+
+Please drop by Issue #271 or reach out to @autumnjolitz to throw your hat into the ring!
+
+New Task List
+----------------
+
+- [ ] ensure compatibility with latest ST4 builds
+- [ ] add CI/CD
+- [ ] modernize code to Python 3.12
+- [ ] support Python 3.13+
+- [ ] publish new version for Sublime Package Manager
+
+Prior README
+--------------
+
 SublimeGit is going open source. This is a short TODO list of what needs to happen:
  - [x] Split plugin code from website code
  - [x] Remove licensing code and commands
